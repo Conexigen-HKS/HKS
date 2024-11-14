@@ -1,13 +1,16 @@
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Boolean, BigInteger, func
+
 import uuid
+from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, func
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
+from sqlalchemy.ext.declarative import declarative_base
+
+from sqlalchemy.ext.declarative import declarative_base
 
 Base = declarative_base()
 
 
-class UserBase(Base):
+class UsersBase(Base):
     __tablename__ = 'Users'
     user_id = Column(Integer, primary_key=True, unique=True, nullable=False)
     user_username = Column(String, nullable=False, unique=True)
@@ -17,14 +20,14 @@ class UserBase(Base):
     user_created_at = Column(DateTime, default=func.now())
 
 
-class CompanyBase(Base):
+class CompaniesBase(Base):
     __tablename__ = 'Companies'
     user_id = Column(Integer, ForeignKey('Users.user_id'))  # One-to-one relationship
     company_id = Column(Integer, primary_key=True, unique=True, nullable=False)
     company_name = Column(String, nullable=False, unique=True)
     company_description = Column(String, nullable=True)
     company_contacts = Column(String, nullable=True)
-    user = relationship('UserBase', backref='company')  # Relationship field
+    user = relationship(UsersBase, backref='company')  # Changed 'UserBase' to UsersBase
 
 
 class CompanyOffersBase(Base):
@@ -35,7 +38,7 @@ class CompanyOffersBase(Base):
     max_salary = Column(Integer)
     company_offers_col = Column(String)
     status = Column(String)
-    company = relationship('CompanyBase', backref='offers')  # Relationship field
+    company = relationship(CompaniesBase, backref='offers')  # Relationship field
 
 
 class CompanyRequirementsBase(Base):
@@ -44,9 +47,8 @@ class CompanyRequirementsBase(Base):
     min_experience = Column(Integer)
     max_experience = Column(Integer)
 
-
 def create_postgresql_file():
-    UserBase()
-    CompanyBase()
+    UsersBase()
+    CompaniesBase()
     CompanyOffersBase()
     CompanyRequirementsBase()

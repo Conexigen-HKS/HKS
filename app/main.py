@@ -1,7 +1,8 @@
 import os
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from app.data.databaseScript.database import Base, create_postgresql_file, UserBase
+from app.data.databaseScript.database import create_postgresql_file
+from app.data.databaseScript.database import Base, UsersBase
 from dotenv import load_dotenv
 
 
@@ -24,13 +25,13 @@ Base.metadata.create_all(engine)
 # create a session maker bound to the engine
 Session = sessionmaker(bind=engine)
 
-new_user = UserBase(
+new_user = UsersBase(
     user_username='FirstCompanyUser',
     user_hashed_password='1234',
     user_is_admin=1,
     user_role='Company',
 )
-new_user2 = UserBase(
+new_user2 = UsersBase(
     user_username='2CompanyUser',
     user_hashed_password='1234',
     user_is_admin=0,
