@@ -1,5 +1,5 @@
 
-from app.data.schemas.user import BaseUser
+from HKS.data.schemas.user import BaseUser
 class Company(BaseUser):
     role: str = "company"
     company_name: str

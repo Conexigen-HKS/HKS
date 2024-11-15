@@ -17,7 +17,6 @@ class UsersBase(Base):
     user_created_at = Column(DateTime, default=func.now())
 
 
-
 class CompaniesBase(Base):
     __tablename__ = 'companies'
     user_id = Column(UUID(as_uuid=True), ForeignKey('users.user_id'))
@@ -56,7 +55,16 @@ class Message(Base):
     message_receiver_id = Column(UUID(as_uuid=True), ForeignKey('users.user_id'), nullable=False)
     message_created_at = Column(DateTime(timezone=True), default=func.now(), nullable=False)
 
-
+# class Requests(Base):
+#     __tablename__ = "requests"
+#     request_id = Column(UUID(as_uuid=True), default=uuid.uuid4, primary_key=True, nullable=False)
+#     request_from = Column(String, nullable=False) # company/professional
+#     professional_profile_id = Column(UUID(as_uuid=True), ForeignKey("professional_profile.id"))
+#     company_offer_id = Column(UUID(as_uuid=True), ForeignKey("company_offers.id"), nullable=False)
+# #ДА СЕ ДОБАВЯТ В PROFESSIONAL / COMPANIES - backpopulates връзки !
+#     professional = relationship("Professionals", foreign_keys=[professional_profile_id], back_populates="requests")
+#     company = relationship("Companies", foreign_keys=[company_offer_id], back_populates="requests")
+#
 
 
 
