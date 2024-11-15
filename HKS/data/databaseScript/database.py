@@ -1,9 +1,11 @@
 import os
+import uuid
+
 from dotenv import load_dotenv
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from HKS.data.databaseScript.models import Base
-
+from HKS.data.databaseScript.models import CompaniesBase
 # Load environment variables
 load_dotenv()
 
