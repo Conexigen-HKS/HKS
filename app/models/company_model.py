@@ -1,6 +1,6 @@
 from sqlalchemy.ext.declarative import declarative_base
 from pydantic import BaseModel
-from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, func, event
+from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, func, event, Float
 from sqlalchemy.sql import insert
 from sqlalchemy import Table, MetaData
 import datetime
@@ -60,5 +60,10 @@ class CompanyInfoModel(BaseModel):
 #     pass
 #
 #
-# class CompanyAdBase(Base):
-#     pass
+class CompanyAdBase(Base):
+    __tablename__ = 'company_job_ad'
+    company_ad_id = Column(Integer, autoincrement=True, nullable=False, primary_key=True)
+    position_title = Column(String)
+    salary = Column(Float)
+    job_description = Column(String)
+    ad_created_at = Column(DateTime, default=datetime.datetime.now)
