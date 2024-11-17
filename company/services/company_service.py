@@ -1,8 +1,6 @@
 from typing import Optional
-
 from fastapi import Depends, HTTPException
 from sqlalchemy import func
-
 from company.models.company_model import (CompanyBase, CompanyLoginModel,
                                           CompanyInfoBase, CompanyInfoModel,
                                           CompanyAdBase, CompanyAdModel, CompanyAdModel2)
@@ -77,7 +75,6 @@ def edit_company_description_service(company_info: CompanyInfoModel, company_use
 
 def count_job_ads(company_id):
     session = Session()
-
     count = session.query(func.count(CompanyAdBase.company_id)).filter(CompanyAdBase.company_id == company_id).scalar()
     session.close()
 
@@ -165,7 +162,6 @@ def edit_company_ad_by_id_service(ad_id: int, ad_info: CompanyAdModel2, username
         if ad_info.ad_status is not None:
             ad.ad_status = ad_info.ad_status
 
-        # Fetch the fields needed after closing the Session.
         position_title = ad.position_title
         salary = ad.salary
         job_description = ad.job_description

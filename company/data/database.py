@@ -5,8 +5,6 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from company.models.company_model import Base
 
-
-
 load_dotenv()
 
 username = os.getenv('DB_USERNAME')

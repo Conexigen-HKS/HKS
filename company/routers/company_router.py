@@ -6,8 +6,8 @@ from company.services.company_service import create_new_company, company_login_s
     create_new_ad_service, get_company_id_by_username_service, get_company_name_by_username_service, \
     get_company_ads_service, edit_company_ad_by_id_service
 from company.cummon.auth import create_access_token, decode_access_token
-from company.models.company_model import CompanyRegistrationModel, CompanyLoginModel, CompanyInfoModel, CompanyAdModel, \
-    AdResponseModel, CompanyAdBase, CompanyAdModel2
+from company.models.company_model import (CompanyRegistrationModel, CompanyLoginModel,
+                                          CompanyInfoModel, CompanyAdModel, CompanyAdModel2)
 
 company_router = APIRouter(prefix="/companies", tags=["Companies"])
 

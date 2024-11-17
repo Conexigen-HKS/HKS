@@ -1,8 +1,7 @@
 from typing import List
-
 from sqlalchemy.ext.declarative import declarative_base
 from pydantic import BaseModel
-from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Boolean, event, Float
+from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, event, Float
 from sqlalchemy.sql import insert
 from sqlalchemy import Table, MetaData
 import datetime
