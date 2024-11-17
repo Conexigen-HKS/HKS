@@ -2,9 +2,10 @@ from typing import List, Optional
 
 from fastapi import APIRouter, Response, HTTPException, Query
 from starlette import status
-from company.services.company_service import create_new_company, company_login_service, edit_company_description_service, \
+from company.services.company_service import create_new_company, company_login_service, \
+    edit_company_description_service, \
     create_new_ad_service, get_company_id_by_username_service, get_company_name_by_username_service, \
-    get_company_ads_service, edit_company_ad_by_id_service
+    get_company_ads_service, edit_company_ad_by_id_service, find_all_companies_service
 from company.cummon.auth import create_access_token, decode_access_token
 from company.models.company_model import (CompanyRegistrationModel, CompanyLoginModel,
                                           CompanyInfoModel, CompanyAdModel, CompanyAdModel2)
@@ -32,9 +33,9 @@ def company_login(company: CompanyLoginModel, response: Response):
 
     return {"message": f"{company.company_username} Logged in Successfully"}
 
+
 @company_router.put('/companies/info')
 def edit_company_description(company_info: CompanyInfoModel, token: str = Query(..., alias="token")):
-
     try:
         payload = decode_access_token(token)
         company_username = payload.get("username")
@@ -92,9 +93,10 @@ def create_new_ad(company_ad: CompanyAdModel, token: str = Query(..., alias="tok
                 "location": company_ad.location,
                 "status": company_ad.ad_status
                 }
+
+
 @company_router.get('/company/ads', response_model=List[Optional[CompanyAdModel]])
 def get_company_ads(token: Optional[str] = Query(None)):
-
     if token is None:
         raise HTTPException(
             status_code=401,
@@ -118,3 +120,9 @@ def update_company_ad(ad_id: int, ad_info: CompanyAdModel2, token: str = Query(.
     payload = decode_access_token(token)
     company_username = payload.get("username")
     return edit_company_ad_by_id_service(ad_id, ad_info, company_username)
+
+
+@company_router.get('/all')
+async def show_all_companies():
+    companies = find_all_companies_service()
+    return companies

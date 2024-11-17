@@ -176,3 +176,10 @@ def edit_company_ad_by_id_service(ad_id: int, ad_info: CompanyAdModel2, username
         "location": location,
         "ad_status": ad_status
     }
+
+
+def find_all_companies_service():
+    with Session() as session:
+        companies = session.query(CompanyInfoBase).all()
+        return [{attr: value for attr, value in company.__dict__.items() if attr != '_sa_instance_state'} for company in
+                companies]
