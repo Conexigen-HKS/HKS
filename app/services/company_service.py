@@ -1,6 +1,7 @@
 from fastapi import Depends, HTTPException
-from fastapi.security import OAuth2PasswordBearer
-from app.models.company_model import CompanyBase, CompanyLoginModel, CompanyInfoBase, CompanyInfoModel
+from app.models.company_model import (CompanyBase, CompanyLoginModel,
+                                      CompanyInfoBase, CompanyInfoModel,
+                                      CompanyAdBase, CompanyAdModel)
 from app.data.database import Session
 import bcrypt
 
@@ -59,3 +60,40 @@ def edit_company_description_service(company_info: CompanyInfoModel, company_use
             "company_description": company_info_data.company_description,
             "company_address": company_info_data.company_address
         }
+
+
+def create_new_ad_service(company_id: int, position_title: str, salary: float, job_description: str) -> CompanyAdBase:
+    new_ad = CompanyAdBase(
+        company_id=company_id,
+        position_title=position_title,
+        salary=salary,
+        job_description=job_description
+    )
+
+    with Session() as session:
+        session.add(new_ad)
+        session.commit()
+
+    return new_ad
+
+
+def get_company_id_by_username_service(username: str) -> int:
+    with Session() as session:
+        try:
+            company = session.query(CompanyBase).filter(CompanyBase.company_username == username).one()
+            return company.company_id
+        except:
+            raise HTTPException(
+                status_code=404,
+                detail="Company not found"
+            )
+def get_company_name_by_username_service(username: str) -> str:
+    with Session() as session:
+        try:
+            company = session.query(CompanyBase).filter(CompanyBase.company_username == username).one()
+            return company.company_name
+        except:
+            raise HTTPException(
+                status_code=404,
+                detail="Company not found"
+            )

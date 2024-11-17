@@ -38,7 +38,6 @@ class CompanyInfoBase(Base):
 
 @event.listens_for(CompanyBase, 'after_insert')
 def receive_after_insert(mapper, connection, target):
-
     metadata = MetaData()
 
     company_info_table = Table('company_info', metadata, autoload_with=connection)
@@ -56,12 +55,16 @@ class CompanyInfoModel(BaseModel):
     company_description: str
     company_address: str
 
-# class CompanyAdModel(BaseModel):
-#     pass
-#
-#
+
+class CompanyAdModel(BaseModel):
+    position_title: str
+    salary: float
+    job_description: str
+
+
 class CompanyAdBase(Base):
     __tablename__ = 'company_job_ad'
+    company_id = Column(Integer, ForeignKey('companies.company_id'), nullable=False)
     company_ad_id = Column(Integer, autoincrement=True, nullable=False, primary_key=True)
     position_title = Column(String)
     salary = Column(Float)

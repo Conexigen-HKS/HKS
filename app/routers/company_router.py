@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Response, HTTPException, Query
 from starlette import status
-# from models.job_ad_model import JobAdBase
-from app.services.company_service import create_new_company, company_login_service, edit_company_description_service
+from app.services.company_service import create_new_company, company_login_service, edit_company_description_service, \
+    create_new_ad_service, get_company_id_by_username_service, get_company_name_by_username_service
 from app.cummon.auth import create_access_token, decode_access_token
-from app.models.company_model import CompanyRegistrationModel, CompanyLoginModel, CompanyInfoModel
+from app.models.company_model import CompanyRegistrationModel, CompanyLoginModel, CompanyInfoModel, CompanyAdModel
 
 company_router = APIRouter(prefix="/companies", tags=["Companies"])
 
@@ -58,14 +58,29 @@ def edit_company_description(company_info: CompanyInfoModel, token: str = Query(
         )
 
 
-# @company_router.post("/companies/create/job_ad")
-# def create_new_job_ad(job_ad: JobAdBase):
-#     created_job_ad = create_new_job_ad(job_ad)
-#
-#     if created_job_ad:
-#         return {"message": "Job ad created successfully", "job_ad": created_job_ad}
-#     else:
-#         raise HTTPException(
-#             status_code=400,
-#             detail="Error occurred while creating the job ad"
-#         )
+@company_router.post('/company/create/ad')
+def create_new_ad(company_ad: CompanyAdModel, token: str = Query(..., alias="token")):
+    try:
+        payload = decode_access_token(token)
+        company_username = payload.get("username")
+
+        if company_username is None:
+            raise HTTPException(
+                status_code=401,
+                detail="Could not validate credentials"
+            )
+        company_id = get_company_id_by_username_service(company_username)
+        company_name = get_company_name_by_username_service(company_username)
+    except Exception as e:
+        raise HTTPException(
+            status_code=401,
+            detail="Could not validate credentials",
+            headers={"WWW-Authenticate": "Bearer"}
+        )
+    new_ad = create_new_ad_service(company_id, company_ad.position_title, company_ad.salary, company_ad.job_description)
+    if new_ad:
+        return {"message": "Ad added successfully",
+                "Company name": company_name,
+                "Title": company_ad.position_title,
+                "salary": company_ad.salary,
+                "description": company_ad.job_description}
