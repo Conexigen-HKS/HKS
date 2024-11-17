@@ -1,9 +1,13 @@
+from typing import List, Optional
+
 from fastapi import APIRouter, Response, HTTPException, Query
 from starlette import status
-from app.services.company_service import create_new_company, company_login_service, edit_company_description_service, \
-    create_new_ad_service, get_company_id_by_username_service, get_company_name_by_username_service
-from app.cummon.auth import create_access_token, decode_access_token
-from app.models.company_model import CompanyRegistrationModel, CompanyLoginModel, CompanyInfoModel, CompanyAdModel
+from company.services.company_service import create_new_company, company_login_service, edit_company_description_service, \
+    create_new_ad_service, get_company_id_by_username_service, get_company_name_by_username_service, \
+    get_company_ads_service, edit_company_ad_by_id_service
+from company.cummon.auth import create_access_token, decode_access_token
+from company.models.company_model import CompanyRegistrationModel, CompanyLoginModel, CompanyInfoModel, CompanyAdModel, \
+    AdResponseModel, CompanyAdBase, CompanyAdModel2
 
 company_router = APIRouter(prefix="/companies", tags=["Companies"])
 
@@ -77,10 +81,40 @@ def create_new_ad(company_ad: CompanyAdModel, token: str = Query(..., alias="tok
             detail="Could not validate credentials",
             headers={"WWW-Authenticate": "Bearer"}
         )
-    new_ad = create_new_ad_service(company_id, company_ad.position_title, company_ad.salary, company_ad.job_description)
+    new_ad = create_new_ad_service(company_id, company_ad.position_title, company_ad.salary,
+                                   company_ad.job_description, company_ad.location, company_ad.ad_status)
     if new_ad:
         return {"message": "Ad added successfully",
                 "Company name": company_name,
                 "Title": company_ad.position_title,
                 "salary": company_ad.salary,
-                "description": company_ad.job_description}
+                "description": company_ad.job_description,
+                "location": company_ad.location,
+                "status": company_ad.ad_status
+                }
+@company_router.get('/company/ads', response_model=List[Optional[CompanyAdModel]])
+def get_company_ads(token: Optional[str] = Query(None)):
+
+    if token is None:
+        raise HTTPException(
+            status_code=401,
+            detail="Token is missing"
+        )
+
+    payload = decode_access_token(token)
+    company_username = payload.get("username")
+    ads = get_company_ads_service(company_username)
+
+    return ads or []
+
+
+@company_router.put('/company/ad/{ad_id}', response_model=CompanyAdModel2)
+def update_company_ad(ad_id: int, ad_info: CompanyAdModel2, token: str = Query(...)):
+    if token is None:
+        raise HTTPException(
+            status_code=401,
+            detail="Token is missing"
+        )
+    payload = decode_access_token(token)
+    company_username = payload.get("username")
+    return edit_company_ad_by_id_service(ad_id, ad_info, company_username)

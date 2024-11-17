@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from HKS.data.databaseScript.models import Base
-from HKS.data.databaseScript.models import CompaniesBase
+from HKS.data.databaseScript.models import Companies
 # Load environment variables
 load_dotenv()
 
