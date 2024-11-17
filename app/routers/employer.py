@@ -2,9 +2,8 @@ from datetime import datetime
 from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel, UUID4
+from pydantic import BaseModel, ConfigDict, UUID4
 from sqlalchemy.orm import Session
-
 from app.data.database import get_db
 from app.services.user_services import create_user, get_user, get_all_users
 
@@ -18,8 +17,7 @@ class UserSchema(BaseModel):
     role: str
     created_at: datetime
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 class UserCreateSchema(BaseModel):
     username: str
@@ -27,8 +25,7 @@ class UserCreateSchema(BaseModel):
     role: Optional[str] = "professional"
     is_admin: Optional[bool] = False
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 @users_router.post("/", response_model=UserSchema)
 def create_user_endpoint(username: str, hashed_password: str, db: Session = Depends(get_db)):
     return create_user(db, username, hashed_password)
