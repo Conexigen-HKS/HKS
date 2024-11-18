@@ -1,10 +1,12 @@
 import os
-# app/config.py
-DB_USER = "postgres"            # Your PostgreSQL username
-DB_PASSWORD = "Kristi2005"      # Your PostgreSQL password
-DB_ADDRESS = "localhost"        # Address, assuming local connection
-DB_PORT = "5435"                # Port you mapped in Docker
-DB_NAME = "postgres"            # Database name
+
+DB_USER = os.getenv('DB_USER', 'postgres')
+DB_PASSWORD = os.getenv('DB_PASSWORD', 'Kristi2005')
+DB_ADDRESS = os.getenv('DB_ADDRESS', '192.168.1.7')
+DB_PORT = os.getenv('DB_PORT', '5432')
+DB_NAME = os.getenv('DB_NAME', 'postgres')
+
+DATABASE_URL = f"postgresql+psycopg2://{DB_USER}:{DB_PASSWORD}@{DB_ADDRESS}:{DB_PORT}/{DB_NAME}"
 
 # # JWT
 # SECRET_KEY = os.getenv('SECRET_KEY')
