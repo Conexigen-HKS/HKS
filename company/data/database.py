@@ -3,7 +3,8 @@ import os
 from dotenv import load_dotenv
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from company.models.company_model import Base
+from company.data.database_models import Base
+
 
 load_dotenv()
 

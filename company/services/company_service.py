@@ -1,9 +1,10 @@
 from typing import Optional
 from fastapi import Depends, HTTPException
 from sqlalchemy import func
-from company.models.company_model import (CompanyBase, CompanyLoginModel,
-                                          CompanyInfoBase, CompanyInfoModel,
-                                          CompanyAdBase, CompanyAdModel, CompanyAdModel2)
+from company.models.company_model import (CompanyLoginModel,
+                                          CompanyInfoModel,
+                                          CompanyAdModel, CompanyAdModel2)
+from company.data.database_models import CompanyBase, CompanyInfoBase, CompanyAdBase
 from company.data.database import Session
 import bcrypt
 
