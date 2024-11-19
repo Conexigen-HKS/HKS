@@ -5,9 +5,8 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from sqlalchemy.ext.declarative import declarative_base
 
-from app.data.database import Base
 
-
+Base = declarative_base()
 class User(Base):
     __tablename__ = "users"
     id = Column(UUID(as_uuid=True), default=uuid.uuid4, primary_key=True)
@@ -19,20 +18,22 @@ class User(Base):
 
     sent_messages = relationship("Message", foreign_keys="[Message.author_id]", back_populates="author")
     receiver_messages = relationship("Message", foreign_keys="[Message.receiver_id]", back_populates="receiver")
-    professional_profile = relationship("ProfessionalProfile", uselist=False,
-                                        back_populates="user")
 
 
 class Professional(Base):
     __tablename__ = "professionals"
     id = Column(UUID(as_uuid=True), default=uuid.uuid4, primary_key=True, nullable=False)
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
-    first_name = Column(String, nullable=False)
-    last_name = Column(String, nullable=False)
-    address = Column(String, nullable=False)
-    status = Column(String, nullable=True)
-    summary = Column(String, nullable=True)
     is_approved = Column(Boolean, default=False)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
+    first_name = Column(String(45), nullable=False)
+    last_name = Column(String(45), nullable=False)
+    address = Column(String(45), nullable=False)
+    status = Column(String(45))
+    summary = Column(String(255))
+    picture = Column(String(255))
+
+    user = relationship("User", back_populates="professional")
+    professional_profile = relationship("ProfessionalProfile", back_populates="professional")
 
 
 class ProfessionalProfile(Base):
@@ -48,9 +49,24 @@ class ProfessionalProfile(Base):
 
     user = relationship("User", back_populates="professional_profile")
     chosen_offer = relationship("CompanyOffers", foreign_keys=[chosen_company_offer_id])
-    job_app_skills = relationship("JobAppSkills", back_populates="professional_profile")
-    requests = relationship("Requests", back_populates="professional")
-    matches = relationship("Matches", back_populates="professional")
+    skills = relationship("ProfessionalProfileSkills", back_populates="professional_profile")
+    requests_and_matches = relationship("RequestsAndMatches", back_populates="professional_profile")
+
+class ProfessionalProfileSkills(Base):
+    __tablename__ = "professional_profile_skills"
+    professional_profile_id = Column(UUID(as_uuid=True), ForeignKey("professional_profile.id"), primary_key=True)
+    skills_id = Column(UUID(as_uuid=True), ForeignKey("skills.id"), primary_key=True)
+    level = Column(Integer, nullable=True)
+
+    professional_profile = relationship("ProfessionalProfile", back_populates="skills")
+    skill = relationship("Skills", back_populates="professional_profile_skills")
+
+class Skills(Base):
+    __tablename__ = 'skills'
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, nullable=False)
+    name = Column(String(255), nullable=False)
+
+    professional_profile_skills = relationship("ProfessionalProfileSkills", back_populates="skill")
 
 
 class Companies(Base):
@@ -63,20 +79,42 @@ class Companies(Base):
     contacts = Column(String, nullable=False)
     is_approved = Column(Boolean, default=False)
 
-    requests = relationship("Requests", back_populates="company")
+    company_offers = relationship("CompanyOffers", back_populates="company")
+
 
 class CompanyOffers(Base):
     __tablename__ = "company_offers"
     id = Column(UUID(as_uuid=True), default=uuid.uuid4, primary_key=True, nullable=False)
     company_id = Column(UUID(as_uuid=True), ForeignKey("companies.id"), nullable=False)
-    choosen_professional_id = Column(UUID(as_uuid=True), ForeignKey("professional_profile.id"), nullable=True)
+    chosen_professional_offer_id = Column(UUID(as_uuid=True), ForeignKey("professional_profile.id"), nullable=True)
     min_salary = Column(Integer, nullable=True)
     max_salary = Column(Integer, nullable=True)
     status = Column(String, nullable=True)
 
-    matches = relationship("Matches", back_populates="company_offer")
-    job_ad_reqs = relationship("JobAdReq", back_populates="company_offer")
+    company = relationship("Companies", back_populates="company_offers")
+    requirements = relationship("CompaniesRequirements", back_populates="company_offer")
+    requests_and_matches = relationship("RequestsAndMatches", back_populates="company_offer")
 
+
+class CompaniesRequirements(Base):
+    __tablename__ = "companies_requirements"
+    requirements_id = Column(UUID(as_uuid=True), ForeignKey("skills.id"), primary_key=True)
+    company_offers_id = Column(UUID(as_uuid=True), ForeignKey("company_offers.id"), primary_key=True)
+    level = Column(Integer, nullable=True)
+
+    company_offer = relationship("CompanyOffers", back_populates="requirements")
+    skill = relationship("Skills")
+
+
+class RequestsAndMatches(Base):
+    __tablename__ = "requests_and_matches"
+    professional_profile_id = Column(UUID(as_uuid=True), ForeignKey("professional_profile.id"), primary_key=True)
+    company_offers_id = Column(UUID(as_uuid=True), ForeignKey("company_offers.id"), primary_key=True)
+    match = Column(Boolean, default=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+
+    professional_profile = relationship("ProfessionalProfile", back_populates="requests_and_matches")
+    company_offer = relationship("CompanyOffers", back_populates="requests_and_matches")
 
 
 class Message(Base):
@@ -91,63 +129,6 @@ class Message(Base):
     receiver = relationship("User", foreign_keys=[receiver_id], back_populates="receiver_messages")
 
 
-class Requests(Base):
-    __tablename__ = "requests"
-    id = Column(UUID(as_uuid=True), default=uuid.uuid4, primary_key=True, nullable=False)
-    request_from = Column(String, nullable=False)
-    professional_profile_id = Column(UUID(as_uuid=True), ForeignKey("professional_profile.id"))
-    company_offer_id = Column(UUID(as_uuid=True), ForeignKey("company_offers.id"), nullable=False)
-    company_id = Column(UUID(as_uuid=True), ForeignKey("companies.id"), nullable=False)  # Add this foreign key
-
-    professional = relationship("ProfessionalProfile", foreign_keys=[professional_profile_id],
-                                back_populates="requests")
-    company = relationship("Companies", back_populates="requests", foreign_keys=[company_id])  # Set up the relationship with Companies
 
 
-class Matches(Base):
-    __tablename__ = "matches"
-    id = Column(UUID(as_uuid=True), default=uuid.uuid4, primary_key=True, nullable=False)
-    professional_profile_id = Column(UUID(as_uuid=True), ForeignKey("professional_profile.id"))
-    company_offer_id = Column(UUID(as_uuid=True), ForeignKey("company_offers.id"), nullable=False)
-    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
-    professional = relationship("ProfessionalProfile", foreign_keys=[professional_profile_id], back_populates="matches")
-    company_offer = relationship("CompanyOffers", foreign_keys=[company_offer_id], back_populates="matches")
-
-
-class Requirements(Base):
-    __tablename__ = "requirements"
-    id = Column(UUID(as_uuid=True), default=uuid.uuid4, primary_key=True, nullable=False)
-    name = Column(String, nullable=False)
-
-    job_ad_reqs = relationship("JobAdReq", back_populates="requirement")
-
-
-class JobAdReq(Base):
-    __tablename__ = 'job_ad_req'
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, nullable=False)
-    company_offers_id = Column(UUID(as_uuid=True), ForeignKey('company_offers.id'), nullable=False)
-    requirements_id = Column(UUID(as_uuid=True), ForeignKey('requirements.id'), nullable=False)
-    level = Column(Integer, nullable=True)
-
-    requirement = relationship("Requirements", back_populates="job_ad_reqs")
-    company_offer = relationship("CompanyOffers", back_populates="job_ad_reqs")
-
-
-class JobAppSkills(Base):
-    __tablename__ = 'job_app_skills'
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, nullable=False)
-    professional_offer_id = Column(UUID(as_uuid=True), ForeignKey("professional_profile.id"), nullable=False)
-    skills_id = Column(UUID(as_uuid=True), ForeignKey("skills.id"), nullable=False)
-    level = Column(Integer, nullable=True)
-
-    skill = relationship("Skills", back_populates="job_app_skills")
-    professional_profile = relationship("ProfessionalProfile", back_populates="job_app_skills")
-
-
-class Skills(Base):
-    __tablename__ = 'skills'
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, nullable=False)
-    name = Column(String(255), nullable=False)
-
-    job_app_skills = relationship("JobAppSkills", back_populates="skill")
