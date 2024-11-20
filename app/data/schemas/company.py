@@ -3,7 +3,6 @@ from typing import Optional
 from uuid import UUID
 
 class CompanyResponse(BaseModel):
-    id: UUID
     name: str
     address: str
     description: Optional[str]

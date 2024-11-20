@@ -19,9 +19,25 @@ class User(Base):
  
     sent_messages = relationship("Message", foreign_keys="[Message.author_id]", back_populates="author")
     receiver_messages = relationship("Message", foreign_keys="[Message.receiver_id]", back_populates="receiver")
+    professional = relationship("Professional", back_populates="user", uselist=False)
+    company = relationship("Companies", back_populates="user", uselist=False)
+
  
  
 class Professional(Base):
+    '''Professional model
+    Attributes:
+    id (UUID): The unique identifier of the professional
+    is_approved (Boolean): The status of the professional
+    user_id (UUID): The unique identifier of the user
+    first_name (String): The first name of the professional
+    last_name (String): The last name of the professional
+    address (String): The address of the professional
+    status (String): The status of the professional
+    summary (String): The summary of the professional
+    picture (String): The picture of the professional
+    '''
+
     __tablename__ = "professionals"
     id = Column(UUID(as_uuid=True), default=uuid.uuid4, primary_key=True, nullable=False)
     is_approved = Column(Boolean, default=False)
@@ -48,7 +64,7 @@ class ProfessionalProfile(Base):
     max_salary = Column(Integer)
     status = Column(String, nullable=False)
  
-    user = relationship("User", back_populates="professional_profile")
+    professional = relationship("Professional", back_populates="professional_profile")
     chosen_offer = relationship("CompanyOffers", foreign_keys=[chosen_company_offer_id])
     skills = relationship("ProfessionalProfileSkills", back_populates="professional_profile")
     requests_and_matches = relationship("RequestsAndMatches", back_populates="professional_profile")
@@ -67,10 +83,20 @@ class Skills(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, nullable=False)
     name = Column(String(255), nullable=False)
  
-    professional_profile_skills = relationship("ProfessionalProfileHasSkills", back_populates="skill")
+    professional_profile_skills = relationship("ProfessionalProfileSkills", back_populates="skill")
  
  
 class Companies(Base):
+    '''Companies model
+    Attributes:
+    id (UUID): The unique identifier of the company
+    user_id (UUID): The unique identifier of the user
+    name (String): The name of the company
+    address (String): The address of the company
+    description (String): The description of the company
+    contacts (String): The contacts of the company
+    is_approved (Boolean): The status of the company
+    '''
     __tablename__ = "companies"
     id = Column(UUID(as_uuid=True), default=uuid.uuid4, primary_key=True)
     user_id = Column(UUID(as_uuid=True), ForeignKey('users.id'))
@@ -80,6 +106,7 @@ class Companies(Base):
     contacts = Column(String, nullable=False)
     is_approved = Column(Boolean, default=False)
  
+    user = relationship("User", back_populates="company", uselist=False)
     company_offers = relationship("CompanyOffers", back_populates="company")
  
  
@@ -99,6 +126,7 @@ class CompanyOffers(Base):
  
 class CompaniesRequirements(Base):
     __tablename__ = "companies_requirements"
+    title = Column(String, nullable=False )
     requirements_id = Column(UUID(as_uuid=True), ForeignKey("skills.id"), primary_key=True)
     company_offers_id = Column(UUID(as_uuid=True), ForeignKey("company_offers.id"), primary_key=True)
     level = Column(Integer, nullable=True)

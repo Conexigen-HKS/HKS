@@ -1,9 +1,15 @@
 from sqlalchemy.orm import Session
 from data.models import Professional, Companies, User
 from common.responses import NotFound
-from data.schemas.user import WaitingApproval
+from app.data.schemas.user_register import WaitingApproval
 from data.schemas.professional import ProfessionalOut
 from data.schemas.company import CompanyOut
+
+def get_admin_by_id(id: int, db: Session) -> User:
+    admin =  db.query(User).filter(User.id == id).first()
+    if not admin:
+        return None
+    return admin
 
 def approve_proffesional(id: int, db: Session):
     professional = db.query(Professional).filter(Professional.id == id).first()
@@ -69,6 +75,8 @@ def waiting_approvals(db: Session) -> WaitingApproval:
    ]
 
     return WaitingApproval(professionals=professionals_out, companies=company_out)
+
+
     
 
     

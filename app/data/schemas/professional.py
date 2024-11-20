@@ -4,7 +4,6 @@ from uuid import UUID
 
 
 class ProfessionalResponse(BaseModel):
-    id: UUID
     first_name: str
     last_name: str
     address: str
