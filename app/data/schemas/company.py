@@ -8,6 +8,8 @@ class CompanyResponse(BaseModel):
     description: Optional[str]
     contacts: Optional[str]
     is_approved: bool
+    username: str
+    user_id: str
 
     model_config = ConfigDict(from_attributes=True)
 

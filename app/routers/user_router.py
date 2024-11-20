@@ -1,10 +1,11 @@
-from fastapi import APIRouter, Depends, FastAPI, HTTPException, Request
+from typing import Literal
+from fastapi import APIRouter, Depends, FastAPI, HTTPException, Query, Request
 from sqlalchemy.orm import Session
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from data.database import get_db
 from common import auth
 from data.schemas.user_register import CompanyRegister, ProfessionalRegister
-from services.user_services import create_company, create_professional, get_all_users, get_all_professionals
+from services.user_services import create_company, create_professional, get_all_users
 from common.responses import BadRequest
 
 app = FastAPI()
@@ -27,18 +28,16 @@ def register_professional(professional_data: ProfessionalRegister, db: Session =
     except HTTPException as e:
         raise e
 
+#ТРЯБВА ДА СЕ ДОБАВИ id от User
 @users_router.get("/")
-def return_all_users(db: Session = Depends(get_db)):
-    users = get_all_users(db)
+def return_all_users(
+    role: Literal['professional', 'company'] = Query(...),
+    db: Session = Depends(get_db)
+    ):
+    print("Role received:", role)
+    users = get_all_users(db=db, role=role)
 
     if not users:
         return []
     return users
 
-@users_router.get("/professionals")
-def return_all_professionals(db: Session = Depends(get_db)):
-    professionals = get_all_professionals(db)
-
-    if not professionals:
-        return []
-    return professionals

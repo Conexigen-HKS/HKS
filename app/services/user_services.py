@@ -1,11 +1,12 @@
 from uuid import UUID
 from sqlalchemy.orm import Session
+from data.schemas.company import CompanyResponse
 from data.schemas.professional import ProfessionalResponse
 from common import auth
 from data.models import Professional, User, Companies
 from data.schemas.user_register import UserResponse
 from common.auth import verify_token, oauth2_scheme
-from fastapi import Depends
+from fastapi import Depends, HTTPException
 from sqlalchemy.exc import SQLAlchemyError
 from data.schemas.user_register import CompanyRegister, ProfessionalRegister
 
@@ -99,7 +100,7 @@ def get_company(db: Session, username: str) -> Companies:
 def return_company_response():#трябва да се създаде компани модел в пайдантик
     raise NotImplementedError
 
-def get_user_by_id(db: Session, user_id: UUID) -> User:
+def get_user_by_id(db: Session, user_id: str) -> User:
     user = db.query(User).filter(User.id == user_id).first()
 
     if not user:
@@ -107,28 +108,59 @@ def get_user_by_id(db: Session, user_id: UUID) -> User:
     
     return UserResponse.model_validate(user)
 
-def get_all_users(db: Session):
-    all_users =  db.query(User).all()
-    
-    return [UserResponse.model_validate(user) for user in all_users] if all_users else []
-
-def get_all_professionals(db: Session):
-    all_prof = (
-        db.query(Professional, User)
-        .join(User, Professional.user_id == User.id)
-        .filter(User.role == 'professional')
-        .all()
-    )
-
-    return [
-        ProfessionalResponse(
-            first_name=prof.first_name,
-            last_name=prof.last_name,
-            address=prof.address,
-            status=prof.status,
-            summary=prof.summary,
-            is_approved=prof.is_approved,
+def get_all_users(db: Session, role: str):
+    print("Role inside get_all_entities:", role)
+    if role == 'professional':
+        all_entities = (
+            db.query(Professional, User)
+            .join(User, Professional.user_id == User.id)
+            .filter(User.role == 'professional')
+            .all()
         )
-        for prof, user in all_prof
-    ] if all_prof else []
 
+        return [
+            ProfessionalResponse(
+                username=user.username,
+                first_name=entity.first_name,
+                last_name=entity.last_name,
+                address=entity.address,
+                status=entity.status,
+                summary=entity.summary,
+                is_approved=entity.is_approved,
+            )
+            for entity, user in all_entities
+        ] if all_entities else []
+
+    elif role == 'company':
+        all_entities = (
+            db.query(Companies, User)
+            .join(User, Companies.user_id == User.id)
+            .filter(User.role == 'company')
+            .all()
+        )
+
+        return [
+            CompanyResponse(
+                username=user.username,
+                name=entity.name,
+                address=entity.address,
+                description=entity.description,
+                contacts=entity.contacts,
+                is_approved=entity.is_approved,
+            )
+            for entity, user in all_entities
+        ] if all_entities else []
+
+    else:
+        return []
+
+def get_username_from_id(usr_id: str, db: Session):
+    user = db.query(User).filter(User.id == usr_id).first()
+
+    if not user:
+        raise HTTPException(status_code=404, detail=f"User with ID {usr_id} not found !")
+    return user.username
+
+def user_exists(id: str, db: Session):
+    user = db.query(User).filter(User.id == id).first()
+    return True if user else False

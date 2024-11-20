@@ -1,40 +1,32 @@
+from uuid import UUID
 from sqlalchemy.orm import Session
 from data.models import Professional, Companies, User
 from common.responses import NotFound
-from app.data.schemas.user_register import WaitingApproval
+from data.schemas.user_register import WaitingApproval
 from data.schemas.professional import ProfessionalOut
 from data.schemas.company import CompanyOut
+from services.user_services import get_user_by_id, get_username_from_id, user_exists
 
-def get_admin_by_id(id: int, db: Session) -> User:
-    admin =  db.query(User).filter(User.id == id).first()
-    if not admin:
-        return None
-    return admin
+from fastapi import HTTPException, status
 
-def approve_proffesional(id: int, db: Session):
-    professional = db.query(Professional).filter(Professional.id == id).first()
-
-    if professional:
-        professional.is_approved = True
-        db.commit()
-        db.refresh(professional)
+def approve_user(id: str, entity_type: str, db: Session):
+    if entity_type == 'professional':
+        entity = db.query(Professional).filter(Professional.id == id).first()
+    elif entity_type == 'company':
+        entity = db.query(Companies).filter(Companies.id == id).first()
     else:
-        return NotFound(content='Proffesional with ID {id} not found')
-    
-    
-def approve_company(id: int, db: Session):
-    company = db.query(Companies).filter(Companies.id == id).first()
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Entity type '{entity_type}' is not valid")
 
-    if company:
-        company.is_approved = True
+    if entity:
+        entity.is_approved = True
         db.commit()
-        db.refresh(company)
-    else:
-        return NotFound(content='Company with ID {id} not found')
+        db.refresh(entity)
+        return entity
+        
+    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"{entity_type.capitalize()} with ID {id} not found")
     
 
 def waiting_approvals(db: Session) -> WaitingApproval:
-
     waiting_professionals = (
         db.query(Professional, User.username)
         .join(User, Professional.user_id == User.id)
@@ -76,6 +68,19 @@ def waiting_approvals(db: Session) -> WaitingApproval:
 
     return WaitingApproval(professionals=professionals_out, companies=company_out)
 
+def delete_user(id: str, db: Session):
+    user = db.query(User).filter(User.id == id).first()
+
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    db.delete(user)
+    try:
+        db.commit()
+        return {"message": "User deleted successfully"}
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail="Error while deleting user")
 
     
 

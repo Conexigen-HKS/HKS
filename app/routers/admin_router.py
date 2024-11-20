@@ -1,29 +1,41 @@
-from fastapi import APIRouter, Depends, FastAPI, HTTPException, Header
+from typing import Literal
+from uuid import UUID
+from fastapi import APIRouter, Depends, FastAPI, HTTPException, Header, Query
 from sqlalchemy.orm import Session
-from app.common.responses import Forbidden
-from app.data.models import User
+from common.responses import Forbidden
+from data.models import User
 from data.database import get_db
 from common import auth
-from services.admin_service import get_admin_by_id, approve_proffesional, approve_company, waiting_approvals
+from services.admin_service import waiting_approvals, approve_user, delete_user
 from data.schemas.admin import Admin
 
 app = FastAPI()
 
 admin_router = APIRouter(prefix='/api/admins', tags=['Admins'])
 
-@admin_router.get("/admin/{id}", tags=["Admin"])
-def get_admin_by_id_r(
-    id: int, 
-    db: Session = Depends(get_db), 
-    current_user: User = Depends(auth.get_current_admin_user)
-):
-    admin = get_admin_by_id(id, db)
-    if not admin:
-        raise HTTPException(status_code=404, detail="Admin not found")  # По-добър статус код
+@admin_router.get("/")
+def get_waiting_approvals(db: Session = Depends(get_db)):
+    waiting_appr = waiting_approvals(db)
 
-    return {
-        "id": admin.id,
-        "username": admin.username,
-        "role": admin.role,
-        "created_at": admin.created_at,
-    }
+    return waiting_appr
+
+@admin_router.patch("/approve/{id}")
+def approve_user_(
+    id: str,
+    role: Literal['professional', 'company'] = Query(...),
+    db: Session = Depends(get_db)
+    ):
+    try:
+        user_to_be_approved = approve_user(id=id, entity_type=role, db=db)
+        return {"message": f"{role.capitalize()} approved successfully", "data": user_to_be_approved}
+    except HTTPException as e:
+        raise e
+
+#НЕ РАБОТИ - ТРЯБВА ДА СЕ СЛОЖИ ONDELETE - CASCADE
+@admin_router.delete("/{id}")
+def delete_user_(
+    id: str,
+    db: Session = Depends(get_db)
+    ):
+    user_to_be_del = delete_user(id=id, db=db)
+    return user_to_be_del

@@ -10,6 +10,8 @@ class ProfessionalResponse(BaseModel):
     status: Optional[str]
     summary: Optional[str]
     is_approved: bool
+    username: str
+    user_id: str
 
     model_config = ConfigDict(from_attributes=True)
 
