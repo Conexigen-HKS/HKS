@@ -2,7 +2,7 @@ from uuid import UUID
 from sqlalchemy.orm import Session
 from data.models import Professional, Companies, User
 from common.responses import NotFound
-from data.schemas.user_register import WaitingApproval
+from data.schemas.users import WaitingApproval
 from data.schemas.professional import ProfessionalOut
 from data.schemas.company import CompanyOut
 from services.user_services import get_user_by_id, get_username_from_id, user_exists
@@ -69,21 +69,29 @@ def waiting_approvals(db: Session) -> WaitingApproval:
     return WaitingApproval(professionals=professionals_out, companies=company_out)
 
 def delete_user(id: str, db: Session):
-    user = db.query(User).filter(User.id == id).first()
-
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
-    
-    db.delete(user)
     try:
-        db.commit()
-        return {"message": "User deleted successfully"}
-    except Exception as e:
-        db.rollback()
-        raise HTTPException(status_code=500, detail="Error while deleting user")
+        user_id = UUID(id)
+        user = db.query(User).filter(User.id == user_id).first()
 
-    
-
-    
-    
+        if not user:
+            raise HTTPException(
+                status_code=404, 
+                detail=f"User with ID {id} not found"
+            )
+        
+        db.delete(user)
+        try:
+            db.commit()
+            return {"message": "User and related data deleted successfully"}
+        except Exception as e:
+            db.rollback()
+            raise HTTPException(
+                status_code=500, 
+                detail=f"Error while deleting user: {str(e)}"
+            )
+    except ValueError:
+        raise HTTPException(
+            status_code=400, 
+            detail="Invalid UUID format"
+        )
 

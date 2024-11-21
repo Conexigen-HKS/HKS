@@ -31,11 +31,14 @@ def approve_user_(
     except HTTPException as e:
         raise e
 
-#НЕ РАБОТИ - ТРЯБВА ДА СЕ СЛОЖИ ONDELETE - CASCADE
-@admin_router.delete("/{id}")
-def delete_user_(
+@admin_router.delete("/{user_id}")
+async def delete_user_(
     id: str,
-    db: Session = Depends(get_db)
-    ):
-    user_to_be_del = delete_user(id=id, db=db)
-    return user_to_be_del
+    db: Session = Depends(get_db),
+    current_user: User = Depends(auth.get_current_admin_user)
+):
+    try:
+        result = delete_user(id=id, db=db)
+        return result
+    except HTTPException as e:
+        raise e

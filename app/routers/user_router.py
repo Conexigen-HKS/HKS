@@ -1,10 +1,11 @@
 from typing import Literal
 from fastapi import APIRouter, Depends, FastAPI, HTTPException, Query, Request
+from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from data.database import get_db
 from common import auth
-from data.schemas.user_register import CompanyRegister, ProfessionalRegister
+from data.schemas.users import CompanyRegister, ProfessionalRegister, TokenResponse
 from services.user_services import create_company, create_professional, get_all_users
 from common.responses import BadRequest
 
@@ -40,4 +41,22 @@ def return_all_users(
     if not users:
         return []
     return users
+
+@users_router.post('/login', response_model=TokenResponse)
+def login_user(
+    data: OAuth2PasswordRequestForm = Depends(), 
+    db: Session = Depends(get_db)
+):
+    user = auth.authenticate_user(db, data.username, data.password)
+    if not user:
+        raise HTTPException(status_code=401, detail='Invalid username or password')
+    
+    access_token = auth.create_access_token(data={
+        'sub': user.username,
+        'id': str(user.id),
+        'role': user.role,
+        'is_admin': user.is_admin
+    })
+
+    return TokenResponse(access_token=access_token, token_type='bearer')
 

@@ -17,10 +17,10 @@ class User(Base):
     role = Column(String, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
  
-    sent_messages = relationship("Message", foreign_keys="[Message.author_id]", back_populates="author")
-    receiver_messages = relationship("Message", foreign_keys="[Message.receiver_id]", back_populates="receiver")
-    professional = relationship("Professional", back_populates="user", uselist=False)
-    company = relationship("Companies", back_populates="user", uselist=False)
+    sent_messages = relationship("Message", foreign_keys="[Message.author_id]", back_populates="author", cascade="all, delete-orphan")
+    receiver_messages = relationship("Message", foreign_keys="[Message.receiver_id]", back_populates="receiver", cascade="all, delete-orphan")
+    professional = relationship("Professional", back_populates="user", uselist=False, cascade="all, delete-orphan")
+    company = relationship("Companies", back_populates="user", uselist=False, cascade="all, delete-orphan")
 
  
  
@@ -156,5 +156,4 @@ class Message(Base):
  
     author = relationship("User", foreign_keys=[author_id], back_populates="sent_messages")
     receiver = relationship("User", foreign_keys=[receiver_id], back_populates="receiver_messages")
- 
 

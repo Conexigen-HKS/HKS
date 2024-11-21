@@ -1,25 +1,34 @@
 from datetime import datetime
 from typing import Literal, Optional
+from uuid import UUID
 from pydantic import BaseModel, ConfigDict, field_validator, Field
 from data.schemas.professional import ProfessionalOut, ProfessionalResponse
 from data.schemas.company import CompanyOut, CompanyResponse
 
 
+# class UserResponse(BaseModel):
+#     username: str
+#     role: str
+#     created_at: datetime
+#     professional: Optional[ProfessionalResponse]
+#     company: Optional[CompanyResponse]
+
+#     model_config = ConfigDict(from_attributes=True)
+
+
 class UserResponse(BaseModel):
+    id: UUID
     username: str
     role: str
+    is_admin: bool
     created_at: datetime
-    professional: Optional[ProfessionalResponse]
-    company: Optional[CompanyResponse]
 
     model_config = ConfigDict(from_attributes=True)
-
 
 class BaseUser(BaseModel):
     username: str
     hashed_password: str
     role: Literal['professional', 'company']
-
 
 class WaitingApproval(BaseModel):
     professionals: list[ProfessionalOut]
@@ -71,3 +80,8 @@ class CompanyRegister(BaseModel):
             return value
         raise ValueError(
             "Password must contain at least one lowercase letter, one uppercase letter, one digit, and one special character.")
+
+
+class TokenResponse(BaseModel):
+    access_token: str
+    token_type: str

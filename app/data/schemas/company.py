@@ -3,13 +3,14 @@ from typing import Optional
 from uuid import UUID
 
 class CompanyResponse(BaseModel):
+    id: UUID
     name: str
     address: str
     description: Optional[str]
     contacts: Optional[str]
     is_approved: bool
     username: str
-    user_id: str
+    user_id: UUID  # Changed from str to UUID
 
     model_config = ConfigDict(from_attributes=True)
 

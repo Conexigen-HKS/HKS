@@ -1,28 +1,19 @@
+# app/services/user_services.py
 from uuid import UUID
 from sqlalchemy.orm import Session
-from data.schemas.company import CompanyResponse
-from data.schemas.professional import ProfessionalResponse
-from common import auth
-from data.models import Professional, User, Companies
-from data.schemas.user_register import UserResponse
-from common.auth import verify_token, oauth2_scheme
 from fastapi import Depends, HTTPException
 from sqlalchemy.exc import SQLAlchemyError
-from data.schemas.user_register import CompanyRegister, ProfessionalRegister
+from data.models import Professional, User, Companies
+from data.schemas.users import UserResponse, CompanyRegister, ProfessionalRegister
+from data.schemas.company import CompanyResponse
+from data.schemas.professional import ProfessionalResponse
+from common.utils import get_password_hash
 
-
-def get_current_user(db: Session, token: str = Depends(oauth2_scheme)):
-    if not token:
-        return None
-    payload = verify_token(token)
-    username = payload.get('sub') if payload else None
-    if not username:
-        return None
-    
+def get_user(db: Session, username: str) -> User:
     return db.query(User).filter(User.username == username).first()
     
 def create_professional(db: Session, professional_data: ProfessionalRegister) -> Professional:
-    hashed_password = auth.get_password_hash(professional_data.password)
+    hashed_password = get_password_hash(professional_data.password)
 
     try:
         user = User(username=professional_data.username, hashed_password=hashed_password, role="professional")
@@ -61,7 +52,7 @@ def return_professional_response():#трябва да се създаде про
     raise NotImplementedError
 
 def create_company(db: Session, company_data: CompanyRegister) -> Companies:
-    hashed_password = auth.get_password_hash(company_data.password)
+    hashed_password = get_password_hash(company_data.password)
 
     try:
         user = User(username=company_data.username, hashed_password=hashed_password, role="company")
@@ -120,6 +111,7 @@ def get_all_users(db: Session, role: str):
 
         return [
             ProfessionalResponse(
+                id=entity.id,  # Add the professional's ID
                 username=user.username,
                 first_name=entity.first_name,
                 last_name=entity.last_name,
@@ -127,6 +119,7 @@ def get_all_users(db: Session, role: str):
                 status=entity.status,
                 summary=entity.summary,
                 is_approved=entity.is_approved,
+                user_id=user.id
             )
             for entity, user in all_entities
         ] if all_entities else []
@@ -141,18 +134,20 @@ def get_all_users(db: Session, role: str):
 
         return [
             CompanyResponse(
-                username=user.username,
+                id=entity.id,
                 name=entity.name,
                 address=entity.address,
                 description=entity.description,
                 contacts=entity.contacts,
                 is_approved=entity.is_approved,
+                username=user.username,
+                user_id=user.id  # UUID type will be preserved
             )
             for entity, user in all_entities
         ] if all_entities else []
 
     else:
-        return []
+        raise HTTPException(status_code=400, detail="Invalid role")
 
 def get_username_from_id(usr_id: str, db: Session):
     user = db.query(User).filter(User.id == usr_id).first()
