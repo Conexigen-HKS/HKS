@@ -1,34 +1,31 @@
-from pydantic import BaseModel
-from typing import Optional, List
+from typing import Optional
+from uuid import UUID
+
+from pydantic import BaseModel, field_validator, ConfigDict
+
+from HKS.common.utils import ValidUsername, ValidPassword
 
 
-class UserRegistrationRequest(BaseModel):
+class Login(BaseModel):
     username: str
     password: str
 
+    @field_validator('username')
+    def validate_username(cls, v):
+        if not ValidUsername.match(v):
+            raise ValueError('Invalid username format')
+        return v
 
-class UserLoginRequest(BaseModel):
-    username: str
-    password: str
-
+    @field_validator('password')
+    def validate_password(cls, v):
+        if not ValidPassword.match(v):
+            raise ValueError('Invalid password format')
+        return v
 
 class UserResponse(BaseModel):
-    id: str
+    id: UUID
     username: str
-    role: Optional[str] = None
+    role: str
+    is_admin: Optional[bool] = False
 
-    class Config:
-        orm_mode = True
-
-
-class TokenData(BaseModel):
-    access_token: str
-    token_type: str = "bearer"
-
-
-class TokenPayload(BaseModel):
-    user_id: str
-    username: str
-    user_role: Optional[str]
-class UsersListResponse(BaseModel):
-    users: List[UserResponse]
+    model_config = ConfigDict(from_attributes=True)

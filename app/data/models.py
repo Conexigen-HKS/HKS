@@ -5,8 +5,9 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from sqlalchemy.ext.declarative import declarative_base
 
-
 Base = declarative_base()
+
+
 class User(Base):
     __tablename__ = "users"
     id = Column(UUID(as_uuid=True), default=uuid.uuid4, primary_key=True)
@@ -16,11 +17,14 @@ class User(Base):
     role = Column(String, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
-    sent_messages = relationship("Message", foreign_keys="[Message.author_id]", back_populates="author")
-    receiver_messages = relationship("Message", foreign_keys="[Message.receiver_id]", back_populates="receiver")
+    sent_messages = relationship("Message", foreign_keys="[Message.author_id]", back_populates="author", cascade="all, delete-orphan")
+    receiver_messages = relationship("Message", foreign_keys="[Message.receiver_id]", back_populates="receiver", cascade="all, delete-orphan")
+    professional = relationship("Professional", back_populates="user", uselist=False, cascade="all, delete-orphan")
+    company = relationship("Companies", back_populates="user", uselist=False, cascade="all, delete-orphan")
 
 
 class Professional(Base):
+
     __tablename__ = "professionals"
     id = Column(UUID(as_uuid=True), default=uuid.uuid4, primary_key=True, nullable=False)
     is_approved = Column(Boolean, default=False)
@@ -47,10 +51,11 @@ class ProfessionalProfile(Base):
     max_salary = Column(Integer)
     status = Column(String, nullable=False)
 
-    user = relationship("User", back_populates="professional_profile")
+    professional = relationship("Professional", back_populates="professional_profile")
     chosen_offer = relationship("CompanyOffers", foreign_keys=[chosen_company_offer_id])
     skills = relationship("ProfessionalProfileSkills", back_populates="professional_profile")
     requests_and_matches = relationship("RequestsAndMatches", back_populates="professional_profile")
+
 
 class ProfessionalProfileSkills(Base):
     __tablename__ = "professional_profile_skills"
@@ -61,6 +66,7 @@ class ProfessionalProfileSkills(Base):
     professional_profile = relationship("ProfessionalProfile", back_populates="skills")
     skill = relationship("Skills", back_populates="professional_profile_skills")
 
+
 class Skills(Base):
     __tablename__ = 'skills'
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, nullable=False)
@@ -70,6 +76,7 @@ class Skills(Base):
 
 
 class Companies(Base):
+
     __tablename__ = "companies"
     id = Column(UUID(as_uuid=True), default=uuid.uuid4, primary_key=True)
     user_id = Column(UUID(as_uuid=True), ForeignKey('users.id'))
@@ -79,6 +86,7 @@ class Companies(Base):
     contacts = Column(String, nullable=False)
     is_approved = Column(Boolean, default=False)
 
+    user = relationship("User", back_populates="company", uselist=False)
     company_offers = relationship("CompanyOffers", back_populates="company")
 
 
@@ -98,6 +106,7 @@ class CompanyOffers(Base):
 
 class CompaniesRequirements(Base):
     __tablename__ = "companies_requirements"
+    title = Column(String, nullable=False)
     requirements_id = Column(UUID(as_uuid=True), ForeignKey("skills.id"), primary_key=True)
     company_offers_id = Column(UUID(as_uuid=True), ForeignKey("company_offers.id"), primary_key=True)
     level = Column(Integer, nullable=True)
@@ -127,8 +136,3 @@ class Message(Base):
 
     author = relationship("User", foreign_keys=[author_id], back_populates="sent_messages")
     receiver = relationship("User", foreign_keys=[receiver_id], back_populates="receiver_messages")
-
-
-
-
-

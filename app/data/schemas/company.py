@@ -1,8 +1,6 @@
+from pydantic import BaseModel, ConfigDict
 from typing import Optional
 from uuid import UUID
-
-from pydantic import BaseModel, ConfigDict
-
 
 class CompanyResponse(BaseModel):
     id: UUID
@@ -17,6 +15,7 @@ class CompanyResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 class CompanyOut(BaseModel):
+
     id: UUID
     name: str
     address: str
@@ -26,3 +25,10 @@ class CompanyOut(BaseModel):
     username: Optional[str]
 
     model_config = ConfigDict(from_attributes=True)
+
+class CompanyRegister(BaseModel):
+    username: str
+    password: str
+    company_name: str
+    address: str
+    description: Optional[str] = None

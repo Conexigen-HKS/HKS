@@ -1,86 +1,87 @@
+from http.client import HTTPException
+
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
-import bcrypt
 
-from app.data.models import User, Professional, ProfessionalProfile, Skills, Companies, Message
+from HKS.common.utils import get_password_hash
+from app.data.models import Companies, User, Professional
+from app.data.schemas.company import CompanyResponse, CompanyRegister
+from app.data.schemas.professional import ProfessionalResponse, ProfessionalRegister
+from app.data.schemas.user import UserResponse
 
 
-def get_user_by_username(db: Session, username: str):
-    return db.query(User).filter(User.username == username).first()
+def get_user(db: Session, username: str) -> UserResponse:
+    """
+    Retrieve a user by username and return its response model.
+    """
+    user = db.query(User).filter(User.username == username).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    return UserResponse(
+        id=user.id,
+        username=user.username,
+        role=user.role,
+        is_admin=user.is_admin
+    )
 
-def get_user_by_id(db: Session, user_id: str) -> User:
-    return db.query(User).filter(User.id == user_id).first()
-def create_user(db: Session, username: str, password: str, role: str):
-    hashed_password = bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
-    new_user = User(username=username, hashed_password= hashed_password , role=role)
-    db.add(new_user)
-    db.commit()
-    db.refresh(new_user)
-    return new_user
 
-# User Queries
-def get_user_by_username(db: Session, username: str):
-    return db.query(User).filter(User.username == username).first()
+def create_professional(db: Session, professional_data: ProfessionalRegister) -> ProfessionalResponse:
+    """
+    Create and return a new professional.
+    """
+    try:
+        hashed_password = get_password_hash(professional_data.password)
+        user = User(username=professional_data.username, hashed_password=hashed_password, role="professional")
+        db.add(user)
+        db.commit()
+        db.refresh(user)
 
-def create_user(db: Session, username: str, password: str, role: str):
-    hashed_password = bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
-    user = User(username=username, hashed_password=hashed_password, role=role)
-    db.add(user)
-    db.commit()
-    db.refresh(user)
-    return user
-
-def get_user_by_id(db: Session, user_id: str):
-    return db.query(User).filter(User.id == user_id).first()
-
-# Professional Queries
-def get_professional_by_user_id(db: Session, user_id: str):
-    return db.query(Professional).filter(Professional.user_id == user_id).first()
-
-def create_or_update_professional(db: Session, user_id: str, first_name: str, last_name: str, address: str, status: str):
-    professional = db.query(Professional).filter(Professional.user_id == user_id).first()
-    if professional:
-        professional.first_name = first_name
-        professional.last_name = last_name
-        professional.address = address
-        professional.status = status
-    else:
-        professional = Professional(user_id=user_id, first_name=first_name, last_name=last_name, address=address, status=status)
+        professional = Professional(
+            user_id=user.id,
+            **professional_data.dict(exclude={"username", "password"})
+        )
         db.add(professional)
-    db.commit()
-    db.refresh(professional)
-    return professional
+        db.commit()
+        db.refresh(professional)
+        return ProfessionalResponse.model_validate(professional)
+    except SQLAlchemyError as e:
+        db.rollback()
+        raise Exception(f"Error creating professional: {e}")
 
-def get_approved_professionals(db: Session):
-    return db.query(Professional).filter(Professional.is_approved.is_(True)).all()
 
-# Professional Profile Queries
-def get_professional_profile_by_id(db: Session, professional_id: str):
-    return db.query(ProfessionalProfile).filter(ProfessionalProfile.professional_id == professional_id).first()
+def create_company(db: Session, company_data: CompanyRegister) -> CompanyResponse:
+    """
+    Create and return a new company.
+    """
+    try:
+        hashed_password = get_password_hash(company_data.password)
+        user = User(username=company_data.username, hashed_password=hashed_password, role="company")
+        db.add(user)
+        db.commit()
+        db.refresh(user)
 
-# Skill Queries
-def get_skill_by_name(db: Session, skill_name: str):
-    return db.query(Skills).filter(Skills.name == skill_name).first()
+        company = Companies(
+            user_id=user.id,
+            **company_data.dict(exclude={"username", "password"})
+        )
+        db.add(company)
+        db.commit()
+        db.refresh(company)
+        return CompanyResponse.model_validate(company)
+    except SQLAlchemyError as e:
+        db.rollback()
+        raise Exception(f"Error creating company: {e}")
 
-def create_skill(db: Session, skill_name: str):
-    skill = Skills(name=skill_name)
-    db.add(skill)
-    db.commit()
-    db.refresh(skill)
-    return skill
 
-# Company Queries
-def get_company_by_user_id(db: Session, user_id: str):
-    return db.query(Companies).filter(Companies.user_id == user_id).first()
-
-# Message Queries
-def create_message(db: Session, content: str, author_id: str, receiver_id: str):
-    message = Message(content=content, author_id=author_id, receiver_id=receiver_id)
-    db.add(message)
-    db.commit()
-    db.refresh(message)
-    return message
-
-def get_messages_by_user(db: Session, user_id: str):
-    sent = db.query(Message).filter(Message.author_id == user_id).all()
-    received = db.query(Message).filter(Message.receiver_id == user_id).all()
-    return {"sent": sent, "received": received}
+def get_all_users(db: Session, role: str):
+    """
+    Retrieve all users of a specified role and return a list of response models.
+    """
+    if role == "professional":
+        professionals = db.query(Professional).join(User).filter(User.role == "professional").all()
+        return [ProfessionalResponse.model_validate(professional) for professional in professionals]
+    elif role == "company":
+        companies = db.query(Companies).join(User).filter(User.role == "company").all()
+        return [CompanyResponse.model_validate(company) for company in companies]
+    else:
+        raise HTTPException(status_code=400, detail="Invalid role")
