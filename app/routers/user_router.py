@@ -3,11 +3,11 @@ from fastapi import APIRouter, Depends, FastAPI, HTTPException, Query, Request
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from starlette.exceptions import HTTPException as StarletteHTTPException
-from data.database import get_db
-from common import auth
-from data.schemas.users import CompanyRegister, ProfessionalRegister, TokenResponse
-from services.user_services import create_company, create_professional, get_all_users
-from common.responses import BadRequest
+from app.data.database import get_db
+from app.common import auth
+from app.data.schemas.users import CompanyRegister, ProfessionalRegister, TokenResponse
+from app.services.user_services import create_company, create_professional, get_all_users
+from app.common.responses import BadRequest
 
 app = FastAPI()
 

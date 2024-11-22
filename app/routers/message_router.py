@@ -1,10 +1,10 @@
 from fastapi import APIRouter, Depends, FastAPI, HTTPException
 from sqlalchemy.orm import Session
-from data.database import get_db
-from common import auth
-from data.models import User
-from services.message_service import create_message, get_all_conversations, get_conversation, update_message
-from services.user_services import user_exists
+from app.data.database import get_db
+from app.common import auth
+from app.data.models import User
+from app.services.message_service import create_message, get_all_conversations, get_conversation, update_message
+from app.services.user_services import user_exists
 from sqlalchemy.exc import SQLAlchemyError
 
 

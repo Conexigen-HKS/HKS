@@ -1,8 +1,8 @@
 from sqlalchemy import Boolean, and_, or_
-from data.models import Message
+from app.data.models import Message
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
-from data.models import User
+from app.data.models import User
 
 
 
