@@ -4,12 +4,14 @@ from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from routers.user_router import users_router
 from routers.admin_router import admin_router
+from routers.message_router import messages_router
 import uvicorn
 
 
 app = FastAPI()
 app.include_router(users_router)
 app.include_router(admin_router)
+app.include_router(messages_router)
 
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):

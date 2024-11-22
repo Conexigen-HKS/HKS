@@ -10,7 +10,7 @@ from services.admin_service import waiting_approvals, approve_user, delete_user
 from data.schemas.admin import Admin
 
 app = FastAPI()
-
+#DA SI OPRAVQ RUTERITE, ZASHTOTO NE SPAZVAT RESTFUL !
 admin_router = APIRouter(prefix='/api/admins', tags=['Admins'])
 
 @admin_router.get("/")
@@ -19,7 +19,7 @@ def get_waiting_approvals(db: Session = Depends(get_db)):
 
     return waiting_appr
 
-@admin_router.patch("/approve/{id}")
+@admin_router.patch("/{id}")
 def approve_user_(
     id: str,
     role: Literal['professional', 'company'] = Query(...),

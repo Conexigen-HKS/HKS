@@ -6,16 +6,6 @@ from data.schemas.professional import ProfessionalOut, ProfessionalResponse
 from data.schemas.company import CompanyOut, CompanyResponse
 
 
-# class UserResponse(BaseModel):
-#     username: str
-#     role: str
-#     created_at: datetime
-#     professional: Optional[ProfessionalResponse]
-#     company: Optional[CompanyResponse]
-
-#     model_config = ConfigDict(from_attributes=True)
-
-
 class UserResponse(BaseModel):
     id: UUID
     username: str
@@ -27,13 +17,15 @@ class UserResponse(BaseModel):
 
 class BaseUser(BaseModel):
     username: str
-    hashed_password: str
+    first_name: str
+    last_name: str
     role: Literal['professional', 'company']
+
+    model_config = ConfigDict(from_attributes=True)
 
 class WaitingApproval(BaseModel):
     professionals: list[ProfessionalOut]
     companies: list[CompanyOut]
-
 
 class ProfessionalRegister(BaseModel):
     username: str = Field(..., description="Username of the user", min_length=3, max_length=20)
@@ -58,7 +50,6 @@ class ProfessionalRegister(BaseModel):
         raise ValueError(
             "Password must contain at least one lowercase letter, one uppercase letter, one digit, and one special character.")
 
-
 class CompanyRegister(BaseModel):
     username: str = Field(..., description="Username of the company user", min_length=3, max_length=20)
     password: str = Field(...,min_length=6, max_length=20)
@@ -80,7 +71,6 @@ class CompanyRegister(BaseModel):
             return value
         raise ValueError(
             "Password must contain at least one lowercase letter, one uppercase letter, one digit, and one special character.")
-
 
 class TokenResponse(BaseModel):
     access_token: str
