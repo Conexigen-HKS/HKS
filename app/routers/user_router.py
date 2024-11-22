@@ -60,3 +60,17 @@ def login_user(
 
     return TokenResponse(access_token=access_token, token_type='bearer')
 
+@users_router.post('/logout')
+def logout_user(
+    token: str = Depends(auth.oauth2_scheme)
+):
+    if not token:
+        raise HTTPException(status_code=401, detail="No user is currently logged in.")
+    
+    payload = auth.verify_token(token)
+    if not payload:
+        raise HTTPException(status_code=401, detail="Invalid or expired token.")
+    
+    auth.token_blacklist.add(token)
+
+    return {"detail": "Logged out successfully"}
