@@ -1,12 +1,15 @@
 from http.client import HTTPException
+from uuid import UUID
 
 from sqlalchemy.exc import SQLAlchemyError
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, aliased
 
 from HKS.common.utils import get_password_hash
-from app.data.models import Companies, User, Professional
+from HKS.data.schemas.professional import ProfessionalResponse
+from app.data.models import Companies, User, Professional, ProfessionalProfile, CompanyOffers, \
+    CompaniesRequirements
 from app.data.schemas.company import CompanyResponse, CompanyRegister
-from app.data.schemas.professional import ProfessionalResponse, ProfessionalRegister
+
 from app.data.schemas.user import UserResponse
 
 
@@ -25,28 +28,7 @@ def get_user(db: Session, username: str) -> UserResponse:
     )
 
 
-def create_professional(db: Session, professional_data: ProfessionalRegister) -> ProfessionalResponse:
-    """
-    Create and return a new professional.
-    """
-    try:
-        hashed_password = get_password_hash(professional_data.password)
-        user = User(username=professional_data.username, hashed_password=hashed_password, role="professional")
-        db.add(user)
-        db.commit()
-        db.refresh(user)
 
-        professional = Professional(
-            user_id=user.id,
-            **professional_data.dict(exclude={"username", "password"})
-        )
-        db.add(professional)
-        db.commit()
-        db.refresh(professional)
-        return ProfessionalResponse.model_validate(professional)
-    except SQLAlchemyError as e:
-        db.rollback()
-        raise Exception(f"Error creating professional: {e}")
 
 
 def create_company(db: Session, company_data: CompanyRegister) -> CompanyResponse:
@@ -85,3 +67,64 @@ def get_all_users(db: Session, role: str):
         return [CompanyResponse.model_validate(company) for company in companies]
     else:
         raise HTTPException(status_code=400, detail="Invalid role")
+
+
+
+
+def get_professional_profile(db: Session, professional_id: UUID):
+    return db.query(ProfessionalProfile).filter(ProfessionalProfile.professional_id == professional_id).first()
+
+
+def update_professional_profile(db: Session, professional_id: UUID, data: dict):
+    profile = db.query(ProfessionalProfile).filter(ProfessionalProfile.professional_id == professional_id).first()
+    if profile:
+        for key, value in data.items():
+            setattr(profile, key, value)
+        db.commit()
+        db.refresh(profile)
+    return profile
+
+
+def get_all_applications(db: Session, professional_id: UUID):
+    return db.query(ProfessionalProfile).filter(ProfessionalProfile.professional_id == professional_id).all()
+
+
+def search_job_ads(db: Session, filters: dict):
+    query = db.query(CompanyOffers)
+    if filters.get("title"):
+        query = query.filter(CompanyOffers.status.ilike(f"%{filters['title']}%"))
+    if filters.get("location"):
+        query = query.filter(CompanyOffers.location.ilike(f"%{filters['location']}%"))
+    if filters.get("min_salary"):
+        query = query.filter(CompanyOffers.min_salary >= filters["min_salary"])
+    if filters.get("max_salary"):
+        query = query.filter(CompanyOffers.max_salary <= filters["max_salary"])
+    if filters.get("skills"):
+        query = query.join(CompaniesRequirements).filter(CompaniesRequirements.title.in_(filters["skills"]))
+    return query.all()
+
+def create_company_offer(
+    db: Session,
+    company_id: UUID = None,
+    professional_profile_id: UUID = None,
+    offer_type: str = "company",
+    status: str = "active",
+    min_salary: int = 0,
+    max_salary: int = 2147483647,
+    location: str = None,
+    description: str = None
+) -> CompanyOffers:
+    new_offer = CompanyOffers(
+        company_id=company_id,
+        professional_profile_id=professional_profile_id,
+        type=offer_type,
+        status=status,
+        min_salary=min_salary,
+        max_salary=max_salary,
+        location=location,
+        description=description
+    )
+    db.add(new_offer)
+    db.commit()
+    db.refresh(new_offer)
+    return new_offer

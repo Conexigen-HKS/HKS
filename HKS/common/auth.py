@@ -5,14 +5,14 @@ from jose import JWTError, jwt
 from jose.exceptions import ExpiredSignatureError
 from passlib.context import CryptContext
 from fastapi.security import OAuth2PasswordBearer
-from common.responses import Forbidden
-from data.schemas.users import UserResponse
-from config import ACCESS_TOKEN_EXPIRE_MINUTES, ALGORITHM, SECRET_KEY
 from sqlalchemy.orm import Session
-from data.models import User
-from data.database import get_db
-from services.user_services import get_user
-from common.utils import get_password_hash, verify_password, verify_token
+
+from HKS.common.responses import Forbidden
+from HKS.common.utils import verify_password, verify_token, get_password_hash
+from HKS.config import ACCESS_TOKEN_EXPIRE_MINUTES, SECRET_KEY, ALGORITHM
+from app.data.database import get_db
+from app.data.models import User
+from app.data.schemas.user import UserResponse
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl='/api/users/login', auto_error=False)
 token_blacklist = set()

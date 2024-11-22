@@ -5,10 +5,11 @@ from sqlalchemy.orm import Session
 from fastapi import Depends, HTTPException
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 
-from HKS.common.utils import get_password_hash, ValidUsername, ValidPassword
+from HKS.common.utils import get_password_hash
+from HKS.data.schemas.professional import ProfessionalRegister, ProfessionalResponse
 from app.data.models import Professional, User, Companies
 from app.data.schemas.company import CompanyRegister, CompanyResponse
-from app.data.schemas.professional import ProfessionalResponse, ProfessionalRegister
+
 from app.data.schemas.user import UserResponse
 
 
@@ -19,49 +20,6 @@ def get_user(db: Session, username: str) -> UserResponse:
         raise HTTPException(status_code=404, detail="User not found")
 
     return UserResponse.model_validate(user)
-
-
-def create_professional(db: Session, professional_data: ProfessionalRegister) -> ProfessionalResponse:
-    hashed_password = get_password_hash(professional_data.password)
-
-    try:
-        user = User(username=professional_data.username, hashed_password=hashed_password, role="professional")
-        db.add(user)
-        db.commit()
-        db.refresh(user)
-
-        professional = Professional(
-            user_id=user.id,
-            first_name=professional_data.first_name,
-            last_name=professional_data.last_name,
-            address=professional_data.address,
-            summary=professional_data.summary,
-            is_approved=False
-        )
-
-        db.add(professional)
-        db.commit()
-        db.refresh(professional)
-
-        return ProfessionalResponse.model_validate(professional)
-
-    except SQLAlchemyError as e:
-        db.rollback()
-        raise HTTPException(status_code=500, detail=f"Error occurred while creating professional: {str(e)}")
-
-
-def get_professional(db: Session, username: str) -> ProfessionalResponse:
-    professional = (
-        db.query(Professional)
-        .join(User, Professional.user_id == User.id)
-        .filter(User.username == username)
-        .first()
-    )
-
-    if not professional:
-        raise HTTPException(status_code=404, detail="Professional not found")
-
-    return ProfessionalResponse.model_validate(professional)
 
 def create_company(db: Session, company_data: CompanyRegister) -> dict:
     hashed_password = get_password_hash(company_data.password)
