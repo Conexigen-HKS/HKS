@@ -53,7 +53,7 @@ def login_user(
     
     access_token = auth.create_access_token(data={
         'sub': user.username,
-        'id': user.id,
+        'id': str(user.id),
         'role': user.role,
         'is_admin': user.is_admin
     })

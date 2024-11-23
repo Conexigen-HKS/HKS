@@ -114,45 +114,49 @@ def get_company_name_by_username_service(company_id) -> str:
 #                                            CompanyAdBase.company_id ==
 #                                            get_company_id_by_username_service(username)).first()
 #         return ad
-#
-#
-# def edit_company_ad_by_id_service(ad_id: int, ad_info: CompanyAdModel2, username: str):
-#     with Session() as s:
-#         ad = s.query(CompanyAdBase) \
-#             .filter(CompanyAdBase.company_ad_id == ad_id,
-#                     CompanyAdBase.company_id == get_company_id_by_username_service(username)) \
-#             .first()
-#
-#         if not ad:
-#             raise HTTPException(
-#                 status_code=404,
-#                 detail="Ad not found"
-#             )
-#         if ad_info.position_title:
-#             ad.position_title = ad_info.position_title
-#         if ad_info.salary:
-#             ad.salary = ad_info.salary
-#         if ad_info.job_description:
-#             ad.job_description = ad_info.job_description
-#         if ad_info.location:
-#             ad.location = ad_info.location
-#         if ad_info.ad_status is not None:
-#             ad.ad_status = ad_info.ad_status
-#
-#         position_title = ad.position_title
-#         salary = ad.salary
-#         job_description = ad.job_description
-#         location = ad.location
-#         ad_status = ad.ad_status
-#         s.commit()
-#
-#     return {
-#         "position_title": position_title,
-#         "salary": salary,
-#         "job_description": job_description,
-#         "location": location,
-#         "ad_status": ad_status
-#     }
+
+
+def edit_company_ad_by_position_title_service(position_title: str, ad_info: CompanyAdModel2, user_id: str):
+    with Session() as s:
+        ad = s.query(CompanyOffers) \
+            .filter(CompanyOffers.position_title == position_title,
+                    CompanyOffers.company_id == get_company_id_by_user_id_service(user_id)) \
+            .first()
+
+        if not ad:
+            raise HTTPException(
+                status_code=404,
+                detail="Ad not found"
+            )
+        if ad_info.position_title:
+            ad.position_title = ad_info.position_title
+        if ad_info.min_salary:
+            ad.min_salary = ad_info.min_salary
+        if ad_info.max_salary:
+            ad.max_salary = ad_info.max_salary
+        if ad_info.description:
+            ad.description = ad_info.description
+        if ad_info.location:
+            ad.location = ad_info.location
+        if ad_info.status is not None:
+            ad.status = ad_info.status
+
+        position_title = ad.position_title
+        min_salary = ad.min_salary
+        max_salary = ad.max_salary
+        description = ad.description
+        location = ad.location
+        status = ad.status
+        s.commit()
+
+    return {
+        "position_title": position_title,
+        "min_salary": min_salary,
+        "max_salary": max_salary,
+        "description": description,
+        "location": location,
+        "status": status
+    }
 
 
 def find_all_companies_service():

@@ -35,7 +35,8 @@ class CompanyAdModel(BaseModel):
 
 class CompanyAdModel2(BaseModel):
     position_title: str
-    salary: float
+    min_salary: float
+    max_salary: float
     description: str
     location: str
-    ad_status: int
+    status: str

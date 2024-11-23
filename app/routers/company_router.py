@@ -8,7 +8,7 @@ from app.services.company_service import (edit_company_description_service,
                                           get_company_name_by_username_service,
                                           find_all_companies_service,
                                           create_new_ad_service,
-                                          get_company_id_by_user_id_service)
+                                          get_company_id_by_user_id_service, edit_company_ad_by_position_title_service)
 company_router = APIRouter(prefix="/companies", tags=["Companies"])
 
 
@@ -48,7 +48,9 @@ def create_new_ad(company_ad: CompanyAdModel, token: str = Query(..., alias="tok
     try:
         payload = decode_access_token(token)
         user_username = payload.get("sub")
-
+        user_id = payload.get("id")
+        company_id = get_company_id_by_user_id_service(user_id)
+        company_name = get_company_name_by_username_service(company_id)
         if user_username is None:
             raise HTTPException(
                 status_code=401,
@@ -61,9 +63,7 @@ def create_new_ad(company_ad: CompanyAdModel, token: str = Query(..., alias="tok
             detail="Could not validate credentials",
             headers={"WWW-Authenticate": "Bearer"}
         )
-    user_id = payload.get("id")
-    company_id = get_company_id_by_user_id_service(user_id)
-    company_name = get_company_name_by_username_service(company_id)
+
     new_ad = create_new_ad_service(company_id, company_ad.position_title, company_ad.min_salary, company_ad.max_salary,
                                    company_ad.description, company_ad.location, company_ad.status)
     if new_ad:
@@ -93,16 +93,16 @@ def create_new_ad(company_ad: CompanyAdModel, token: str = Query(..., alias="tok
 #     return ads or []
 #
 #
-# @company_router.put('/company/ad/{ad_id}', response_model=CompanyAdModel2)
-# def update_company_ad(ad_id: int, ad_info: CompanyAdModel2, token: str = Query(...)):
-#     if token is None:
-#         raise HTTPException(
-#             status_code=401,
-#             detail="Token is missing"
-#         )
-#     payload = decode_access_token(token)
-#     company_username = payload.get("username")
-#     return edit_company_ad_by_id_service(ad_id, ad_info, company_username)
+@company_router.put('/company/ad/{ad_id}', response_model=CompanyAdModel2)
+def update_company_ad(ad_id: str, ad_info: CompanyAdModel2, token: str = Query(...)):
+    if token is None:
+        raise HTTPException(
+            status_code=401,
+            detail="Token is missing"
+        )
+    payload = decode_access_token(token)
+    company_username = payload.get("id")
+    return edit_company_ad_by_position_title_service(ad_id, ad_info, company_username)
 
 
 @company_router.get('/all')
