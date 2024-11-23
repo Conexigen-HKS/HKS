@@ -3,6 +3,7 @@ from fastapi import APIRouter, Depends, FastAPI, HTTPException, Query, Request
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from starlette.exceptions import HTTPException as StarletteHTTPException
+from data.models import User
 from data.database import get_db
 from common import auth
 from data.schemas.users import CompanyRegister, ProfessionalRegister, TokenResponse
@@ -33,14 +34,18 @@ def register_professional(professional_data: ProfessionalRegister, db: Session =
 @users_router.get("/")
 def return_all_users(
     role: Literal['professional', 'company'] = Query(...),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(auth.get_current_user)
     ):
-    print("Role received:", role)
-    users = get_all_users(db=db, role=role)
+    if current_user.is_admin:
+        users = get_all_users(db=db, role=role)
 
-    if not users:
-        return []
-    return users
+        if not users:
+            return []
+        return users
+    else:
+        raise HTTPException(status_code=403, detail="You are not authorized to view all users.")
+
 
 @users_router.post('/login', response_model=TokenResponse)
 def login_user(

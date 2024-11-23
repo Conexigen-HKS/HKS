@@ -94,4 +94,8 @@ def delete_user(id: str, db: Session):
             status_code=400, 
             detail="Invalid UUID format"
         )
-
+    
+def approve_requirement(id: str, db: Session, current_user: User):
+    if not current_user.is_admin:
+        raise HTTPException(status_code=403, detail="You are not authorized.")
+#COULD REQUIREMENTS - DA SE APPROVE REQUIREMENTS. TRQBVA DA SE DOBAQT PURVO V MODELS.
