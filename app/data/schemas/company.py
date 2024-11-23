@@ -14,16 +14,6 @@ class CompanyResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-class CompanyOut(BaseModel):
-    id: UUID
-    name: str
-    address: str
-    description: str
-    contacts: str
-    is_approved: bool
-    username: Optional[str]
-
-    model_config = ConfigDict(from_attributes=True)
 
 class CompanyInfoModel(BaseModel):
     company_description: str
@@ -36,15 +26,16 @@ class CompanyInfoModel(BaseModel):
 class CompanyAdModel(BaseModel):
     company_ad_id: int | None = None
     position_title: str
-    salary: float
-    job_description: str
+    min_salary: float
+    max_salary: float
+    description: str
     location: str
-    ad_status: int
+    status: str
 
 
 class CompanyAdModel2(BaseModel):
     position_title: str
     salary: float
-    job_description: str
+    description: str
     location: str
     ad_status: int

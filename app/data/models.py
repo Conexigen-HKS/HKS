@@ -1,8 +1,8 @@
 import uuid
-from sqlalchemy import Column, ForeignKey, Integer, String, DateTime, Boolean
+from sqlalchemy import Column, ForeignKey, Integer, String, DateTime, Boolean, Float, func
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
-from sqlalchemy.sql import func
+
 from sqlalchemy.ext.declarative import declarative_base
  
 Base = declarative_base()
@@ -60,7 +60,7 @@ class ProfessionalProfile(Base):
     professional_id = Column(UUID(as_uuid=True), ForeignKey('professionals.id'), nullable=False)
     chosen_company_offer_id = Column(UUID(as_uuid=True), ForeignKey('company_offers.id'))
     description = Column(String(255))
-    min_salary = Column(Integer)
+    min_salary = Column(Float)
     max_salary = Column(Integer)
     status = Column(String, nullable=False)
  
@@ -104,6 +104,7 @@ class Companies(Base):
     address = Column(String(255), nullable=False)
     description = Column(String(255), nullable=False)
     contacts = Column(String, nullable=False)
+    company_logo = Column(String(255))
     is_approved = Column(Boolean, default=False)
  
     user = relationship("User", back_populates="company", uselist=False)
@@ -114,11 +115,14 @@ class CompanyOffers(Base):
     __tablename__ = "company_offers"
     id = Column(UUID(as_uuid=True), default=uuid.uuid4, primary_key=True, nullable=False)
     company_id = Column(UUID(as_uuid=True), ForeignKey("companies.id"), nullable=False)
-    chosen_professional_offer_id = Column(UUID(as_uuid=True), ForeignKey("professional_profile.id"), nullable=True)
-    min_salary = Column(Integer, nullable=True)
-    max_salary = Column(Integer, nullable=True)
-    status = Column(String, nullable=True)
- 
+    chosen_professional_offer_id = Column(UUID(as_uuid=True), ForeignKey("professional_profile.id"))
+    position_title = Column(String(255))
+    min_salary = Column(Float, nullable=True)
+    max_salary = Column(Float, nullable=True)
+    job_description = Column(String(255))
+    location = Column(String(255))
+    status = Column(String)
+
     company = relationship("Companies", back_populates="company_offers")
     requirements = relationship("CompaniesRequirements", back_populates="company_offer")
     requests_and_matches = relationship("RequestsAndMatches", back_populates="company_offer")
@@ -130,7 +134,7 @@ class CompaniesRequirements(Base):
     requirements_id = Column(UUID(as_uuid=True), ForeignKey("skills.id"), primary_key=True)
     company_offers_id = Column(UUID(as_uuid=True), ForeignKey("company_offers.id"), primary_key=True)
     level = Column(Integer, nullable=True)
- 
+
     company_offer = relationship("CompanyOffers", back_populates="requirements")
     skill = relationship("Skills")
  

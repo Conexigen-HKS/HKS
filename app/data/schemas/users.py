@@ -3,7 +3,7 @@ from typing import Literal, Optional
 from uuid import UUID
 from pydantic import BaseModel, ConfigDict, field_validator, Field
 from app.data.schemas.professional import ProfessionalOut, ProfessionalResponse
-from app.data.schemas.company import CompanyOut, CompanyResponse
+from app.data.schemas.company import CompanyResponse, CompanyInfoModel
 
 
 class UserResponse(BaseModel):
@@ -25,7 +25,7 @@ class BaseUser(BaseModel):
 
 class WaitingApproval(BaseModel):
     professionals: list[ProfessionalOut]
-    companies: list[CompanyOut]
+    companies: list[CompanyInfoModel]
 
 class ProfessionalRegister(BaseModel):
     username: str #= Field(..., description="Username of the user", min_length=3, max_length=20)

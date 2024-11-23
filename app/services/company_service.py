@@ -19,7 +19,7 @@ def edit_company_description_service(company_info: CompanyInfoModel, company_use
             )
 
         company_info_data = s.query(Companies).filter(Companies.id == company.id).first()
-        #company_active_job_ads = count_job_ads(company.company_id)
+        company_active_job_ads = count_job_ads(company.id)
         if company_info_data is None:
             raise HTTPException(
                 status_code=404,
@@ -29,10 +29,10 @@ def edit_company_description_service(company_info: CompanyInfoModel, company_use
             company_info_data.description = company_info.company_description
         if company_info.company_contacts:
             company_info_data.contacts = company_info.company_contacts
-            # if company_info.company_logo:
-            #     company_info_data.company_logo = company_info.company_logo
-            #
-            # company_info_data.company_active_job_ads = company_info.company_active_job_ads
+        if company_info.company_logo:
+            company_info_data.company_logo = company_info.company_logo
+
+        company_info_data.company_active_job_ads = company_info.company_active_job_ads
         if company_info.company_address:
             company_info_data.address = company_info.company_address
         s.commit()
@@ -42,54 +42,57 @@ def edit_company_description_service(company_info: CompanyInfoModel, company_use
             "company_description": company_info_data.description,
             "company_address": company_info_data.address,
             "company_contacts": company_info_data.contacts,
-            # "company_logo": company_info_data.company_logo,
-            # "company_active_job_ads": company_active_job_ads
+            "company_logo": company_info_data.company_logo,
+            "company_active_job_ads": company_active_job_ads
         }
 
 
-# def count_job_ads(company_id):
-#     session = Session()
-#     count = session.query(func.count(CompanyAdBase.company_id)).filter(CompanyAdBase.company_id == company_id).scalar()
-#     session.close()
-#
-#     return count
+def count_job_ads(company_id):
+    session = Session()
+    count = session.query(func.count(CompanyOffers.id)).filter(CompanyOffers.company_id == company_id).scalar()
+    session.close()
+
+    return count
 
 
-# def create_new_ad_service(company_id: int, position_title: str,
-#                           salary: float, job_description: str,
-#                           location: str, ad_status: Optional[int] = 1) -> CompanyAdBase:
-#     new_ad = CompanyAdBase(
-#         company_id=company_id,
-#         position_title=position_title,
-#         salary=salary,
-#         job_description=job_description,
-#         location=location,
-#         ad_status=ad_status
-#     )
-#
-#     with Session() as session:
-#         session.add(new_ad)
-#         session.commit()
-#
-#     return new_ad
+def create_new_ad_service(company_id: int, position_title: str,
+                          min_salary: float, max_salary: float, job_description: str,
+                          location: str, status) -> CompanyOffers:
+    try:
+        new_ad = CompanyOffers(
+            company_id=company_id,
+            position_title=position_title,
+            min_salary=min_salary,
+            max_salary=max_salary,
+            job_description=job_description,
+            location=location,
+            status=status
+        )
 
+        with Session() as session:
+            session.add(new_ad)
+            session.commit()
 
-# def get_company_id_by_username_service(username: str) -> int:
-#     with Session() as session:
-#         try:
-#             company = session.query(CompanyBase).filter(CompanyBase.company_username == username).one()
-#             return company.company_id
-#         except:
-#             raise HTTPException(
-#                 status_code=404,
-#                 detail="Company not found"
-#             )
+        return new_ad
+    except Exception as e:
+        raise HTTPException(status_code=300, detail=str(e))
 
-
-def get_company_name_by_username_service(username: str) -> str:
+def get_company_id_by_user_id_service(user_id: str) -> int:
     with Session() as session:
         try:
-            company = session.query(Companies).filter(Companies.name == username).one()
+            company = session.query(Companies).filter(Companies.user_id == user_id).one()
+            return company.id
+        except:
+            raise HTTPException(
+                status_code=404,
+                detail="Company not found"
+            )
+
+
+def get_company_name_by_username_service(company_id) -> str:
+    with Session() as session:
+        try:
+            company = session.query(Companies).filter(Companies.id == company_id).one()
             return company.name
         except:
             raise HTTPException(
