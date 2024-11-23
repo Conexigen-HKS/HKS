@@ -24,3 +24,27 @@ class CompanyOut(BaseModel):
     username: Optional[str]
 
     model_config = ConfigDict(from_attributes=True)
+
+class CompanyInfoModel(BaseModel):
+    company_description: str
+    company_address: str
+    company_contacts: str
+    company_logo: str
+    company_active_job_ads: int
+
+
+class CompanyAdModel(BaseModel):
+    company_ad_id: int | None = None
+    position_title: str
+    salary: float
+    job_description: str
+    location: str
+    ad_status: int
+
+
+class CompanyAdModel2(BaseModel):
+    position_title: str
+    salary: float
+    job_description: str
+    location: str
+    ad_status: int
