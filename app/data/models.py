@@ -133,8 +133,8 @@ class CompaniesRequirements(Base):
  
     company_offer = relationship("CompanyOffers", back_populates="requirements")
     skill = relationship("Skills")
- 
- 
+
+
 class RequestsAndMatches(Base):
     __tablename__ = "requests_and_matches"
     professional_profile_id = Column(UUID(as_uuid=True), ForeignKey("professional_profile.id"), primary_key=True)

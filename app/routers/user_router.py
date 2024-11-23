@@ -1,9 +1,10 @@
 from typing import Literal
-from fastapi import APIRouter, Depends, FastAPI, HTTPException, Query, Request
+from fastapi import APIRouter, Depends, FastAPI, File, HTTPException, Query, Request, UploadFile
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from starlette.exceptions import HTTPException as StarletteHTTPException
-from data.models import User
+from services.cloudinary_service import upload_image_to_cloudinary
+from data.models import Professional, User
 from data.database import get_db
 from common import auth
 from data.schemas.users import CompanyRegister, ProfessionalRegister, TokenResponse
@@ -14,7 +15,7 @@ app = FastAPI()
 
 users_router = APIRouter(prefix='/api/users', tags=['Users'])
 
-@users_router.post("/register_company")
+@users_router.post("/register/company")
 def register_company(company_data: CompanyRegister, db: Session = Depends(get_db)):
     try:
         company = create_company(db, company_data)
@@ -22,7 +23,7 @@ def register_company(company_data: CompanyRegister, db: Session = Depends(get_db
     except HTTPException as e:
         raise e
     
-@users_router.post("/register_professional")
+@users_router.post("/register/professional")
 def register_professional(professional_data: ProfessionalRegister, db: Session = Depends(get_db)):
     try:
         professional = create_professional(db, professional_data)
@@ -79,3 +80,27 @@ def logout_user(
     auth.token_blacklist.add(token)
 
     return {"detail": "Logged out successfully"}
+
+@users_router.post("/me/picture")
+async def upload_picture(
+    file: UploadFile = File(...),
+    current_user: User = Depends(auth.get_current_user),
+    db: Session = Depends(get_db)
+):
+    try:
+        upload_result = upload_image_to_cloudinary(file.file)
+        file_url = upload_result["secure_url"]
+
+        professional = db.query(Professional).filter_by(user_id=current_user.id).first()
+        if not professional:
+            raise HTTPException(status_code=404, detail="Professional profile not found")
+
+        professional.picture = file_url
+        db.commit()
+
+        return {
+            "message": "Picture uploaded successfully",
+            "picture_url": file_url,
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
