@@ -119,7 +119,7 @@ class CompanyOffers(Base):
     position_title = Column(String(255))
     min_salary = Column(Float, nullable=True)
     max_salary = Column(Float, nullable=True)
-    job_description = Column(String(255))
+    description = Column(String(255))
     location = Column(String(255))
     status = Column(String)
 

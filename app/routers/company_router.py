@@ -8,7 +8,8 @@ from app.services.company_service import (edit_company_description_service,
                                           get_company_name_by_username_service,
                                           find_all_companies_service,
                                           create_new_ad_service,
-                                          get_company_id_by_user_id_service, edit_company_ad_by_position_title_service)
+                                          get_company_id_by_user_id_service, edit_company_ad_by_position_title_service,
+                                          get_company_ads_service)
 company_router = APIRouter(prefix="/companies", tags=["Companies"])
 
 
@@ -77,22 +78,22 @@ def create_new_ad(company_ad: CompanyAdModel, token: str = Query(..., alias="tok
                 "status": company_ad.status
                 }
 
-#
-# @company_router.get('/company/ads', response_model=List[Optional[CompanyAdModel]])
-# def get_company_ads(token: Optional[str] = Query(None)):
-#     if token is None:
-#         raise HTTPException(
-#             status_code=401,
-#             detail="Token is missing"
-#         )
-#
-#     payload = decode_access_token(token)
-#     company_username = payload.get("username")
-#     ads = get_company_ads_service(company_username)
-#
-#     return ads or []
-#
-#
+
+@company_router.get('/company/ads', response_model=List[Optional[CompanyAdModel]])
+def get_company_ads(token: Optional[str] = Query(None)):
+    if token is None:
+        raise HTTPException(
+            status_code=401,
+            detail="Token is missing"
+        )
+
+    payload = decode_access_token(token)
+    user_username = payload.get("id")
+    ads = get_company_ads_service(user_username)
+
+    return ads or {}
+
+
 @company_router.put('/company/ad/{ad_id}', response_model=CompanyAdModel2)
 def update_company_ad(ad_id: str, ad_info: CompanyAdModel2, token: str = Query(...)):
     if token is None:

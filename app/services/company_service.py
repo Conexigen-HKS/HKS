@@ -55,16 +55,16 @@ def count_job_ads(company_id):
     return count
 
 
-def create_new_ad_service(company_id: int, position_title: str,
+def create_new_ad_service(company_id: str, position_title: str,
                           min_salary: float, max_salary: float, job_description: str,
                           location: str, status) -> CompanyOffers:
     try:
         new_ad = CompanyOffers(
-            company_id=company_id,
+            company_id=str(company_id),
             position_title=position_title,
             min_salary=min_salary,
             max_salary=max_salary,
-            job_description=job_description,
+            description=job_description,
             location=location,
             status=status
         )
@@ -101,13 +101,21 @@ def get_company_name_by_username_service(company_id) -> str:
             )
 
 
-# def get_company_ads_service(username: str):
-#     with Session() as session:
-#         company_id = get_company_id_by_username_service(username)
-#         ads = session.query(CompanyAdBase).filter(CompanyAdBase.company_id == company_id).all()
-#         return [CompanyAdModel(**ad.__dict__) for ad in ads]
-#
-#
+def get_company_ads_service(user_id: str):
+    with Session() as session:
+        company_id = get_company_id_by_user_id_service(user_id)
+        ads = session.query(CompanyOffers).filter(CompanyOffers.company_id == company_id).all()
+        return [CompanyAdModel(
+            company_ad_id=str(ad.id),
+            position_title=ad.position_title,
+            min_salary=ad.min_salary,
+            max_salary=ad.max_salary,
+            description=ad.description,
+            location=ad.location,
+            status=ad.status
+        ) for ad in ads]
+
+
 # def find_ad_by_id(ad_id: int, username: str):
 #     with Session() as s:
 #         ad = s.query(CompanyAdBase).filter(CompanyAdBase.company_ad_id == ad_id,

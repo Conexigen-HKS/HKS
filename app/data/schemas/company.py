@@ -24,7 +24,7 @@ class CompanyInfoModel(BaseModel):
 
 
 class CompanyAdModel(BaseModel):
-    company_ad_id: int | None = None
+    company_ad_id: str | None = None
     position_title: str
     min_salary: float
     max_salary: float
