@@ -40,4 +40,3 @@ class NotFound(Response):
 class InternalServerError(Response):
     def __init__(self, content: Any = None):
         super().__init__(status_code=500, content=content, media_type="application/json")
-

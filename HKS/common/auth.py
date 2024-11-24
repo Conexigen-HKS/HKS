@@ -1,21 +1,22 @@
 from datetime import datetime, timedelta
 from typing import Annotated, Optional
 from fastapi import Depends, HTTPException
-from jose import JWTError, jwt
-from jose.exceptions import ExpiredSignatureError
-from passlib.context import CryptContext
+import jwt
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 
+
 from HKS.common.responses import Forbidden
 from HKS.common.utils import verify_password, verify_token, get_password_hash
-from HKS.config import ACCESS_TOKEN_EXPIRE_MINUTES, SECRET_KEY, ALGORITHM
+from HKS.config import ALGORITHM, ACCESS_TOKEN_EXPIRE_MINUTES, SECRET_KEY
 from app.data.database import get_db
 from app.data.models import User
+from app.data.queries import get_user_by_username
 from app.data.schemas.user import UserResponse
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl='/api/users/login', auto_error=False)
 token_blacklist = set()
+
 
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
@@ -26,13 +27,11 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
 
-def authenticate_user(db: Session, username: str, password: str) -> Optional[UserResponse]:
-    user = db.query(User).filter(User.username == username).first()
-
+def authenticate_user(db: Session, username: str, password: str):
+    user = get_user_by_username(db, username)
     if not user or not verify_password(password, user.hashed_password):
         return None
-
-    return UserResponse.model_validate(user)
+    return user
 
 
 def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)) -> User:
@@ -50,8 +49,6 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
         raise HTTPException(status_code=401, detail="User not found")
 
     return user
-
-
 def get_current_admin_user(current_user: User = Depends(get_current_user)) -> User:
     if not current_user.is_admin:
         raise Forbidden("Not enough permissions")

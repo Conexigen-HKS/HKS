@@ -1,82 +1,147 @@
-from sqlalchemy.orm import Session
+from typing import List
 from uuid import UUID
-from HKS.data.schemas.professional import ProfessionalRegister, ProfessionalResponse
-from app.data.models import Professional, User, ProfessionalProfile
-from app.data.queries import search_job_ads
 
-
-
+from fastapi import HTTPException
 from sqlalchemy.orm import Session
-from app.data.models import Professional, User
-from app.data.schemas.professional import ProfessionalProfileCreate
+
+from HKS.common.utils import get_password_hash
+from app.data.models import User, ProfessionalProfile, CompanyOffers, CompaniesRequirements, Professional
+from app.data.queries import get_professional_by_user_id, \
+    get_user_by_username, update_user_role, get_user_by_id, create_professional_profile
 
 
-def create_professional_profile(db: Session, user_id: UUID, profile_data: ProfessionalProfileCreate):
-    # Check if the user exists
-    user = db.query(User).filter(User.id == user_id).first()
-    if not user:
-        raise ValueError(f"User with ID {user_id} does not exist")
+def create_professional_service(db: Session, professional_data, username: str):
+    user = get_user_by_username(db, username)
+    if user:
+        raise HTTPException(status_code=400, detail="Username already exists.")
 
-    # Check if the user already has a professional profile
-    if user.professional:
-        raise ValueError(f"User with ID {user_id} already has a professional profile")
-
-    # Create the professional profile
-    new_profile = Professional(
-        user_id=user_id,
-        first_name=profile_data.first_name,
-        last_name=profile_data.last_name,
-        address=profile_data.address,
-        status=profile_data.status,
-        summary=profile_data.summary,
-        picture=profile_data.picture,
+    hashed_password = get_password_hash(professional_data.password)
+    user = User(
+        username=professional_data.username,
+        hashed_password=hashed_password,
+        role="professional"
     )
-    db.add(new_profile)
+    db.add(user)
     db.commit()
-    db.refresh(new_profile)
-    return new_profile
+    db.refresh(user)
 
-#NOT TESTED:
-def get_professional_by_id(db: Session, user_id: UUID) -> ProfessionalResponse:
-    """
-    Retrieve a professional profile by user ID.
-    """
-    professional = db.query(Professional).filter(Professional.user_id == user_id).first()
-    if not professional:
-        raise ValueError("Professional not found.")
-    return ProfessionalResponse.model_validate(professional)
+    professional_dict = {
+        "first_name": professional_data.first_name,
+        "last_name": professional_data.last_name,
+        "address": professional_data.address,
+        "summary": professional_data.summary,
+        "is_approved": False,
+    }
+    return create_professional_profile(db, user.id, professional_dict)
 
 
-def get_profile_details(db: Session, professional_id: UUID):
-    return db.query(ProfessionalProfile).filter_by(professional_id=professional_id).first()
-
-
-def update_profile(db: Session, professional_id: UUID, update_data: dict):
-    profile = db.query(ProfessionalProfile).filter(ProfessionalProfile.id == professional_id).first()
+def view_professional_profile(db: Session, user_id: UUID):
+    profile = get_professional_by_user_id(db, user_id)
     if not profile:
-        raise ValueError("Profile not found")
-    for key, value in update_data.items():
-        setattr(profile, key, value)
-    db.commit()
+        raise HTTPException(status_code=404, detail="Profile not found.")
     return profile
 
-def create_job_application(db: Session, professional_id: UUID, data: dict):
-    application = ProfessionalProfile(**data, professional_id=professional_id)
-    db.add(application)
+
+
+def upgrade_user_to_professional_service(db: Session, user_id: UUID, professional_data):
+
+    user = get_user_by_id(db, user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found.")
+
+    if user.role != "basic":
+        raise HTTPException(status_code=400, detail="Only basic users can be upgraded to professional.")
+
+    update_user_role(db, user_id, "professional")
+
+    professional = create_professional_profile(db, user_id, {
+        "first_name": professional_data.first_name,
+        "last_name": professional_data.last_name,
+        "address": professional_data.address,
+        "summary": professional_data.summary,
+        "is_approved": False,
+        "status": "active",
+    })
+
+    professional_profile = ProfessionalProfile(
+        user_id=user_id,
+        professional_id=professional.id,
+        status="active"
+    )
+    db.add(professional_profile)
     db.commit()
-    db.refresh(application)
-    return application
+    db.refresh(professional_profile)
 
-def search_jobs(db: Session, filters: dict):
-    return search_job_ads(db, filters)
+    return {
+        "id": user.id,
+        "username": user.username,
+        "role": user.role,
+        "professional_profile": {
+            "id": professional_profile.id,
+            "status": professional_profile.status,
+            "first_name": professional_data.first_name,
+            "last_name": professional_data.last_name,
+            "address": professional_data.address,
+            "summary": professional_data.summary
+        }
+    }
 
-def set_main_application(db: Session, professional_id: UUID, application_id: UUID):
-    db.query(ProfessionalProfile).filter_by(professional_id=professional_id).update({"is_main_application": False})
-    main_application = db.query(ProfessionalProfile).filter_by(id=application_id).first()
-    if not main_application:
-        raise ValueError("Application not found")
-    main_application.is_main_application = True
+
+
+
+def create_company_offer(db: Session, company_id: str, min_salary: int, max_salary: int, location: str, description: str, requirements: List[dict]):
+
+    company_offer = CompanyOffers(
+        company_id=company_id,
+        type="company",
+        status="active",
+        min_salary=min_salary,
+        max_salary=max_salary,
+        location=location,
+        description=description
+    )
+    db.add(company_offer)
     db.commit()
-    return main_application
+    db.refresh(company_offer)
+
+    for req in requirements:
+        company_requirement = CompaniesRequirements(
+            company_offers_id=company_offer.id,
+            requirements_id=req["requirements_id"],
+            level=req.get("level", 0)
+        )
+        db.add(company_requirement)
+
+    db.commit()
+    db.refresh(company_offer)
+    return company_offer
 
 
+def create_professional_application(db: Session, professional_profile_id: str, min_salary: int, max_salary: int, location: str, description: str):
+
+    professional_application = CompanyOffers(
+        professional_profile_id=professional_profile_id,
+        type="professional",
+        status="active",
+        min_salary=min_salary,
+        max_salary=max_salary,
+        location=location,
+        description=description
+    )
+    db.add(professional_application)
+    db.commit()
+    db.refresh(professional_application)
+    return professional_application
+
+def get_professional_profile_for_user(db: Session, user_id: str):
+    professional = db.query(Professional).filter(Professional.user_id == user_id).first()
+    if not professional:
+        raise HTTPException(status_code=404, detail="Professional profile not found.")
+
+    professional_profile = db.query(ProfessionalProfile).filter(
+        ProfessionalProfile.professional_id == professional.id
+    ).first()
+    if not professional_profile:
+        raise HTTPException(status_code=404, detail="Professional profile not found.")
+
+    return professional_profile

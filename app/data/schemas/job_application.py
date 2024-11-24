@@ -1,29 +1,36 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, UUID4
 from typing import List, Optional
-from uuid import UUID
+from datetime import datetime
 
-class JobApplicationCreate(BaseModel):
-    desired_salary_range: Optional[str]
-    description: Optional[str]
+
+class CompanyOfferBase(BaseModel):
+    min_salary: int
+    max_salary: int
     location: str
-    status: str
-    skills: List[str]
+    description: Optional[str] = None
 
 
-class JobApplicationResponse(BaseModel):
-    id: UUID
-    desired_salary_range: Optional[str]
-    description: Optional[str]
+class CompanyOfferCreate(CompanyOfferBase):
+    requirements: Optional[List[dict]] = []
+
+
+class ProfessionalApplicationCreate(BaseModel):
+    min_salary: int
+    max_salary: int
     location: str
+    description: str
+
+
+class CompanyOfferResponse(BaseModel):
+    id: UUID4
+    type: str
     status: str
+    min_salary: int
+    max_salary: int
+    location: str
+    description: Optional[str]
+    created_at: datetime
+    requirements: Optional[List[dict]] = None
 
     class Config:
         orm_mode = True
-
-
-class SearchJobAds(BaseModel):
-    title: Optional[str] = None
-    location: Optional[str] = None
-    min_salary: Optional[int] = None
-    max_salary: Optional[int] = None
-    skills: List[str] = []

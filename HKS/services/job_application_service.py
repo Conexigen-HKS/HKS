@@ -4,30 +4,24 @@ from uuid import UUID
 from pydantic import UUID4
 from sqlalchemy.orm import Session
 
-from HKS.data.schemas.job_application import  CompanyOfferCreate, \
-    CompanyOfferResponse
 from app.data.models import ProfessionalProfile, CompanyOffers
-from app.data.queries import search_job_ads, create_company_offer
 
-
-def create_offer_service(db: Session, offer_data: CompanyOfferCreate) -> CompanyOfferResponse:
-    new_offer = CompanyOffers(
-        company_id=offer_data.company_id,
-        professional_profile_id=offer_data.professional_profile_id,
-        type=offer_data.offer_type,
-        status=offer_data.status,
-        min_salary=offer_data.min_salary,
-        max_salary=offer_data.max_salary,
-        location=offer_data.location,
-        description=offer_data.description,
-    )
-    db.add(new_offer)
-    db.commit()
-    db.refresh(new_offer)
-    return CompanyOfferResponse.from_orm(new_offer)
-
+# def create_job_application_service(
+#     db: Session, application_data: JobApplicationCreate
+# ) -> JobApplicationResponse:
+#     job_application: CompanyOffers = create_company_offer(
+#         db,
+#         professional_profile_id=application_data.professional_profile_id,
+#         offer_type="professional",
+#         status=application_data.status,
+#         min_salary=application_data.min_salary,
+#         max_salary=application_data.max_salary,
+#         location=application_data.location,
+#         description=application_data.description
+#     )
+#
+#     return JobApplicationResponse.from_orm(job_application)
 def get_professional_job_applications(db: Session, professional_profile_id: UUID):
-    """Retrieve all job applications created by a professional."""
     return db.query(CompanyOffers).filter(
         CompanyOffers.professional_profile_id == professional_profile_id,
         CompanyOffers.type == "professional"
@@ -60,8 +54,8 @@ def match_job_application(db: Session, application_id: UUID4, professional_id: U
     db.refresh(application)
     return application
 
-def search_jobs(db: Session, filters: dict):
-    return search_job_ads(db, filters)
+# def search_jobs(db: Session, filters: dict):
+#     return search_job_ads(db, filters)
 
 def get_applications_by_status(db: Session, professional_id: UUID, status: Optional[str] = None):
     query = db.query(ProfessionalProfile).filter(ProfessionalProfile.professional_id == professional_id)

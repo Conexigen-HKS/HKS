@@ -1,44 +1,27 @@
+import logging
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from typing import List, Optional
-from uuid import UUID
 
-from HKS.services.job_application_service import get_applications_by_status
-from HKS.services.professional_service import get_profile_details, update_profile, set_main_application, \
-    create_professional_profile
+from HKS.common.auth import get_current_user
+from HKS.services.professional_service import upgrade_user_to_professional_service
 from app.data.database import get_db
-from app.data.schemas.professional import ProfessionalProfileResponse, ProfessionalProfileUpdate, \
-    ProfessionalProfileCreate
+from app.data.models import User
+from app.data.schemas.professional import ProfessionalUpgrade
 
-professional_router = APIRouter(tags=["Professionals"], prefix="/professionals")
-
-@professional_router.post("/{user_id}/create-profile", response_model=ProfessionalProfileResponse)
-def create_profile(user_id: UUID, profile_data: ProfessionalProfileCreate, db: Session = Depends(get_db)):
-    try:
-        profile = create_professional_profile(db, user_id, profile_data)
-        return profile
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
-    except Exception as e:
-        raise HTTPException(status_code=500, detail="An error occurred while creating the profile")
+professional_router = APIRouter(prefix="/professionals", tags=["Professionals"])
 
 
+@professional_router.put("/upgrade")
+def upgrade_to_professional(professional_data: ProfessionalUpgrade, current_user: tuple[User, dict] = Depends(get_current_user), db: Session = Depends(get_db)):
+    user = current_user
+    user_id = user.id
 
-#NOT TESTED:
-@professional_router.get("/{professional_id}", response_model=ProfessionalProfileResponse)
-def get_profile(professional_id: UUID, db: Session = Depends(get_db)):
-    return get_profile_details(db, professional_id)
+    if user.role != "basic":
+        raise HTTPException(status_code=400, detail="Only basic users can be upgraded to professional.")
 
-
-@professional_router.put("/{professional_id}", response_model=ProfessionalProfileResponse)
-def edit_profile(professional_id: UUID, data: ProfessionalProfileUpdate, db: Session = Depends(get_db)):
-    return update_profile(db, professional_id, data.dict())
-
-@professional_router.get("/{professional_id}/applications")
-def get_professional_applications(professional_id: UUID, status: Optional[str] = None, db: Session = Depends(get_db)):
-    return get_applications_by_status(db, professional_id, status)
+    professional = upgrade_user_to_professional_service(db, user_id, professional_data)
 
 
-@professional_router.post("/{professional_id}/set-main-application/{application_id}")
-def set_main(professional_id: UUID, application_id: UUID, db: Session = Depends(get_db)):
-    return set_main_application(db, professional_id, application_id)
+    return professional
+

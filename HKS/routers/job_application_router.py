@@ -1,45 +1,84 @@
-import shutil
+from typing import List
+from uuid import UUID
+from venv import logger
 
-from pydantic import ValidationError
-from rest_framework import status
-
-from HKS.data.schemas.job_application import CompanyOfferResponse, CompanyOfferCreate
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, Request
 from sqlalchemy.orm import Session
-from uuid import UUID
-from typing import List, Optional
 
-from HKS.services.job_application_service import (update_application, delete_application,
-                                                  search_job_applications, match_job_application,
-                                                  get_professional_job_applications,
-                                                  create_offer_service)
-from HKS.services.professional_service import create_job_application, search_jobs, update_profile
+from HKS.common.auth import get_current_user
+from HKS.services.job_application_service import get_professional_job_applications
+from HKS.services.professional_service import create_company_offer, create_professional_application, \
+    get_professional_profile_for_user
+
 from app.data.database import get_db
-from app.data.schemas.job_application import JobApplicationCreate, SearchJobAds
+from app.data.models import ProfessionalProfile, User, Professional, CompanyOffers
+from app.data.schemas.job_application import CompanyOfferCreate,  CompanyOfferResponse, ProfessionalApplicationCreate
 
 job_app_router = APIRouter(tags=["Job Applications"], prefix="/job_applications")
 
 
-@job_app_router.post("/", response_model=CompanyOfferResponse, summary="Create a new offer or application")
-def create_offer(offer_data: CompanyOfferCreate, db: Session = Depends(get_db)):
-    """
-    Create a new job offer (company) or job application (professional).
-    """
-    try:
-        return create_offer_service(db, offer_data)
-    except ValidationError as e:
-        raise HTTPException(status_code=422, detail=e.errors())
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
 
-# @job_app_router.get("/{professional_profile_id}", response_model=List[JobApplicationResponse])
-# def get_professional_applications(
-#     professional_profile_id: UUID,
-#     db: Session = Depends(get_db),
-# ):
-#     """Retrieve job applications for a professional."""
-#     applications = get_professional_job_applications(db, professional_profile_id)
-#     return applications
+@job_app_router.post("/company-offers", response_model=CompanyOfferResponse)
+def create_company_offer_endpoint(data: CompanyOfferCreate, db: Session = Depends(get_db)):
+
+    offer = create_company_offer(
+        db=db,
+        company_id="company-id-placeholder",
+        min_salary=data.min_salary,
+        max_salary=data.max_salary,
+        location=data.location,
+        description=data.description,
+        requirements=data.requirements
+    )
+    return offer
+
+@job_app_router.post("/", response_model=CompanyOfferResponse)
+def create_professional_application(data: ProfessionalApplicationCreate, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+
+    try:
+        professional = db.query(Professional).filter(Professional.user_id == current_user.id).first()
+
+        if not professional:
+            logger.error("Professional not found for user_id: %s", current_user.id)
+            raise HTTPException(status_code=404, detail="Professional not found.")
+
+        professional_profile = db.query(ProfessionalProfile).filter(
+            ProfessionalProfile.professional_id == professional.id
+        ).first()
+
+        if not professional_profile:
+            logger.error("Professional profile not found for professional_id: %s", professional.id)
+            raise HTTPException(status_code=404, detail="Professional profile not found.")
+
+        application = CompanyOffers(
+            professional_profile_id=professional_profile.id,
+            type="professional",
+            status="active",
+            min_salary=data.min_salary,
+            max_salary=data.max_salary,
+            location=data.location,
+            description=data.description
+        )
+        db.add(application)
+        db.commit()
+        db.refresh(application)
+
+        return CompanyOfferResponse(
+            id=application.id,
+            type=application.type,
+            status=application.status,
+            min_salary=application.min_salary,
+            max_salary=application.max_salary,
+            location=application.location,
+            description=application.description,
+            created_at=application.created_at
+        )
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+
+
 # @job_app_router.put("/{application_id}", response_model=JobApplicationResponse)
 # def update_application(application_id: str, update_data: JobApplicationUpdate, db: Session = Depends(get_db)):
 #     application = update_job_application(db, application_id, update_data)
@@ -69,9 +108,9 @@ def create_offer(offer_data: CompanyOfferCreate, db: Session = Depends(get_db)):
 #     profile = update_profile(db, professional_id, {"picture": file_location})
 #     return {"message": "Profile picture uploaded successfully.", "profile": profile}
 #
+
+# @job_app_router.delete("/{application_id}")
+# def delete_job_application(application_id: UUID, db: Session = Depends(get_db)):
+#     delete_application(db, application_id)
+#     return {"message": "Application deleted successfully"}
 #
-# # @job_app_router.delete("/{application_id}")
-# # def delete_job_application(application_id: UUID, db: Session = Depends(get_db)):
-# #     delete_application(db, application_id)
-# #     return {"message": "Application deleted successfully"}
-# #
