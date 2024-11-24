@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, FastAPI, File, HTTPException, Query, Req
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from starlette.exceptions import HTTPException as StarletteHTTPException
-from services.cloudinary_service import upload_image_to_cloudinary
+from services.cloudinary_service import delete_picture, upload_image_to_cloudinary
 from data.models import Professional, User
 from data.database import get_db
 from common import auth
@@ -43,7 +43,6 @@ def return_all_users(
 
         if not users:
             return []
-        return users
     else:
         raise HTTPException(status_code=403, detail="You are not authorized to view all users.")
 
@@ -104,3 +103,13 @@ async def upload_picture(
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@users_router.delete("/me/picture")
+def remove_picture(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(auth.get_current_user)
+):
+    try:
+        return delete_picture(current_user=current_user, db=db)
+    except Exception as e:
+        return {"error": "Failed to delete picture", "details": str(e)}
