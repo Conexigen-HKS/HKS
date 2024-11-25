@@ -19,7 +19,8 @@ def show_company_description_service(company_username: str):
                 detail="Company not found"
             )
 
-        company_ads = s.query(CompanyOffers).filter(CompanyOffers.status == "Active").all()
+        company_ads = s.query(CompanyOffers).filter(CompanyOffers.status == "Active",
+                                                    CompanyOffers.company_id == company.id).all()
 
         return {
             "company_name": company.name,
@@ -70,7 +71,8 @@ def edit_company_description_service(company_info: CompanyInfoModel, company_use
         s.commit()
 
         company_ads = s.query(CompanyOffers).filter(CompanyOffers.status == "Active").all()
-        company_ads_by_len = s.query(func.count(CompanyOffers.id)).filter(CompanyOffers.status == "Active").scalar()
+        company_ads_by_len = s.query(func.count(CompanyOffers.id)).filter(CompanyOffers.status == "Active",
+                                                                          CompanyOffers.company_id == company.id).scalar()
         return {
             "company_name": company.name,
             "company_description": company_info_data.description,

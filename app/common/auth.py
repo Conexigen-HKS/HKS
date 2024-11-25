@@ -7,7 +7,7 @@ from passlib.context import CryptContext
 from fastapi.security import OAuth2PasswordBearer
 from app.common.responses import Forbidden
 from app.data.schemas.users import UserResponse
-from app.config import ACCESS_TOKEN_EXPIRE_MINUTES, ALGORITHM, SECRET_KEY
+from app.config import ALGORITHM, SECRET_KEY
 from sqlalchemy.orm import Session
 from app.data.models import User
 from app.data.database import get_db

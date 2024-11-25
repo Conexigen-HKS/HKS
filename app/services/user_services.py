@@ -66,7 +66,8 @@ def create_company(db: Session, company_data: CompanyRegister) -> Companies:
             description=company_data.description,
             address=company_data.address,
             contacts="",
-            is_approved=False
+            is_approved=False,
+            company_logo=""
         )
 
         db.add(company)
