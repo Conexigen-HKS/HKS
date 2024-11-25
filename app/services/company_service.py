@@ -162,7 +162,7 @@ def get_company_ads_service(user_id: str):
 def edit_company_ad_by_position_title_service(position_title: str, ad_info: CompanyAdModel2, user_id: str):
     with Session() as s:
         ad = s.query(CompanyOffers) \
-            .filter(CompanyOffers.position_title == position_title,
+            .filter(CompanyOffers.id == position_title,
                     CompanyOffers.company_id == get_company_id_by_user_id_service(user_id)) \
             .first()
 

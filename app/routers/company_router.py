@@ -117,7 +117,7 @@ def get_company_ads(token: Optional[str] = Query(None)):
     return ads or {}
 
 
-@company_router.put('/company/ad/{ad_id}', response_model=CompanyAdModel2)
+@company_router.put('/ad/{ad_id}', response_model=CompanyAdModel2)
 def update_company_ad(add_title: str, ad_info: CompanyAdModel2, token: str = Query(...)):
     if token is None:
         raise HTTPException(
