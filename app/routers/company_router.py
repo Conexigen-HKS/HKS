@@ -88,7 +88,7 @@ def create_new_ad(company_ad: CompanyAdModel, token: str = Query(..., alias="tok
             headers={"WWW-Authenticate": "Bearer"}
         )
 
-    new_ad = create_new_ad_service(company_id, company_ad.position_title, company_ad.min_salary, company_ad.max_salary,
+    new_ad = create_new_ad_service(str(company_id), company_ad.position_title, company_ad.min_salary, company_ad.max_salary,
                                    company_ad.description, company_ad.location, company_ad.status)
     if new_ad:
         return {"message": "Ad added successfully",
