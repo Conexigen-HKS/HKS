@@ -109,7 +109,7 @@ class Companies(Base):
  
     user = relationship("User", back_populates="company", uselist=False)
     company_offers = relationship("CompanyOffers", back_populates="company")
- 
+
  
 class CompanyOffers(Base):
     __tablename__ = "company_offers"

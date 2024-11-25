@@ -2,6 +2,7 @@ from pydantic import BaseModel, ConfigDict
 from typing import Optional
 from uuid import UUID
 
+
 class CompanyResponse(BaseModel):
     id: UUID
     name: str
@@ -15,12 +16,22 @@ class CompanyResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
-class CompanyInfoModel(BaseModel):
+class ShowCompanyModel(BaseModel):
+    company_name: str
     company_description: str
     company_address: str
     company_contacts: str
     company_logo: str
-    company_active_job_ads: int
+    company_active_job_ads: list
+
+
+class CompanyInfoModel(BaseModel):
+    # company_name: str
+    company_description: str
+    company_address: str
+    company_contacts: str
+    company_logo: str
+    company_active_job_ads: list | int
 
 
 class CompanyAdModel(BaseModel):
