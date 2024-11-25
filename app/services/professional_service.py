@@ -4,9 +4,9 @@ from uuid import UUID
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
-from HKS.common.utils import get_password_hash
-from app.data.models import User, ProfessionalProfile, CompanyOffers, CompaniesRequirements, Professional
-from app.data.queries import get_professional_by_user_id, \
+from app.common.utils import get_password_hash
+from HKS.data.models import User, ProfessionalProfile, CompanyOffers, CompaniesRequirements, Professional
+from HKS.data.queries import get_professional_by_user_id, \
     get_user_by_username, update_user_role, get_user_by_id, create_professional_profile
 
 

@@ -6,10 +6,9 @@ from fastapi import HTTPException
 from pydantic import UUID4
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
-from app.data.models import User, Professional, CompanyOffers, Companies, ProfessionalProfile, Skills, \
+from HKS.data.models import User, Professional, CompanyOffers, Companies, ProfessionalProfile, Skills, \
     ProfessionalProfileSkills, RequestsAndMatches
-from app.data.schemas.skills import SkillCreate
-from app.data.schemas.user import UserResponse
+from HKS.data.schemas.user import UserResponse
 
 
 # USER QUERIES
@@ -25,9 +24,6 @@ def create_user(db: Session, user_data: dict) -> User:
 
 def get_user_by_username(db: Session, username: str) -> User:
     return db.query(User).filter(User.username == username).first()
-
-
-from datetime import datetime
 
 
 def get_user_by_id(db: Session, user_id: UUID) -> UserResponse:
@@ -151,43 +147,7 @@ def get_skills_for_profile(db: Session, profile_id: UUID):
     ).all()
 
 
-def create_job_application(db: Session, professional_profile_id: str, company_offer_id: str):
 
-    try:
-        profile = db.query(ProfessionalProfile).filter(ProfessionalProfile.id == professional_profile_id).first()
-
-        if not profile:
-            raise HTTPException(status_code=404, detail="Professional profile not found.")
-
-        offer = db.query(CompanyOffers).filter(CompanyOffers.id == company_offer_id).first()
-
-        if not offer:
-            raise HTTPException(status_code=404, detail="Company offer not found.")
-
-        existing_application = db.query(RequestsAndMatches).filter(
-            RequestsAndMatches.professional_profile_id == professional_profile_id,
-            RequestsAndMatches.company_offers_id == company_offer_id
-        ).first()
-
-        if existing_application:
-            logger.error("Job application already exists for profile_id: %s and offer_id: %s",
-                         professional_profile_id, company_offer_id)
-            raise HTTPException(status_code=400, detail="Job application already exists.")
-
-        application = RequestsAndMatches(
-            professional_profile_id=professional_profile_id,
-            company_offers_id=company_offer_id,
-            match=False
-        )
-        db.add(application)
-        db.commit()
-        db.refresh(application)
-
-        return application
-
-    except Exception as e:
-        logger.exception("Failed to create job application: %s", str(e))
-        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 def get_job_applications_by_professional(db: Session, professional_profile_id: str):

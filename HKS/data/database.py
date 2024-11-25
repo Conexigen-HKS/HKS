@@ -1,7 +1,6 @@
 from sqlalchemy import create_engine
-from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
-from app.data.models import Base
+from HKS.data.models import Base
 
 DATABASE_URL = "postgresql+pg8000://postgres:Kristi2005@localhost:5432/postgres"
 
