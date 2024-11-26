@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Depends, FastAPI, HTTPException
 from sqlalchemy.orm import Session
-from data.database import get_db
-from common import auth
-from data.models import User
-from services.match_service import view_matches, send_match_request
+from app.data.database import get_db
+from app.common import auth
+from app.data.models import User
+from app.services.match_service import view_matches, send_match_request
 from sqlalchemy.exc import SQLAlchemyError
 
 app = FastAPI()

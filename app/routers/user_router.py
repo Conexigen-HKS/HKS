@@ -3,13 +3,13 @@ from fastapi import APIRouter, Depends, FastAPI, File, HTTPException, Query, Req
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from starlette.exceptions import HTTPException as StarletteHTTPException
-from services.cloudinary_service import delete_picture, upload_image_to_cloudinary
-from data.models import Professional, User
-from data.database import get_db
-from common import auth
-from data.schemas.users import CompanyRegister, ProfessionalRegister, TokenResponse
-from services.user_services import create_company, create_professional, get_all_users
-from common.responses import BadRequest
+from app.services.cloudinary_service import delete_picture, upload_image_to_cloudinary
+from app.data.models import Professional, User
+from app.data.database import get_db
+from app.common import auth
+from app.data.schemas.users import CompanyRegister, ProfessionalRegister, TokenResponse
+from app.services.user_services import create_company, create_professional, get_all_users
+
 
 app = FastAPI()
 

@@ -1,7 +1,7 @@
 import cloudinary
 import cloudinary.uploader
 from cloudinary.utils import cloudinary_url
-from data.models import Professional, User
+from app.data.models import Professional, User
 from sqlalchemy.orm import Session
 from dotenv import load_dotenv
 import os
