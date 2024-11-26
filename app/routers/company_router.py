@@ -1,6 +1,6 @@
 from typing import List, Optional
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException, Query, Header
 
 from app.common.auth import decode_access_token
 from app.data.schemas.company import CompanyInfoModel, CompanyAdModel, CompanyAdModel2, ShowCompanyModel
@@ -13,7 +13,7 @@ from app.services.company_service import (edit_company_description_service,
 company_router = APIRouter(prefix="/companies", tags=["Companies"])
 
 @company_router.get("/info", response_model=List[ShowCompanyModel])
-def show_company_description(token: str = Query(...)):
+def show_company_description(token: str = Header(..., alias="token")):
     try:
         payload = decode_access_token(token)
         username = payload.get("sub")
@@ -39,7 +39,7 @@ def show_company_description(token: str = Query(...)):
         )
 
 @company_router.put('/info')
-def edit_company_description(company_info: CompanyInfoModel, token: str = Query(..., alias="token")):
+def edit_company_description(company_info: CompanyInfoModel, token: str = Header(..., alias="token")):
     try:
         payload = decode_access_token(token)
         company_username = payload.get("sub")

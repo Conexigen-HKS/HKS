@@ -1,22 +1,17 @@
 from typing import List, Optional
-
-from fastapi import APIRouter, HTTPException, Query
-
+from fastapi import APIRouter, HTTPException, Query, Header
 from app.common.auth import decode_access_token
 from app.data.schemas.company import CompanyAdModel, CompanyAdModel2
 from app.services.company_ad_service import create_new_ad_service, get_company_ads_service, \
     edit_company_ad_by_position_title_service
-from app.services.company_service import (
-                                          get_company_name_by_username_service,
-
-                                          get_company_id_by_user_id_service,
-                                         )
-
-company_ad_router = APIRouter(prefix="/ads", tags=["Ads"])
+from app.services.company_service import get_company_name_by_username_service, get_company_id_by_user_id_service
 
 
-@company_ad_router.post('/company/create/ad')
-def create_new_ad(company_ad: CompanyAdModel, token: str = Query(..., alias="token")):
+company_ad_router = APIRouter(prefix="/ads", tags=["Company Ads"])
+
+
+@company_ad_router.post('/new_ad')
+def create_new_ad(company_ad: CompanyAdModel, token: str = Header(..., alias="token")):
     try:
         payload = decode_access_token(token)
         user_username = payload.get("sub")
@@ -36,7 +31,8 @@ def create_new_ad(company_ad: CompanyAdModel, token: str = Query(..., alias="tok
             headers={"WWW-Authenticate": "Bearer"}
         )
 
-    new_ad = create_new_ad_service(str(company_id), company_ad.position_title, company_ad.min_salary, company_ad.max_salary,
+    new_ad = create_new_ad_service(str(company_id), company_ad.position_title, company_ad.min_salary,
+                                   company_ad.max_salary,
                                    company_ad.description, company_ad.location, company_ad.status)
     if new_ad:
         return {"message": "Ad added successfully",
@@ -50,8 +46,8 @@ def create_new_ad(company_ad: CompanyAdModel, token: str = Query(..., alias="tok
                 }
 
 
-@company_ad_router.get('/company/ads', response_model=List[Optional[CompanyAdModel]])
-def get_company_ads(token: Optional[str] = Query(None)):
+@company_ad_router.get('/info', response_model=List[Optional[CompanyAdModel]])
+def get_company_ads(token: str = Header(..., alias="token")):
     if token is None:
         raise HTTPException(
             status_code=401,
@@ -64,8 +60,9 @@ def get_company_ads(token: Optional[str] = Query(None)):
 
     return ads or {}
 
+
 @company_ad_router.put('/ad/{ad_id}', response_model=CompanyAdModel2)
-def update_company_ad(add_title: str, ad_info: CompanyAdModel2, token: str = Query(...)):
+def update_company_ad(add_title: str, ad_info: CompanyAdModel2, token: str = Header(..., alias="token")):
     if token is None:
         raise HTTPException(
             status_code=401,
