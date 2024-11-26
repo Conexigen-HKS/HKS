@@ -1,13 +1,15 @@
 from typing import Literal
-from fastapi import APIRouter, Depends, FastAPI, HTTPException, Query, Request
+from fastapi import APIRouter, Depends, FastAPI, File, HTTPException, Query, Request, UploadFile
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from starlette.exceptions import HTTPException as StarletteHTTPException
-from app.data.database import get_db
-from app.common import auth
-from app.data.schemas.users import CompanyRegister, ProfessionalRegister, TokenResponse
-from app.services.user_services import create_company, create_professional, get_all_users
-from app.common.responses import BadRequest
+from services.cloudinary_service import delete_picture, upload_image_to_cloudinary
+from data.models import Professional, User
+from data.database import get_db
+from common import auth
+from data.schemas.users import CompanyRegister, ProfessionalRegister, TokenResponse
+from services.user_services import create_company, create_professional, get_all_users
+from common.responses import BadRequest
 
 app = FastAPI()
 
@@ -33,14 +35,17 @@ def register_professional(professional_data: ProfessionalRegister, db: Session =
 @users_router.get("/")
 def return_all_users(
     role: Literal['professional', 'company'] = Query(...),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(auth.get_current_user)
     ):
-    print("Role received:", role)
-    users = get_all_users(db=db, role=role)
+    if current_user.is_admin:
+        users = get_all_users(db=db, role=role)
 
-    if not users:
-        return []
-    return users
+        if not users:
+            return []
+    else:
+        raise HTTPException(status_code=403, detail="You are not authorized to view all users.")
+
 
 @users_router.post('/login', response_model=TokenResponse)
 def login_user(
@@ -74,3 +79,37 @@ def logout_user(
     auth.token_blacklist.add(token)
 
     return {"detail": "Logged out successfully"}
+
+@users_router.post("/me/picture")
+async def upload_picture(
+    file: UploadFile = File(...),
+    current_user: User = Depends(auth.get_current_user),
+    db: Session = Depends(get_db)
+):
+    try:
+        upload_result = upload_image_to_cloudinary(file.file)
+        file_url = upload_result["secure_url"]
+
+        professional = db.query(Professional).filter_by(user_id=current_user.id).first()
+        if not professional:
+            raise HTTPException(status_code=404, detail="Professional profile not found")
+
+        professional.picture = file_url
+        db.commit()
+
+        return {
+            "message": "Picture uploaded successfully",
+            "picture_url": file_url,
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@users_router.delete("/me/picture")
+def remove_picture(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(auth.get_current_user)
+):
+    try:
+        return delete_picture(current_user=current_user, db=db)
+    except Exception as e:
+        return {"error": "Failed to delete picture", "details": str(e)}

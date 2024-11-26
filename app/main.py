@@ -7,7 +7,7 @@ from app.routers.company_ad_router import company_ad_router
 from routers.user_router import users_router
 from routers.admin_router import admin_router
 from routers.message_router import messages_router
-from app.routers.company_router import company_router
+from routers.match_router import match_router
 import uvicorn
 
 
@@ -15,6 +15,7 @@ app = FastAPI()
 app.include_router(users_router)
 app.include_router(admin_router)
 app.include_router(messages_router)
+app.include_router(match_router)
 app.include_router(company_router)
 app.include_router(company_ad_router)
 # @app.exception_handler(RequestValidationError)

@@ -42,3 +42,16 @@ async def delete_user_(
         return result
     except HTTPException as e:
         raise e
+
+# Administration (could)
+
+
+# Optionally, create application administration functionality
+
+# o Admins approve companies’ and professionals’ registration
+
+# o Admins can block/unblock companies and professionals
+
+# o Admins can delete application data (profiles, job ads etc.)
+
+# o Admins can add/delete or approve skills/requirements
