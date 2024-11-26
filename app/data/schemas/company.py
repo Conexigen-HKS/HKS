@@ -5,9 +5,12 @@ from uuid import UUID
 class CompanyResponse(BaseModel):
     id: UUID
     name: str
-    address: str
+    location: Optional[str]  # Ще съдържа името на града
     description: Optional[str]
     contacts: Optional[str]
+    phone: Optional[str]  # Ще съдържа телефонния номер
+    email: Optional[str]  # Ще съдържа имейл адреса
+    website: Optional[str] 
     is_approved: bool
     username: str
     user_id: UUID
@@ -20,6 +23,9 @@ class CompanyOut(BaseModel):
     address: str
     description: str
     contacts: str
+    phone: str
+    email: str
+    website: str
     is_approved: bool
     username: Optional[str]
 

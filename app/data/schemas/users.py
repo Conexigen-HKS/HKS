@@ -32,7 +32,10 @@ class ProfessionalRegister(BaseModel):
     password: str = Field(..., description="Password of the user", min_length=6, max_length=20)
     first_name: str = Field(..., min_length=2, max_length=20)
     last_name: str = Field(..., min_length=3, max_length=20)
-    address: str = Field(..., description="Address of the user", min_length=3, max_length=50)
+    location: str = Field(..., description="City where the user is located", min_length=3, max_length=50)
+    phone: Optional[str] = Field(None, description="Phone number of the user", min_length=8, max_length=15)
+    email: Optional[str] = Field(None, description="Email address of the user", min_length=5, max_length=100)
+    website: Optional[str] = Field(None, description="Website of the user or company", min_length=5, max_length=255)
     summary: str = Field(..., description="Summary of the user", min_length=10, max_length=200)
 
     @field_validator('password', mode='before')
@@ -55,7 +58,10 @@ class CompanyRegister(BaseModel):
     password: str = Field(...,min_length=6, max_length=20)
     company_name: str = Field(..., description="Name of the company", min_length=3, max_length=50)
     description: str = Field(..., description="Description of the company", min_length=10, max_length=200)
-    address: str = Field(..., description="Address of the company", min_length=3, max_length=50)
+    location: str = Field(..., description="City where the company is located", min_length=3, max_length=50)
+    phone: Optional[str] = Field(None, description="Phone number of the company", min_length=8, max_length=15)
+    email: Optional[str] = Field(None, description="Email address of the company", min_length=5, max_length=100)
+    website: Optional[str] = Field(None, description="Website of the company", min_length=5, max_length=255)
 
     @field_validator('password', mode='before')
     @classmethod

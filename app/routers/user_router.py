@@ -43,6 +43,9 @@ def return_all_users(
 
         if not users:
             return []
+        
+        return users
+    
     else:
         raise HTTPException(status_code=403, detail="You are not authorized to view all users.")
 

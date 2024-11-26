@@ -1,5 +1,5 @@
 import uuid
-from sqlalchemy import Column, ForeignKey, Integer, String, DateTime, Boolean
+from sqlalchemy import Column, ForeignKey, Integer, String, DateTime, Boolean, Enum
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
@@ -25,32 +25,23 @@ class User(Base):
  
  
 class Professional(Base):
-    '''Professional model
-    Attributes:
-    id (UUID): The unique identifier of the professional
-    is_approved (Boolean): The status of the professional
-    user_id (UUID): The unique identifier of the user
-    first_name (String): The first name of the professional
-    last_name (String): The last name of the professional
-    address (String): The address of the professional
-    status (String): The status of the professional
-    summary (String): The summary of the professional
-    picture (String): The picture of the professional
-    '''
-
     __tablename__ = "professionals"
     id = Column(UUID(as_uuid=True), default=uuid.uuid4, primary_key=True, nullable=False)
     is_approved = Column(Boolean, default=False)
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
     first_name = Column(String(45), nullable=False)
     last_name = Column(String(45), nullable=False)
-    address = Column(String(45), nullable=False)
-    status = Column(String(45))
+    location_id = Column(Integer, ForeignKey("locations.id"))#NEW
+    status = Column(String(45)) #"Active"  "Busy".
     summary = Column(String(255))
     picture = Column(String(255))
+    phone = Column(String(15), nullable=True, unique=True)
+    email = Column(String, nullable=True, unique=True)
+    website = Column(String(255), nullable=True, unique=True)
  
     user = relationship("User", back_populates="professional")
     professional_profile = relationship("ProfessionalProfile", back_populates="professional")
+    location = relationship("Location", back_populates="professionals") #NEW
 
  
 class ProfessionalProfile(Base):
@@ -62,8 +53,9 @@ class ProfessionalProfile(Base):
     description = Column(String(255))
     min_salary = Column(Integer)
     max_salary = Column(Integer)
-    status = Column(String, nullable=False)
- 
+    status = Column(String, nullable=False) #("Active", "Hidden", "Private", "Matched")
+    preferred_location = Column(String) # city or remote/ both
+
     professional = relationship("Professional", back_populates="professional_profile")
     chosen_offer = relationship("CompanyOffers", foreign_keys=[chosen_company_offer_id])
     skills = relationship("ProfessionalProfileSkills", back_populates="professional_profile")
@@ -87,32 +79,29 @@ class Skills(Base):
  
  
 class Companies(Base):
-    '''Companies model
-    Attributes:
-    id (UUID): The unique identifier of the company
-    user_id (UUID): The unique identifier of the user
-    name (String): The name of the company
-    address (String): The address of the company
-    description (String): The description of the company
-    contacts (String): The contacts of the company
-    is_approved (Boolean): The status of the company
-    '''
     __tablename__ = "companies"
     id = Column(UUID(as_uuid=True), default=uuid.uuid4, primary_key=True)
-    user_id = Column(UUID(as_uuid=True), ForeignKey('users.id'))
+    user_id = Column(UUID(as_uuid=True), ForeignKey('users.id', ondelete="CASCADE"))
     name = Column(String(45), unique=True, nullable=False)
-    address = Column(String(255), nullable=False)
+    location_id = Column(Integer, ForeignKey("locations.id"))#NEW
     description = Column(String(255), nullable=False)
     contacts = Column(String, nullable=False)
     is_approved = Column(Boolean, default=False)
+    picture = Column(String(255)) # new row
+    phone = Column(String(15), nullable=True, unique=True)
+    email = Column(String, nullable=True, unique=True)
+    website = Column(String(255), nullable=True, unique=True)
+
  
     user = relationship("User", back_populates="company", uselist=False)
     company_offers = relationship("CompanyOffers", back_populates="company")
- 
+    location = relationship("Location", back_populates="companies")#NEW
+
  
 class CompanyOffers(Base):
     __tablename__ = "company_offers"
     id = Column(UUID(as_uuid=True), default=uuid.uuid4, primary_key=True, nullable=False)
+    title = Column(String, nullable=False)
     company_id = Column(UUID(as_uuid=True), ForeignKey("companies.id"), nullable=False)
     chosen_professional_offer_id = Column(UUID(as_uuid=True), ForeignKey("professional_profile.id"), nullable=True)
     min_salary = Column(Integer, nullable=True)
@@ -157,3 +146,11 @@ class Message(Base):
     author = relationship("User", foreign_keys=[author_id], back_populates="sent_messages")
     receiver = relationship("User", foreign_keys=[receiver_id], back_populates="receiver_messages")
 
+class Location(Base):
+    __tablename__ = "locations"
+
+    id = Column(Integer, primary_key=True, index=True)
+    city_name = Column(String(100), unique=True, nullable=False)
+
+    professionals = relationship("Professional", back_populates="location")
+    companies = relationship("Companies", back_populates="location")

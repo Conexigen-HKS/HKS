@@ -1,9 +1,9 @@
 # app/services/user_services.py
 from uuid import UUID
 from sqlalchemy.orm import Session
-from fastapi import Depends, HTTPException
+from fastapi import Depends, HTTPException, status
 from sqlalchemy.exc import SQLAlchemyError
-from data.models import Professional, User, Companies
+from data.models import Location, Professional, User, Companies
 from data.schemas.users import UserResponse, CompanyRegister, ProfessionalRegister
 from data.schemas.company import CompanyResponse
 from data.schemas.professional import ProfessionalResponse
@@ -15,31 +15,61 @@ def get_user(db: Session, username: str) -> User:
 def create_professional(db: Session, professional_data: ProfessionalRegister) -> Professional:
     hashed_password = get_password_hash(professional_data.password)
 
-    try:
+    with db.begin():
+
+        if db.query(User).filter(User.username == professional_data.username).first():
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Username '{professional_data.username}' is already taken. Please choose another one."
+            )
+        
+        if db.query(Professional).filter(Professional.email == professional_data.email).first():
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"The email '{professional_data.email}' is already used. Please use another one."
+            )
+        
+        if db.query(Professional).filter(Professional.website == professional_data.website).first():
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"The website '{professional_data.website}' is already in use. Please use another one."
+            )
+
+        if db.query(Professional).filter(Professional.phone == professional_data.phone).first():
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"The phone number '{professional_data.phone}' is already in use. Please use another one."
+            )
+        
+        location = db.query(Location).filter(Location.city_name == professional_data.location).first()
+        if not location:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Location '{professional_data.location}' does not exist.")
+
+        
         user = User(username=professional_data.username, hashed_password=hashed_password, role="professional")
         db.add(user)
-        db.commit()
-        db.refresh(user)
+        db.flush()
 
         professional = Professional(
-            user_id=user.id,
-            first_name=professional_data.first_name,
-            last_name=professional_data.last_name,
-            address=professional_data.address,
-            summary=professional_data.summary,
-            is_approved=False
+        user_id=user.id,
+        first_name=professional_data.first_name,
+        last_name=professional_data.last_name,
+        location_id=location.id,
+        summary=professional_data.summary,
+        phone=professional_data.phone,
+        email=professional_data.email,
+        website=professional_data.website,
+        is_approved=False
         )
 
         db.add(professional)
-        db.commit()
+        db.flush()
         db.refresh(professional)
 
         return professional
 
-    except SQLAlchemyError as e:
-        db.rollback()
-        raise Exception(f"Error occurred while creating professional: {str(e)}")
-    
 def get_professional(db: Session, username: str) -> Professional:
     professional = db.query(Professional).filter(Professional.username == username).first()
 
@@ -54,30 +84,66 @@ def return_professional_response():#трябва да се създаде про
 def create_company(db: Session, company_data: CompanyRegister) -> Companies:
     hashed_password = get_password_hash(company_data.password)
 
-    try:
+    with db.begin():
+
+        if db.query(User).filter(User.username == company_data.username).first():
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Username '{company_data.username}' is already taken. Please choose another one."
+            )
+
+        if db.query(Companies).filter(Companies.email == company_data.email).first():
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"The email '{company_data.email}' is already used. Please use another one."
+            )
+
+        if db.query(Companies).filter(Companies.phone == company_data.phone).first():
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"The phone number '{company_data.phone}' is already in use. Please use another one."
+            )
+        
+        if db.query(Companies).filter(Companies.website == company_data.website).first():
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"The website '{company_data.website}' is already in use. Please use another one."
+            )
+
+        location = db.query(Location).filter(Location.city_name == company_data.location).first()
+        if not location:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Location '{company_data.location}' does not exist."
+            )
+        
+        company_name = db.query(Companies).filter(Companies.name == company_data.company_name).first()
+        if company_name:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"The company name '{company_data.company_name}' is already in use. Please use another one."
+            )
+
         user = User(username=company_data.username, hashed_password=hashed_password, role="company")
         db.add(user)
-        db.commit()
-        db.refresh(user)
+        db.flush()
 
         company = Companies(
             user_id=user.id,
             name=company_data.company_name,
             description=company_data.description,
-            address=company_data.address,
+            location_id=location.id,
             contacts="",
+            phone=company_data.phone,
+            email=company_data.email,
+            website=company_data.website,
             is_approved=False
         )
-
         db.add(company)
-        db.commit()
+        db.flush()
         db.refresh(company)
 
-        return company
-
-    except SQLAlchemyError as e:
-        db.rollback()
-        raise Exception(f"Error occurred while creating company: {str(e)}")
+    return company
 
 
 def get_company(db: Session, username: str) -> Companies:
@@ -108,15 +174,17 @@ def get_all_users(db: Session, role: str):
             .filter(User.role == 'professional')
             .all()
         )
-
         return [
             ProfessionalResponse(
-                id=entity.id,  # Add the professional's ID
+                id=entity.id,
                 username=user.username,
                 first_name=entity.first_name,
                 last_name=entity.last_name,
-                address=entity.address,
+                location=entity.location.city_name if entity.location else None,
                 status=entity.status,
+                phone=entity.phone,
+                email=entity.email,
+                website=entity.website,
                 summary=entity.summary,
                 is_approved=entity.is_approved,
                 user_id=user.id
@@ -136,12 +204,15 @@ def get_all_users(db: Session, role: str):
             CompanyResponse(
                 id=entity.id,
                 name=entity.name,
-                address=entity.address,
+                location=entity.location.city_name if entity.location else None,
                 description=entity.description,
                 contacts=entity.contacts,
+                phone=entity.phone,
+                email=entity.email,
+                website=entity.website,
                 is_approved=entity.is_approved,
                 username=user.username,
-                user_id=user.id  # UUID type will be preserved
+                user_id=user.id
             )
             for entity, user in all_entities
         ] if all_entities else []
