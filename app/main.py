@@ -2,6 +2,8 @@ from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
+
+from app.routers.company_ad_router import company_ad_router
 from routers.user_router import users_router
 from routers.admin_router import admin_router
 from routers.message_router import messages_router
@@ -14,6 +16,7 @@ app.include_router(users_router)
 app.include_router(admin_router)
 app.include_router(messages_router)
 app.include_router(company_router)
+app.include_router(company_ad_router)
 # @app.exception_handler(RequestValidationError)
 # async def validation_exception_handler(request: Request, exc: RequestValidationError):
 #     return JSONResponse(
