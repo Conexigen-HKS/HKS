@@ -1,10 +1,12 @@
+import uuid
+
 from fastapi import Depends, HTTPException
 from sqlalchemy import func
 from app.data.schemas.company import (CompanyInfoModel,
                                       CompanyAdModel, CompanyAdModel2, ShowCompanyModel)
 from app.data.models import Companies, User, CompanyOffers
 from app.data.database import Session
-from app.services.company_service import get_company_id_by_user_id_service
+from app.services.company_service import get_company_id_by_user_id_service, get_company_name_by_username_service
 
 
 def create_new_ad_service(company_id: str, position_title: str,
@@ -30,11 +32,13 @@ def create_new_ad_service(company_id: str, position_title: str,
         raise HTTPException(status_code=300, detail=str(e))
 
 
-def get_company_ads_service(user_id: str):
+def get_company_ads_service(user_id: uuid, company_name: str):
     with Session() as session:
         company_id = get_company_id_by_user_id_service(user_id)
+
         ads = session.query(CompanyOffers).filter(CompanyOffers.company_id == company_id).all()
         return [CompanyAdModel(
+            company_name=company_name,
             company_ad_id=str(ad.id),
             position_title=ad.position_title,
             min_salary=ad.min_salary,
@@ -85,3 +89,19 @@ def edit_company_ad_by_position_title_service(position_title: str, ad_info: Comp
         "location": location,
         "status": status
     }
+
+
+def get_company_all_ads_service():
+    with Session() as session:
+        ads = session.query(CompanyOffers).filter().all()
+
+        return [CompanyAdModel(
+            company_name=session.query(Companies).filter(Companies.id == ad.company_id).first().name,
+            company_ad_id=str(ad.id),
+            position_title=ad.position_title,
+            min_salary=ad.min_salary,
+            max_salary=ad.max_salary,
+            description=ad.description,
+            location=ad.location,
+            status=ad.status
+        ) for ad in ads]

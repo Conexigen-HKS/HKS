@@ -1,3 +1,4 @@
+import uuid
 from typing import Optional
 from fastapi import Depends, HTTPException
 from sqlalchemy import func
@@ -8,9 +9,9 @@ from app.data.database import Session
 import bcrypt
 
 
-def show_company_description_service(company_username: str):
+def show_company_description_service(user_username: str):
     with Session() as s:
-        user = s.query(User).filter(User.username == company_username).first()
+        user = s.query(User).filter(User.username == user_username).first()
         company = s.query(Companies).filter(Companies.user_id == user.id).first()
 
         if company is None:
@@ -29,6 +30,7 @@ def show_company_description_service(company_username: str):
             "company_contacts": company.contacts,
             "company_logo": company.company_logo,
             "company_active_job_ads": [CompanyAdModel(
+                company_name=company.name,
                 company_ad_id=str(ad.id),
                 position_title=ad.position_title,
                 min_salary=ad.min_salary,
@@ -93,7 +95,7 @@ def count_job_ads(company_id):
 
 
 
-def get_company_id_by_user_id_service(user_id: str) -> int:
+def get_company_id_by_user_id_service(user_id: uuid) -> uuid:
     with Session() as session:
         try:
             company = session.query(Companies).filter(Companies.user_id == user_id).one()

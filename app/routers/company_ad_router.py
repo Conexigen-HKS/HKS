@@ -3,7 +3,7 @@ from fastapi import APIRouter, HTTPException, Query, Header
 from app.common.auth import decode_access_token
 from app.data.schemas.company import CompanyAdModel, CompanyAdModel2
 from app.services.company_ad_service import create_new_ad_service, get_company_ads_service, \
-    edit_company_ad_by_position_title_service
+    edit_company_ad_by_position_title_service, get_company_all_ads_service
 from app.services.company_service import get_company_name_by_username_service, get_company_id_by_user_id_service
 
 
@@ -47,7 +47,7 @@ def create_new_ad(company_ad: CompanyAdModel, token: str = Header(..., alias="to
 
 
 @company_ad_router.get('/info', response_model=List[Optional[CompanyAdModel]])
-def get_company_ads(token: str = Header(..., alias="token")):
+def get_company_own_ads(token: str = Header(..., alias="token")):
     if token is None:
         raise HTTPException(
             status_code=401,
@@ -55,10 +55,12 @@ def get_company_ads(token: str = Header(..., alias="token")):
         )
 
     payload = decode_access_token(token)
-    user_username = payload.get("id")
-    ads = get_company_ads_service(user_username)
+    user_id = payload.get("id")
+    company_id = get_company_id_by_user_id_service(user_id)
+    company_name = get_company_name_by_username_service(company_id)
+    ads = get_company_ads_service(user_id, company_name)
 
-    return ads or {}
+    return ads or []
 
 
 @company_ad_router.put('/ad/{ad_id}', response_model=CompanyAdModel2)
@@ -71,3 +73,11 @@ def update_company_ad(add_title: str, ad_info: CompanyAdModel2, token: str = Hea
     payload = decode_access_token(token)
     company_username = payload.get("id")
     return edit_company_ad_by_position_title_service(add_title, ad_info, company_username)
+
+
+@company_ad_router.get('/all_ads', response_model=List[Optional[CompanyAdModel]])
+def get_all_company_ads():
+
+    ads = get_company_all_ads_service()
+
+    return ads or []
