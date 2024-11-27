@@ -3,8 +3,8 @@ from fastapi import APIRouter, Depends, FastAPI, File, HTTPException, Query, Req
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from starlette.exceptions import HTTPException as StarletteHTTPException
-from services.cloudinary_service import delete_picture, upload_image_to_cloudinary
-from data.models import Professional, User
+from services.cloudinary_service import ALLOWED_EXTENSIONS, change_picture, delete_picture, upload_image_to_cloudinary
+from data.models import Companies, Professional, User
 from data.database import get_db
 from common import auth
 from data.schemas.users import CompanyRegister, ProfessionalRegister, TokenResponse
@@ -83,31 +83,25 @@ def logout_user(
 
     return {"detail": "Logged out successfully"}
 
-@users_router.post("/me/picture")
+@users_router.post("/picture")
 async def upload_picture(
     file: UploadFile = File(...),
     current_user: User = Depends(auth.get_current_user),
     db: Session = Depends(get_db)
 ):
+    if file.filename.split('.')[-1].lower() not in ALLOWED_EXTENSIONS:
+        raise HTTPException(status_code=400, detail="Invalid file format. Allowed formats: jpg, jpeg, png.")
+
+    if current_user.role == 'admin':
+        raise HTTPException(status_code=400, detail="Admins cannot have a profile picture")
+
     try:
-        upload_result = upload_image_to_cloudinary(file.file)
-        file_url = upload_result["secure_url"]
-
-        professional = db.query(Professional).filter_by(user_id=current_user.id).first()
-        if not professional:
-            raise HTTPException(status_code=404, detail="Professional profile not found")
-
-        professional.picture = file_url
-        db.commit()
-
-        return {
-            "message": "Picture uploaded successfully",
-            "picture_url": file_url,
-        }
+        result = change_picture(current_user, db, file)
+        return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
-@users_router.delete("/me/picture")
+    
+@users_router.delete("/picture")
 def remove_picture(
     db: Session = Depends(get_db),
     current_user: User = Depends(auth.get_current_user)
@@ -116,3 +110,16 @@ def remove_picture(
         return delete_picture(current_user=current_user, db=db)
     except Exception as e:
         return {"error": "Failed to delete picture", "details": str(e)}
+    
+
+@users_router.put("/picture")
+async def change_user_picture(
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(auth.get_current_user)
+):
+    if file.filename.split('.')[-1].lower() not in ALLOWED_EXTENSIONS:
+        return {"error": "Invalid file format. Allowed formats: jpg, jpeg, png."}
+
+    result = change_picture(current_user, db, file)
+    return result
