@@ -12,21 +12,23 @@ def create_skill_service(db: Session, skill_data: SkillCreate):
     return create_skill(db, skill_data.name)
 
 
-def assign_skill_to_profile_service(db: Session, profile_id: UUID, skill_data: SkillAssignment):
+def assign_skill_to_job_application_service(db: Session, job_application_id: UUID, skill_data: SkillAssignment):
+    # Check if the skill exists
     skill = db.query(Skills).filter(Skills.name == skill_data.name).first()
-
     if not skill:
         raise HTTPException(status_code=404, detail=f"Skill with name '{skill_data.name}' not found.")
 
+    # Prevent duplicate assignment
     existing_assignment = db.query(ProfessionalProfileSkills).filter(
-        ProfessionalProfileSkills.professional_profile_id == profile_id,
+        ProfessionalProfileSkills.professional_profile_id == job_application_id,
         ProfessionalProfileSkills.skills_id == skill.id
     ).first()
     if existing_assignment:
-        raise HTTPException(status_code=400, detail="Skill already assigned to profile.")
+        raise HTTPException(status_code=400, detail="Skill already assigned to this job application.")
 
+    # Assign the skill
     new_assignment = ProfessionalProfileSkills(
-        professional_profile_id=profile_id,
+        professional_profile_id=job_application_id,  # Change to job application ID
         skills_id=skill.id,
         level=skill_data.level
     )
@@ -35,6 +37,7 @@ def assign_skill_to_profile_service(db: Session, profile_id: UUID, skill_data: S
     db.refresh(new_assignment)
 
     return new_assignment
+
 def get_profile_skills_service(db: Session, profile_id: UUID):
     skill_links = get_skills_for_profile(db, profile_id)
     return [

@@ -7,12 +7,13 @@ class CompanyResponse(BaseModel):
     name: str
     address: str
     description: Optional[str]
-    contacts: Optional[str]
+    contacts: Optional[UUID]  # Assuming you use UUID for contacts
     is_approved: bool
     username: str
     user_id: UUID
 
     model_config = ConfigDict(from_attributes=True)
+
 
 class CompanyOut(BaseModel):
     id: UUID

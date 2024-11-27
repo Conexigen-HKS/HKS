@@ -41,13 +41,13 @@ class Professional(Base):
     professional_profile = relationship("ProfessionalProfile", back_populates="professional")
 
 
+
 class ProfessionalProfile(Base):
     __tablename__ = 'professional_profile'
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    user_id = Column(UUID(as_uuid=True), ForeignKey('users.id'), nullable=False)
     professional_id = Column(UUID(as_uuid=True), ForeignKey('professionals.id'), nullable=False)
     chosen_company_offer_id = Column(UUID(as_uuid=True), ForeignKey('company_offers.id'))
-    location_id = Column(UUID(as_uuid=True), ForeignKey("locations.id"), nullable=True)  # New Field
+    location_id = Column(UUID(as_uuid=True), ForeignKey('locations.id'), nullable=False)  # Add this line
     description = Column(String(255))
     min_salary = Column(Integer)
     max_salary = Column(Integer)
@@ -55,9 +55,9 @@ class ProfessionalProfile(Base):
 
     professional = relationship("Professional", back_populates="professional_profile")
     chosen_offer = relationship("CompanyOffers", foreign_keys=[chosen_company_offer_id])
+    location = relationship("Locations", back_populates="professional_profiles")  # Add this line
     skills = relationship("ProfessionalProfileSkills", back_populates="professional_profile")
     requests_and_matches = relationship("RequestsAndMatches", back_populates="professional_profile")
-    location = relationship("Locations", back_populates="professional_profiles")  # New Relationship
 
 class ProfessionalProfileSkills(Base):
     __tablename__ = "professional_profile_skills"
@@ -95,10 +95,13 @@ class CompanyOffers(Base):
     __tablename__ = "company_offers"
     id = Column(UUID(as_uuid=True), default=uuid.uuid4, primary_key=True, nullable=False)
     company_id = Column(UUID(as_uuid=True), ForeignKey("companies.id"), nullable=False)
-    chosen_professional_offer_id = Column(UUID(as_uuid=True), ForeignKey("professional_profile.id"), nullable=True)
-    min_salary = Column(Integer, nullable=True)
-    max_salary = Column(Integer, nullable=True)
-    status = Column(String, nullable=True)
+    position_title = Column(String(255), nullable=False)
+    min_salary = Column(Integer, nullable=False)
+    max_salary = Column(Integer, nullable=False)
+    description = Column(String, nullable=False)
+    location = Column(String, nullable=False)  # Store location as a string for simplicity
+    status = Column(String, nullable=False)  # Status like "open", "closed", etc.
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
     company = relationship("Companies", back_populates="company_offers")
     requirements = relationship("CompaniesRequirements", back_populates="company_offer")
@@ -143,6 +146,10 @@ class Message(Base):
 class Contacts(Base):
     __tablename__ = 'contacts'
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    email = Column(String(255), nullable=True)
+    phone_number = Column(String(255), nullable=True)
+    web_page = Column(String(255), nullable=True)
+    linkedin = Column(String(255), nullable=True)
     company_id = Column(UUID(as_uuid=True), ForeignKey('companies.id'), nullable=False)
 
     company = relationship("Companies", back_populates="contacts", foreign_keys=[company_id])

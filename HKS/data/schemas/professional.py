@@ -3,21 +3,6 @@ from uuid import UUID
 from typing import List, Literal, Optional
 
 
-class JobApplicationCreate(BaseModel):
-    description: str
-    min_salary: Optional[int]
-    max_salary: Optional[int]
-    status: Literal["active", "hidden", "private"]
-
-
-class JobApplicationResponse(BaseModel):
-    id: UUID
-    description: str
-    min_salary: Optional[int]
-    max_salary: Optional[int]
-    status: Literal["active", "hidden", "private", "matched"]
-    skills: List[str]
-    match_requests: List[UUID]
 
 class ProfessionalResponse(BaseModel):
     id: UUID #tova go nqmashe

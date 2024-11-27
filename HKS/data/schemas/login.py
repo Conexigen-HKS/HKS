@@ -1,6 +1,9 @@
 
 from pydantic import BaseModel, field_validator
 
+from app.common.utils import ValidUsername, ValidPassword
+
+
 class Login(BaseModel):
     username: str
     password: str

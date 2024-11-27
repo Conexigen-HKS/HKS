@@ -8,19 +8,20 @@ from sqlalchemy.orm import Session
 from HKS.data.models import ProfessionalProfile, CompanyOffers, ProfessionalProfileSkills, Skills, RequestsAndMatches
 from HKS.data.schemas.job_application import JobApplicationCreate
 
-def create_job_application(db: Session, professional_id: UUID, data: JobApplicationCreate, user_id: UUID):
-    profile = ProfessionalProfile(
+def create_job_application(db: Session, professional_id: str, min_salary: int, max_salary: int, location_id: UUID, description: str):
+    job_application = ProfessionalProfile(
         professional_id=professional_id,
-        user_id=user_id,
-        description=data.description,
-        min_salary=data.min_salary,
-        max_salary=data.max_salary,
-        status=data.status,
+        min_salary=min_salary,
+        max_salary=max_salary,
+        location_id=location_id,
+        description=description,
+        status="open"
     )
-    db.add(profile)
+    db.add(job_application)
     db.commit()
-    db.refresh(profile)
-    return profile
+    db.refresh(job_application)
+    return job_application
+
 
 
 def assign_skill_to_job_application_by_name(

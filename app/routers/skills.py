@@ -3,20 +3,16 @@ from sqlalchemy.orm import Session
 from uuid import UUID
 
 from app.common.auth import get_current_user
-from app.services.skills_service import assign_skill_to_profile_service, get_profile_skills_service, \
-    create_skill_service
+from app.services.skills_service import get_profile_skills_service, \
+    create_skill_service, assign_skill_to_job_application_service
 from HKS.data.database import get_db
-from HKS.data.models import ProfessionalProfile, User, Professional, Skills
+from HKS.data.models import ProfessionalProfile, User, Professional, Skills, ProfessionalProfileSkills
 from HKS.data.schemas.skills import SkillCreate, SkillAssignment, ProfessionalSkillResponse, SkillResponse
 
 skills_router = APIRouter(prefix="/skills", tags=["Skills"])
 
 @skills_router.post("/", response_model=SkillResponse)
-def create_skill(
-    skill_data: SkillCreate,
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
-):
+def create_skill(skill_data: SkillCreate, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
 
     if not current_user.is_admin:
         raise HTTPException(status_code=403, detail="Only admins can create skills.")
@@ -28,25 +24,22 @@ def create_skill(
         level=0
     )
 
-@skills_router.post("/assign", response_model=ProfessionalSkillResponse)
-def assign_skill_to_professional(
-    skill_data: SkillAssignment,
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
-):
-
+@skills_router.post("/job_application/{job_application_id}/assign", response_model=ProfessionalSkillResponse)
+def assign_skill_to_job_application(job_application_id: UUID, skill_data: SkillAssignment, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     professional = db.query(Professional).filter(Professional.user_id == current_user.id).first()
     if not professional:
         raise HTTPException(status_code=404, detail="Professional profile not found.")
 
-    professional_profile = db.query(ProfessionalProfile).filter(
+    job_application = db.query(ProfessionalProfile).filter(
+        ProfessionalProfile.id == job_application_id,
         ProfessionalProfile.professional_id == professional.id
     ).first()
-    if not professional_profile:
-        raise HTTPException(status_code=404, detail="Professional profile not found.")
-    assigned_skill = assign_skill_to_profile_service(
+    if not job_application:
+        raise HTTPException(status_code=404, detail="Job application not found.")
+
+    assigned_skill = assign_skill_to_job_application_service(
         db=db,
-        profile_id=professional_profile.id,
+        job_application_id=job_application_id,
         skill_data=skill_data
     )
 
@@ -59,27 +52,28 @@ def assign_skill_to_professional(
 
 #TODO: DELETE SKILL FROM ADMIN
 #TODO: DELETE JOB APPLICATION FROM ADMIN OR MAKE IT INVISIBLE
-#ALMOST DONE: JOB APPLICATION CREATE
+#DONE: JOB APPLICATION CREATE
 #DONE: ADD SKILL TO PROFESSIONAL (GET ID OF PROFESSIONAL BY FORIGN KEY IN USER)
 #TODO: PHOTOS OF PROFESSIONAL
 #IF BREAKS SOMETHING CASCADE USE ->   professional = relationship("Professional", back_populates="user", uselist=False, cascade="all, delete-orphan")
 
 
-@skills_router.get("/{profile_id}", response_model=list[ProfessionalSkillResponse])
-def get_skills_for_profile(
-    profile_id: UUID,
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
-):
-    """
-    Get the list of skills assigned to a specific professional profile.
-    """
-    # Optional check: Allow only admins or the profile's owner to access the details
+@skills_router.get("/job_application/{job_application_id}/skills", response_model=list[SkillResponse])
+def get_skills_for_job_application(job_application_id: UUID, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     professional = db.query(Professional).filter(Professional.user_id == current_user.id).first()
-    if not professional and not current_user.is_admin:
+    job_application = db.query(ProfessionalProfile).filter(
+        ProfessionalProfile.id == job_application_id).first()
+
+    if not job_application or (job_application.professional_id != professional.id and not current_user.is_admin):
         raise HTTPException(
             status_code=403,
-            detail="You are not authorized to view skills for this profile."
+            detail="You are not authorized to view skills for this job application."
         )
 
-    return get_profile_skills_service(db, profile_id)
+    skill_links = db.query(ProfessionalProfileSkills).filter(
+        ProfessionalProfileSkills.professional_profile_id == job_application_id
+    ).all()
+    return [
+        SkillResponse(skill_id=link.skills_id, name=link.skill.name, level=link.level)
+        for link in skill_links
+    ]

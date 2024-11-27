@@ -1,12 +1,13 @@
 from pydantic import BaseModel, UUID4
 from typing import Optional
-
 class JobApplicationCreate(BaseModel):
     description: str
     min_salary: int
     max_salary: int
     status: str
-    location_id: Optional[UUID4]
+    location_id: Optional[UUID4] = None
+    location_name: Optional[str] = None
+
 
 
 class JobApplicationResponse(BaseModel):

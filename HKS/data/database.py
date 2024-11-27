@@ -2,7 +2,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from HKS.data.models import Base
 
-DATABASE_URL = "postgresql+pg8000://postgres:Kristi2005@localhost:5432/postgres"
+DATABASE_URL = "postgresql+pg8000://postgres:Kristi2005@localhost:5432/postgres13"
 
 
 engine = create_engine(DATABASE_URL)

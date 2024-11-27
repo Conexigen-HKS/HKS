@@ -86,7 +86,7 @@ def logout_user(
 
 
 @users_router.post("/me/picture")
-async def upload_picture(
+def upload_picture(
         file: UploadFile = File(...),
         current_user: User = Depends(auth.get_current_user),
         db: Session = Depends(get_db)
