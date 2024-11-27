@@ -105,3 +105,13 @@ def get_company_all_ads_service():
             location=ad.location,
             status=ad.status
         ) for ad in ads]
+
+
+def delete_company_ad_service(ad_id: uuid, user_id: uuid, company_name: str):
+    with Session() as session:
+        company_id = get_company_id_by_user_id_service(user_id)
+        ad = session.query(CompanyOffers).filter(CompanyOffers.company_id == company_id,
+                                                 CompanyOffers.id == ad_id).one()
+        session.delete(ad)
+        session.commit()
+        return {'success': True}
