@@ -5,7 +5,8 @@ from app.common import auth
 from app.common.auth import get_current_user
 from app.data.database import Session, get_db
 from app.data.models import User, ProfessionalProfile, Location
-from app.data.schemas.company import CompanyInfoModel, CompanyAdModel, CompanyAdModel2, ShowCompanyModel
+from app.data.schemas.company import CompanyInfoModel, CompanyAdModel, CompanyAdModel2, ShowCompanyModel, \
+    CompanyInfoRequestModel
 from app.data.schemas.job_application import JobApplicationResponse
 from app.services.company_service import (edit_company_description_service,
                                           get_company_name_by_username_service,
@@ -31,7 +32,7 @@ company_router = APIRouter(prefix="/companies", tags=["Companies"])
 
 
 @company_router.get("/info", response_model=List[ShowCompanyModel])
-def show_company_description_(
+def show_company_description(
         current_user: User = Depends(auth.get_current_user),
         db: Session = Depends(get_db)
 ):
@@ -47,7 +48,7 @@ def show_company_description_(
 
 @company_router.put('/info')
 def edit_company_description(
-    company_info: CompanyInfoModel,
+    company_info: CompanyInfoRequestModel,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
@@ -59,7 +60,7 @@ def edit_company_description(
             detail="Could not validate credentials"
 
         )
-    updated_company = edit_company_description_service(company_info, company_username)
+    updated_company = edit_company_description_service(company_info, company_username, db=db)
 
     if updated_company:
         return {"message": "Company description updated successfully", "company": updated_company}

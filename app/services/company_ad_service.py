@@ -9,17 +9,19 @@ from app.data.database import Session
 from app.services.company_service import get_company_id_by_user_id_service, get_company_name_by_username_service
 
 
-def create_new_ad_service(company_id: str, position_title: str,
-                          min_salary: float, max_salary: float, job_description: str,
-                          location: str, status) -> CompanyOffers:
+def create_new_ad_service(company_id: str, title: str,
+                          min_salary: int, max_salary: int, job_description: str,
+                          location: int, status) -> CompanyOffers:
     try:
+
+
         new_ad = CompanyOffers(
             company_id=str(company_id),
-            position_title=position_title,
+            title=title,
             min_salary=min_salary,
             max_salary=max_salary,
             description=job_description,
-            location=location,
+            location_id=location,
             status=status
         )
 

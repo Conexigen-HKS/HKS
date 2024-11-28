@@ -1,7 +1,11 @@
 import uuid
 from typing import List, Optional
-from fastapi import APIRouter, HTTPException, Query, Header
+from fastapi import APIRouter, HTTPException, Query, Header, Depends
+
+from app.common import auth
 from app.common.auth import decode_access_token
+from app.data.database import Session, get_db
+from app.data.models import User
 from app.data.schemas.company import CompanyAdModel, CompanyAdModel2
 from app.services.company_ad_service import create_new_ad_service, get_company_ads_service, \
     edit_company_ad_by_position_title_service, get_company_all_ads_service, delete_company_ad_service
@@ -12,11 +16,12 @@ company_ad_router = APIRouter(prefix="/ads", tags=["Company Ads"])
 
 
 @company_ad_router.post('/new_ad')
-def create_new_ad(company_ad: CompanyAdModel, token: str = Header(..., alias="token")):
+def create_new_ad(company_ad: CompanyAdModel, current_user: User = Depends(auth.get_current_user),
+                  db: Session = Depends(get_db)):
     try:
-        payload = decode_access_token(token)
-        user_username = payload.get("sub")
-        user_id = payload.get("id")
+
+        user_username = current_user.username
+        user_id = current_user.id
         company_id = get_company_id_by_user_id_service(user_id)
         company_name = get_company_name_by_username_service(company_id)
         if user_username is None:
@@ -32,8 +37,7 @@ def create_new_ad(company_ad: CompanyAdModel, token: str = Header(..., alias="to
             headers={"WWW-Authenticate": "Bearer"}
         )
 
-    new_ad = create_new_ad_service(str(company_id), company_ad.position_title, company_ad.min_salary,
-                                   company_ad.max_salary,
+    new_ad = create_new_ad_service(company_id, company_ad.position_title, company_ad.min_salary, company_ad.max_salary,
                                    company_ad.description, company_ad.location, company_ad.status)
     if new_ad:
         return {"message": "Ad added successfully",

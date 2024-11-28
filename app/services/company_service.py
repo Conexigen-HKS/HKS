@@ -1,10 +1,9 @@
-
 import uuid
 from typing import Optional
 from fastapi import Depends, HTTPException
 from sqlalchemy import func
 from app.data.schemas.company import (CompanyInfoModel,
-                                      CompanyAdModel, CompanyAdModel2, ShowCompanyModel)
+                                      CompanyAdModel, CompanyAdModel2, ShowCompanyModel, CompanyInfoRequestModel)
 from app.data.models import Companies, User, CompanyOffers, Location
 
 from app.data.database import Session
@@ -45,67 +44,69 @@ def show_company_description_service(user: User, db: Session):
     }
 
 
-def edit_company_description_service(company_info: CompanyInfoModel, company_username: str):
-    with Session() as s:
-        user = s.query(User).filter(User.username == company_username).first()
-        company = s.query(Companies).filter(Companies.user_id == user.id).first()
+def edit_company_description_service(company_info: CompanyInfoRequestModel, company_username: str, db: Session):
+    user = db.query(User).filter(User.username == company_username).first()
+    company = db.query(Companies).filter(Companies.user_id == user.id).first()
 
-        if company is None:
-            raise HTTPException(
-                status_code=404,
-                detail="Company not found"
-            )
+    if company is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Company not found"
+        )
 
-        company_info_data = s.query(Companies).filter(Companies.id == company.id).first()
-        location = s.query(Location).filter(Location.city_name == company_info.company_location).first()
-        if not location:
-            raise HTTPException(
-                status_code=400,
-                detail=f"Location '{company_info.company_location}' not found. Please provide a valid location."
-            )
+    company_info_data = db.query(Companies).filter(Companies.id == company.id).first()
+    location = db.query(Location).filter(Location.city_name == company_info.company_location).first()
+    if not location:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Location '{company_info.company_location}' not found. Please provide a valid location."
+        )
 
-        company.description = company_info.company_description
-        company.contacts = company_info.company_contacts
-        company.picture = company_info.company_logo
-        company.phone = company_info.phone
-        company.email = company_info.email
-        company.website = company_info.website
-        company.location_id = location.id
+    company.description = company_info.company_description
+    company.contacts = company_info.company_contacts
+    company.picture = company_info.company_logo
+    company.phone = company_info.phone
+    company.email = company_info.email
+    company.website = company_info.website
+    company.location_id = location.id
 
-        s.commit()
+    db.commit()
 
-        company_ads_count = s.query(func.count(CompanyOffers.id)).filter(
-            CompanyOffers.status == "Active", CompanyOffers.company_id == company.id
-        ).scalar()
+    company_ads_count = db.query(func.count(CompanyOffers.id)).filter(
+        CompanyOffers.status == "Active", CompanyOffers.company_id == company.id
+    ).scalar()
 
-        if company_info_data is None:
-            raise HTTPException(
-                status_code=404,
-                detail="Company information not found"
-            )
-        if company_info.company_description:
-            company_info_data.description = company_info.company_description
-        if company_info.company_contacts:
-            company_info_data.contacts = company_info.company_contacts
-        if company_info.company_logo:
-            company_info_data.company_logo = company_info.company_logo
+    if company_info_data is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Company information not found"
+        )
+    if company_info.company_description:
+        company_info_data.description = company_info.company_description
+    if company_info.company_contacts:
+        company_info_data.contacts = company_info.company_contacts
+    if company_info.company_logo:
+        company_info_data.company_logo = company_info.company_logo
 
-        if company_info.company_address:
-            company_info_data.address = company_info.company_address
-        s.commit()
+    if company_info.company_location:
+        company_info_data.address = company_info.company_location
+    db.commit()
 
-        company_ads = s.query(CompanyOffers).filter(CompanyOffers.status == "Active").all()
-        company_ads_by_len = s.query(func.count(CompanyOffers.id)).filter(CompanyOffers.status == "Active",
-                                                                          CompanyOffers.company_id == company.id).scalar()
-        return {
-            "company_name": company.name,
-            "company_description": company_info_data.description,
-            "company_address": company_info_data.address,
-            "company_contacts": company_info_data.contacts,
-            "company_logo": company_info_data.company_logo,
-            "company_active_job_ads": company_ads_by_len
-        }
+    company_ads = db.query(CompanyOffers).filter(CompanyOffers.status == "Active").all()
+    company_ads_by_len = db.query(func.count(CompanyOffers.id)).filter(CompanyOffers.status == "Active",
+                                                                       CompanyOffers.company_id == company.id).scalar()
+    return {
+        "company_name": company.name,
+        "company_description": company_info_data.description,
+        "company_location": company.location.city_name,
+        "company_contacts": company_info_data.contacts,
+        "company_logo": company_info_data.company_logo,
+        "phone": company_info_data.phone,
+        "email": company_info_data.email,
+        "website": company_info_data.website,
+        "company_active_job_ads": company_ads_by_len
 
+    }
 
 
 def count_job_ads(company_id):
@@ -114,8 +115,6 @@ def count_job_ads(company_id):
     session.close()
 
     return count
-
-
 
 
 def get_company_id_by_user_id_service(user_id: uuid) -> uuid:
@@ -142,16 +141,12 @@ def get_company_name_by_username_service(company_id) -> str:
             )
 
 
-
-
 # def find_ad_by_id(ad_id: int, username: str):
 #     with Session() as s:
 #         ad = s.query(CompanyAdBase).filter(CompanyAdBase.company_ad_id == ad_id,
 #                                            CompanyAdBase.company_id ==
 #                                            get_company_id_by_username_service(username)).first()
 #         return ad
-
-
 
 
 def find_all_companies_service():
