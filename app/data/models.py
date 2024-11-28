@@ -53,8 +53,9 @@ class ProfessionalProfile(Base):
     min_salary = Column(Integer)
     max_salary = Column(Integer)
     status = Column(String, nullable=False) #("Active", "Hidden", "Private", "Matched")
-    preferred_location = Column(String) # city or remote/ both
+    location_id = Column(Integer, ForeignKey('locations.id'), nullable=False)  # Add this line
 
+    location = relationship("Location", back_populates="professional_profiles")  # Add this line
     professional = relationship("Professional", back_populates="professional_profile")
     chosen_offer = relationship("CompanyOffers", foreign_keys=[chosen_company_offer_id])
     skills = relationship("ProfessionalProfileSkills", back_populates="professional_profile")
@@ -158,3 +159,4 @@ class Location(Base):
     professionals = relationship("Professional", back_populates="location")
     companies = relationship("Companies", back_populates="location")
     company_offers = relationship("CompanyOffers", back_populates="location")  # NEW
+    professional_profiles = relationship("ProfessionalProfile", back_populates="location")
