@@ -3,22 +3,12 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
-<<<<<<< Updated upstream
 from app.routers.company_ad_router import company_ad_router
 from app.routers.company_router import company_router
-=======
-from app.routers.job_ap_router import job_app_router
-from app.routers.location_router import locations_router
-from app.routers.skills_router import skills_router
->>>>>>> Stashed changes
 from app.routers.user_router import users_router
 from app.routers.admin_router import admin_router
 from app.routers.message_router import messages_router
 from app.routers.match_router import match_router
-<<<<<<< Updated upstream
-=======
-from app.routers.company_router import company_router
->>>>>>> Stashed changes
 import uvicorn
 
 
@@ -28,14 +18,7 @@ app.include_router(admin_router)
 app.include_router(messages_router)
 app.include_router(match_router)
 app.include_router(company_router)
-<<<<<<< Updated upstream
 app.include_router(company_ad_router)
-=======
-app.include_router(locations_router)
-app.include_router(job_app_router)
-app.include_router(skills_router)
-
->>>>>>> Stashed changes
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
     return JSONResponse(

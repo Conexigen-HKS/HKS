@@ -3,21 +3,11 @@ from uuid import UUID
 from sqlalchemy.orm import Session
 from fastapi import Depends, HTTPException, status
 from sqlalchemy.exc import SQLAlchemyError
-<<<<<<< Updated upstream
 from app.data.models import Location, Professional, User, Companies
 from app.data.schemas.users import UserResponse, CompanyRegister, ProfessionalRegister
 from app.data.schemas.company import CompanyResponse
 from app.data.schemas.professional import ProfessionalResponse
 from app.common.utils import get_password_hash
-=======
-
-from app.common.utils import get_password_hash
-from app.data.models import User, Professional, Location, Companies
-from app.data.schemas.company import CompanyResponse
-from app.data.schemas.professional import ProfessionalResponse
-from app.data.schemas.users import ProfessionalRegister, UserResponse, CompanyRegister
-
->>>>>>> Stashed changes
 
 def get_user(db: Session, username: str) -> User:
     return db.query(User).filter(User.username == username).first()

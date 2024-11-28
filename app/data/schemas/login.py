@@ -1,8 +1,4 @@
-<<<<<<< Updated upstream
 from app.common.utils import ValidUsername, ValidPassword
-=======
-from  app.common.utils import ValidUsername, ValidPassword
->>>>>>> Stashed changes
 from pydantic import BaseModel, field_validator
 
 class Login(BaseModel):

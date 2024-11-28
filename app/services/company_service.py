@@ -4,11 +4,7 @@ from fastapi import Depends, HTTPException
 from sqlalchemy import func
 from app.data.schemas.company import (CompanyInfoModel,
                                       CompanyAdModel, CompanyAdModel2, ShowCompanyModel)
-<<<<<<< Updated upstream
 from app.data.models import Companies, User, CompanyOffers
-=======
-from app.data.models import Companies, User, CompanyOffers, Location
->>>>>>> Stashed changes
 from app.data.database import Session
 import bcrypt
 
@@ -58,30 +54,7 @@ def edit_company_description_service(company_info: CompanyInfoModel, company_use
                 detail="Company not found"
             )
 
-<<<<<<< Updated upstream
         company_info_data = s.query(Companies).filter(Companies.id == company.id).first()
-=======
-        location = s.query(Location).filter(Location.city_name == company_info.company_location).first()
-        if not location:
-            raise HTTPException(
-                status_code=400,
-                detail=f"Location '{company_info.company_location}' not found. Please provide a valid location."
-            )
-
-        company.description = company_info.company_description
-        company.contacts = company_info.company_contacts
-        company.picture = company_info.company_logo
-        company.phone = company_info.phone
-        company.email = company_info.email
-        company.website = company_info.website
-        company.location_id = location.id
-
-        s.commit()
-
-        company_ads_count = s.query(func.count(CompanyOffers.id)).filter(
-            CompanyOffers.status == "Active", CompanyOffers.company_id == company.id
-        ).scalar()
->>>>>>> Stashed changes
 
         if company_info_data is None:
             raise HTTPException(
@@ -105,7 +78,6 @@ def edit_company_description_service(company_info: CompanyInfoModel, company_use
                                                                           CompanyOffers.company_id == company.id).scalar()
         return {
             "company_name": company.name,
-<<<<<<< Updated upstream
             "company_description": company_info_data.description,
             "company_address": company_info_data.address,
             "company_contacts": company_info_data.contacts,
@@ -114,17 +86,6 @@ def edit_company_description_service(company_info: CompanyInfoModel, company_use
         }
 
 
-=======
-            "company_description": company.description,
-            "company_location": company_info.company_location,
-            "company_contacts": company.contacts,
-            "company_logo": company.picture,
-            "company_active_job_ads": company_ads_count
-        }
-
-
-
->>>>>>> Stashed changes
 def count_job_ads(company_id):
     session = Session()
     count = session.query(func.count(CompanyOffers.id)).filter(CompanyOffers.company_id == company_id).scalar()
@@ -176,9 +137,3 @@ def find_all_companies_service():
         companies = session.query(Companies).all()
         return [{attr: value for attr, value in company.__dict__.items() if attr != '_sa_instance_state'} for company in
                 companies]
-<<<<<<< Updated upstream
-=======
-
-
-
->>>>>>> Stashed changes

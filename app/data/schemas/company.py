@@ -35,13 +35,13 @@ class CompanyOut(BaseModel):
 class CompanyInfoModel(BaseModel):
     company_name: str
     company_description: str
-    company_location: str
+    company_address: str
     company_contacts: str
     company_logo: Optional[str]
     phone: Optional[str]
     email: Optional[str]
     website: Optional[str]
-    company_active_job_ads: Optional[list | int]
+    company_active_job_ads: list | int
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -83,4 +83,3 @@ class CompanyAdModel2(BaseModel):
     status: str
 
     model_config = ConfigDict(from_attributes=True)
-

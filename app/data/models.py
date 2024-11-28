@@ -30,8 +30,8 @@ class Professional(Base):
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
     first_name = Column(String(45), nullable=False)
     last_name = Column(String(45), nullable=False)
-    location_id = Column(Integer, ForeignKey("locations.id"))
-    status = Column(String(45),default='Active')
+    location_id = Column(Integer, ForeignKey("locations.id"))#NEW
+    status = Column(String(45),default='Active') #"Active"  "Busy".
     summary = Column(String(255))
     picture = Column(String(255))
     phone = Column(String(15), nullable=True, unique=True)
@@ -40,7 +40,7 @@ class Professional(Base):
  
     user = relationship("User", back_populates="professional")
     professional_profile = relationship("ProfessionalProfile", back_populates="professional")
-    location = relationship("Location", back_populates="professionals")
+    location = relationship("Location", back_populates="professionals") #NEW
 
 
 class ProfessionalProfile(Base):
@@ -65,7 +65,7 @@ class ProfessionalProfileSkills(Base):
     __tablename__ = "professional_profile_skills"
     professional_profile_id = Column(UUID(as_uuid=True), ForeignKey("professional_profile.id"), primary_key=True)
     skills_id = Column(UUID(as_uuid=True), ForeignKey("skills.id"), primary_key=True)
-    level = Column(String, nullable=True)
+    level = Column(Integer, nullable=True)
  
     professional_profile = relationship("ProfessionalProfile", back_populates="skills")
     skill = relationship("Skills", back_populates="professional_profile_skills")
@@ -83,11 +83,11 @@ class Companies(Base):
     id = Column(UUID(as_uuid=True), default=uuid.uuid4, primary_key=True)
     user_id = Column(UUID(as_uuid=True), ForeignKey('users.id', ondelete="CASCADE"))
     name = Column(String(45), unique=True, nullable=False)
-    location_id = Column(Integer, ForeignKey("locations.id"))
+    location_id = Column(Integer, ForeignKey("locations.id"))#NEW
     description = Column(String(255), nullable=False)
     contacts = Column(String, nullable=False)
     is_approved = Column(Boolean, default=False)
-    picture = Column(String(255))
+    picture = Column(String(255)) # new row
     phone = Column(String(15), nullable=True, unique=True)
     email = Column(String, nullable=True, unique=True)
     website = Column(String(255), nullable=True, unique=True)

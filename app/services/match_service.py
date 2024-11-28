@@ -3,10 +3,7 @@ from sqlalchemy.orm import Session
 from fastapi import Depends, HTTPException
 from sqlalchemy.exc import SQLAlchemyError
 from app.data.models import Companies, Professional, RequestsAndMatches, ProfessionalProfile, CompanyOffers, User
-<<<<<<< Updated upstream
 
-=======
->>>>>>> Stashed changes
 
 def send_match_request(
         db: Session,
