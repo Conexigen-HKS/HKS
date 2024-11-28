@@ -30,7 +30,20 @@ class CompanyAdModel(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
+class CompanyResponse(BaseModel):
+    id: UUID
+    name: str
+    location: Optional[str]  # Ще съдържа името на града
+    description: Optional[str]
+    contacts: Optional[str]
+    phone: Optional[str]  # Ще съдържа телефонния номер
+    email: Optional[str]  # Ще съдържа имейл адреса
+    website: Optional[str]
+    is_approved: bool
+    username: str
+    user_id: UUID
 
+    model_config = ConfigDict(from_attributes=True)
 class ShowCompanyModel(BaseModel):
     company_name: str
     company_description: str

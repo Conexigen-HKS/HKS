@@ -24,7 +24,7 @@ class ProfessionalResponse(BaseModel):
             id=professional.id,
             first_name=professional.first_name,
             last_name=professional.last_name,
-            location=professional.location.name if professional.location else None,
+            location=professional.location.city_name if professional.location else None,
             phone=professional.phone,
             email=professional.email,
             website=professional.website,
@@ -54,6 +54,6 @@ class ProfessionalUpdate(BaseModel):
     phone: str
     email: str
     website: str
-    status: Optional[str]
+    status: Optional[str] = None
     summary: Optional[str]
     picture: Optional[str]

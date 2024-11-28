@@ -80,11 +80,6 @@ def get_job_application_endpoint(
         skills=[s.skill.name for s in profile.skills]
     )
 
-@job_app_router.patch("/{job_application_id}/set-main")
-def set_main_job_application(job_application_id: UUID, db: Session = Depends(get_db), current_user: Professional = Depends(get_current_user)):
-    application = set_main_job_application_service(db, job_application_id, current_user.id)
-    return {"message": "Main application set successfully", "application_id": application.id}
-
 
 @job_app_router.get("/", response_model=List[JobApplicationResponse])
 def get_all_job_applications(db: Session = Depends(get_db), current_user: Professional = Depends(get_current_user)):

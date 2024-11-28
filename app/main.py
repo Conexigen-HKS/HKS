@@ -5,6 +5,8 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from app.routers.company_ad_router import company_ad_router
 from app.routers.company_router import company_router
+from app.routers.jop_ap_router import job_app_router
+from app.routers.professional_router import professional_router
 from app.routers.user_router import users_router
 from app.routers.admin_router import admin_router
 from app.routers.message_router import messages_router
@@ -19,6 +21,10 @@ app.include_router(messages_router)
 app.include_router(match_router)
 app.include_router(company_router)
 app.include_router(company_ad_router)
+app.include_router(job_app_router)
+app.include_router(professional_router)
+
+
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
     return JSONResponse(

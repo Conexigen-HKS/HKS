@@ -36,6 +36,47 @@ def update_professional_service(db: Session, user_id: UUID, update_data: Profess
     return professional
 
 
+def get_own_job_applications(db: Session, user_id: UUID):
+    print(f"Fetching Professional for user_id: {user_id}")
+    professional = db.query(Professional).filter(Professional.user_id == user_id).first()
+
+    if not professional:
+        print("No Professional found!")
+        raise HTTPException(status_code=404, detail="Professional not found")
+
+    print(f"Fetching Professional Profiles for professional_id: {professional.id}")
+    applications = db.query(ProfessionalProfile).filter(
+        ProfessionalProfile.professional_id == professional.id
+    ).all()
+
+    if not applications:
+        print("No applications found for professional_id.")
+        return []
+
+    print(f"Applications found: {applications}")
+
+    # Construct response
+    result = []
+    for app in applications:
+        location_name = None
+        if app.location_id:
+            location = db.query(Location).filter(Location.id == app.location_id).first()
+            location_name = location.city_name if location else None
+
+        result.append(
+            JobApplicationResponse(
+                id=app.id,
+                description=app.description,
+                min_salary=app.min_salary,
+                max_salary=app.max_salary,
+                status=app.status,
+                location_name=location_name,
+                skills=[skill.skill.name for skill in app.skills]
+            )
+        )
+    print(f"Job Applications Response: {result}")
+    return result
+
 
 def update_professional_status_on_match(db: Session, professional_profile_id: UUID):
     profile = db.query(ProfessionalProfile).filter(

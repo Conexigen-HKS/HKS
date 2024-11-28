@@ -6,7 +6,7 @@ from app.common.auth import get_current_user
 from app.data.database import get_db
 from app.data.models import ProfessionalProfile, User, Professional, ProfessionalProfileSkills
 from app.data.schemas.skills import SkillCreate, SkillResponse
-from app.services.skills_services import create_skill_service
+from app.services.skills_service import create_skill_service
 
 skills_router = APIRouter(prefix="/skills", tags=["Skills"])
 

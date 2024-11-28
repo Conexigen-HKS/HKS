@@ -184,3 +184,21 @@ def search_job_applications_service(
         )
         for job_app in job_apps
     ]
+
+def view_job_application(db: Session, job_application_id: UUID, user_id: UUID):
+    job_application = db.query(ProfessionalProfile).filter(
+        ProfessionalProfile.id == job_application_id,
+        ProfessionalProfile.user_id == user_id
+    ).first()
+    if not job_application:
+        raise HTTPException(status_code=404, detail="Job application not found")
+
+    return JobApplicationResponse(
+        id=job_application.id,
+        description=job_application.description,
+        min_salary=job_application.min_salary,
+        max_salary=job_application.max_salary,
+        status=job_application.status,
+        location_name=job_application.location.city_name if job_application.location else None,
+        skills=[s.skill.name for s in job_application.skills]
+    )
