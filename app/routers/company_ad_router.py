@@ -37,12 +37,12 @@ def create_new_ad(company_ad: CompanyAdModel, current_user: User = Depends(auth.
             headers={"WWW-Authenticate": "Bearer"}
         )
 
-    new_ad = create_new_ad_service(company_id, company_ad.position_title, company_ad.min_salary, company_ad.max_salary,
+    new_ad = create_new_ad_service(company_id, company_ad.title, company_ad.min_salary, company_ad.max_salary,
                                    company_ad.description, company_ad.location, company_ad.status)
     if new_ad:
         return {"message": "Ad added successfully",
                 "Company name": company_name,
-                "Title": company_ad.position_title,
+                "Title": company_ad.title,
                 "Minimum Salary": company_ad.min_salary,
                 "Maximum Salary": company_ad.max_salary,
                 "description": company_ad.description,
@@ -52,18 +52,14 @@ def create_new_ad(company_ad: CompanyAdModel, current_user: User = Depends(auth.
 
 
 @company_ad_router.get('/info', response_model=List[Optional[CompanyAdModel]])
-def get_company_own_ads(token: str = Header(..., alias="token")):
-    if token is None:
-        raise HTTPException(
-            status_code=401,
-            detail="Token is missing"
-        )
+def get_company_own_ads(current_user: User = Depends(auth.get_current_user),
+        db: Session = Depends(get_db)):
 
-    payload = decode_access_token(token)
-    user_id = payload.get("id")
-    company_id = get_company_id_by_user_id_service(user_id)
+
+
+    company_id = get_company_id_by_user_id_service(current_user.id)
     company_name = get_company_name_by_username_service(company_id)
-    ads = get_company_ads_service(user_id, company_name)
+    ads = get_company_ads_service(current_user.id, company_name)
 
     return ads or []
 

@@ -34,11 +34,11 @@ def show_company_description_service(user: User, db: Session):
         "company_active_job_ads": [CompanyAdModel(
             company_name=company.name,
             company_ad_id=str(ad.id),
-            position_title=ad.title,
+            title=ad.title,
             min_salary=ad.min_salary,
             max_salary=ad.max_salary,
             description=ad.description,
-            location=ad.location.city_name if ad.location else "N/A",
+            location=ad.location_id,
             status=ad.status
         ) for ad in company_ads],
     }

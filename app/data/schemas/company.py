@@ -32,11 +32,11 @@ class CompanyInfoRequestModel(BaseModel):
 class CompanyAdModel(BaseModel):
     company_name: str
     company_ad_id: str | None = None
-    position_title: str
+    title: str
     min_salary: int
     max_salary: int
     description: str
-    location: int
+    location: str
     status: str
 
     model_config = ConfigDict(from_attributes=True)
@@ -85,7 +85,7 @@ class CompanyOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 class CompanyAdModel2(BaseModel):
-    position_title: str
+    title: str
     min_salary: float
     max_salary: float
     description: str

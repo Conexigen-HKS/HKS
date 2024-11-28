@@ -42,11 +42,11 @@ def get_company_ads_service(user_id: uuid, company_name: str):
         return [CompanyAdModel(
             company_name=company_name,
             company_ad_id=str(ad.id),
-            position_title=ad.position_title,
+            title=ad.title,
             min_salary=ad.min_salary,
             max_salary=ad.max_salary,
             description=ad.description,
-            location=ad.location,
+            location=ad.location.city_name,
             status=ad.status
         ) for ad in ads]
 
