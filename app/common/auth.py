@@ -5,25 +5,52 @@ from jose import JWTError, jwt
 from jose.exceptions import ExpiredSignatureError
 from passlib.context import CryptContext
 from fastapi.security import OAuth2PasswordBearer
-from common.responses import Forbidden
-from data.schemas.users import UserResponse
-from config import ACCESS_TOKEN_EXPIRE_MINUTES, ALGORITHM, SECRET_KEY
+from app.common.responses import Forbidden
+from app.data.schemas.users import UserResponse
+from app.config import ALGORITHM, SECRET_KEY
 from sqlalchemy.orm import Session
-from data.models import User
-from data.database import get_db
-from services.user_services import get_user
-from common.utils import get_password_hash, verify_password, verify_token
+from app.data.models import User
+from app.data.database import get_db
+from app.services.user_services import get_user
+from app.common.utils import get_password_hash, verify_password, verify_token
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl='/api/users/login', auto_error=False)
 token_blacklist = set()
 
 
+# def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
+#     to_encode = data.copy()
+#     expire = datetime.now() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+#     to_encode.update({'exp': expire})
+#     to_encode['role'] = data.get('role')
+#     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+from datetime import datetime as dt, timezone, timedelta
+
+
+
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     to_encode = data.copy()
-    expire = datetime.now() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    to_encode.update({'exp': expire})
-    to_encode['role'] = data.get('role')
-    return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    if expires_delta:
+        expire = dt.now(timezone.utc) + expires_delta
+    else:
+        expire = dt.now(timezone.utc) + timedelta(hours=1)
+    to_encode.update({"exp": expire})
+    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    return encoded_jwt
+
+
+def decode_access_token(token: str):
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        payload["exp"] = dt.fromtimestamp(payload["exp"], timezone.utc)
+        if payload["exp"] < dt.now(timezone.utc):
+            raise HTTPException(status_code=401, detail="Token has expired")
+
+        return payload
+
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(status_code=401, detail="Token has expired")
+
 
 
 def authenticate_user(db: Session, username: str, password: str) -> Optional[UserResponse]:

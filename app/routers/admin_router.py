@@ -2,12 +2,12 @@ from typing import Literal
 from uuid import UUID
 from fastapi import APIRouter, Depends, FastAPI, HTTPException, Header, Query
 from sqlalchemy.orm import Session
-from common.responses import Forbidden
-from data.models import User
-from data.database import get_db
-from common import auth
-from services.admin_service import waiting_approvals, approve_user, delete_user
-from data.schemas.admin import Admin
+from app.common.responses import Forbidden
+from app.data.models import User
+from app.data.database import get_db
+from app.common import auth
+from app.services.admin_service import waiting_approvals, approve_user, delete_user
+from app.data.schemas.admin import Admin
 
 app = FastAPI()
 #DA SI OPRAVQ RUTERITE, ZASHTOTO NE SPAZVAT RESTFUL !

@@ -1,11 +1,11 @@
 from uuid import UUID
 from sqlalchemy.orm import Session
-from data.models import Professional, Companies, User
-from common.responses import NotFound
-from data.schemas.users import WaitingApproval
-from data.schemas.professional import ProfessionalOut
-from data.schemas.company import CompanyOut
-from services.user_services import get_user_by_id, get_username_from_id, user_exists
+from app.data.models import Professional, Companies, User
+from app.common.responses import NotFound
+from app.data.schemas.users import WaitingApproval
+from app.data.schemas.professional import ProfessionalOut
+from app.data.schemas.company import CompanyInfoModel
+from app.services.user_services import get_user_by_id, get_username_from_id, user_exists
 
 from fastapi import HTTPException, status
 
@@ -54,7 +54,7 @@ def waiting_approvals(db: Session) -> WaitingApproval:
     ]
 
     company_out = [
-       CompanyOut(
+       CompanyInfoModel(
            id= company.id,
            name= company.name,
            address= company.address,
