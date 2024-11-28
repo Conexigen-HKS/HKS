@@ -2,8 +2,10 @@ from datetime import datetime
 from typing import Literal, Optional
 from uuid import UUID
 from pydantic import BaseModel, ConfigDict, field_validator, Field
+
+from app.data.schemas.company import CompanyOut
 from app.data.schemas.professional import ProfessionalOut, ProfessionalResponse
-from app.data.schemas.company import CompanyOut, CompanyResponse
+
 
 
 class UserResponse(BaseModel):

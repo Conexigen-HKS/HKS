@@ -1,3 +1,9 @@
+from typing import Optional, List
+from uuid import UUID
+
+from pydantic import BaseModel, ConfigDict
+
+
 class CompanyInfoModel(BaseModel):
     company_name: str
     company_description: str
@@ -39,6 +45,20 @@ class ShowCompanyModel(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
+
+class CompanyOut(BaseModel):
+    id: UUID
+    name: str
+    address: str
+    description: str
+    contacts: str
+    phone: str
+    email: str
+    website: str
+    is_approved: bool
+    username: Optional[str]
+
+    model_config = ConfigDict(from_attributes=True)
 
 class CompanyAdModel2(BaseModel):
     position_title: str

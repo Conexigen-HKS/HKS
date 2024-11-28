@@ -5,10 +5,9 @@ from uuid import UUID
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
-from app.data.models import User, ProfessionalProfile, CompanyOffers,  Professional, RequestsAndMatches
-from app.data.schemas.professional import ProfessionalUpdate
-
-
+from app.data.models import User, ProfessionalProfile, CompanyOffers, Professional, RequestsAndMatches, Location
+from app.data.schemas.job_application import JobApplicationResponse
+from app.data.schemas.professional import ProfessionalUpdate, ProfessionalResponse
 
 
 def get_professional_by_user_id(db: Session, user_id: UUID):
@@ -35,12 +34,6 @@ def update_professional_service(db: Session, user_id: UUID, update_data: Profess
     db.commit()
     db.refresh(professional)
     return professional
-
-def view_professional_profile(db: Session, user_id: UUID):
-    profile = get_professional_by_user_id(db, user_id)
-    if not profile:
-        raise HTTPException(status_code=404, detail="Profile not found.")
-    return profile
 
 
 
@@ -95,3 +88,56 @@ def get_professional_profile_for_user(db: Session, user_id: str):
         raise HTTPException(status_code=404, detail="Professional profile not found.")
 
     return professional_profile
+
+
+
+
+def view_own_profile(db: Session, user_id: UUID):
+    professional = db.query(Professional).filter(Professional.user_id == user_id).first()
+    if not professional:
+        raise HTTPException(status_code=404, detail="Professional profile not found")
+    return ProfessionalResponse.from_orm(professional)
+
+
+def update_own_profile(db: Session, user_id: UUID, data: ProfessionalUpdate):
+    professional = db.query(Professional).filter(Professional.user_id == user_id).first()
+    if not professional:
+        raise HTTPException(status_code=404, detail="Professional profile not found")
+
+    if data.first_name:
+        professional.first_name = data.first_name
+    if data.last_name:
+        professional.last_name = data.last_name
+    if data.location:
+        location = db.query(Location).filter(Location.city_name == data.location).first()
+        if not location:
+            raise HTTPException(status_code=404, detail="Location not found")
+        professional.location_id = location.id
+    if data.phone:
+        professional.phone = data.phone
+    if data.email:
+        professional.email = data.email
+    if data.website:
+        professional.website = data.website
+    if data.summary:
+        professional.summary = data.summary
+
+    db.commit()
+    db.refresh(professional)
+    return ProfessionalResponse.from_orm(professional)
+
+
+def get_own_job_applications(db: Session, user_id: UUID):
+    applications = db.query(ProfessionalProfile).filter(ProfessionalProfile.user_id == user_id).all()
+    return [
+        JobApplicationResponse(
+            id=app.id,
+            description=app.description,
+            min_salary=app.min_salary,
+            max_salary=app.max_salary,
+            status=app.status,
+            location_name=app.location.city_name if app.location else None,
+            skills=[s.skill.name for s in app.skills]
+        )
+        for app in applications
+    ]
