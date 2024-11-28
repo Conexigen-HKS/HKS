@@ -22,8 +22,7 @@ class User(Base):
     professional = relationship("Professional", back_populates="user", uselist=False, cascade="all, delete-orphan")
     company = relationship("Companies", back_populates="user", uselist=False, cascade="all, delete-orphan")
 
- 
- 
+
 class Professional(Base):
     __tablename__ = "professionals"
     id = Column(UUID(as_uuid=True), default=uuid.uuid4, primary_key=True, nullable=False)
@@ -32,7 +31,7 @@ class Professional(Base):
     first_name = Column(String(45), nullable=False)
     last_name = Column(String(45), nullable=False)
     location_id = Column(Integer, ForeignKey("locations.id"))#NEW
-    status = Column(String(45)) #"Active"  "Busy".
+    status = Column(String(45),default='Active') #"Active"  "Busy".
     summary = Column(String(255))
     picture = Column(String(255))
     phone = Column(String(15), nullable=True, unique=True)
@@ -43,7 +42,7 @@ class Professional(Base):
     professional_profile = relationship("ProfessionalProfile", back_populates="professional")
     location = relationship("Location", back_populates="professionals") #NEW
 
- 
+
 class ProfessionalProfile(Base):
     __tablename__ = 'professional_profile'
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
@@ -97,7 +96,7 @@ class Companies(Base):
     company_offers = relationship("CompanyOffers", back_populates="company")
     location = relationship("Location", back_populates="companies")#NEW
 
- 
+ #da se dobavi location
 class CompanyOffers(Base):
     __tablename__ = "company_offers"
     id = Column(UUID(as_uuid=True), default=uuid.uuid4, primary_key=True, nullable=False)
@@ -106,12 +105,15 @@ class CompanyOffers(Base):
     chosen_professional_offer_id = Column(UUID(as_uuid=True), ForeignKey("professional_profile.id"), nullable=True)
     min_salary = Column(Integer, nullable=True)
     max_salary = Column(Integer, nullable=True)
+    description = Column(String, nullable=False)
+    location_id = Column(Integer, ForeignKey("locations.id"), nullable=True)  # NEW
     status = Column(String, nullable=True)
  
     company = relationship("Companies", back_populates="company_offers")
+    location = relationship("Location", back_populates="company_offers")  # NEW
     requirements = relationship("CompaniesRequirements", back_populates="company_offer")
     requests_and_matches = relationship("RequestsAndMatches", back_populates="company_offer")
- 
+    
  
 class CompaniesRequirements(Base):
     __tablename__ = "companies_requirements"
@@ -146,6 +148,7 @@ class Message(Base):
     author = relationship("User", foreign_keys=[author_id], back_populates="sent_messages")
     receiver = relationship("User", foreign_keys=[receiver_id], back_populates="receiver_messages")
 
+
 class Location(Base):
     __tablename__ = "locations"
 
@@ -154,3 +157,4 @@ class Location(Base):
 
     professionals = relationship("Professional", back_populates="location")
     companies = relationship("Companies", back_populates="location")
+    company_offers = relationship("CompanyOffers", back_populates="location")  # NEW

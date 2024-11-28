@@ -6,6 +6,7 @@ from routers.user_router import users_router
 from routers.admin_router import admin_router
 from routers.message_router import messages_router
 from routers.match_router import match_router
+from routers.company_router import company_router
 import uvicorn
 
 
@@ -14,6 +15,7 @@ app.include_router(users_router)
 app.include_router(admin_router)
 app.include_router(messages_router)
 app.include_router(match_router)
+app.include_router(company_router)
 
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
