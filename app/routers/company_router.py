@@ -1,8 +1,11 @@
 from typing import List, Optional
 
-from fastapi import APIRouter, HTTPException, Query, Header
+from fastapi import APIRouter, HTTPException, Query, Header, Depends
 
+from app.common import auth
 from app.common.auth import decode_access_token
+from app.data.database import Session, get_db
+from app.data.models import User
 from app.data.schemas.company import CompanyInfoModel, CompanyAdModel, CompanyAdModel2, ShowCompanyModel
 from app.services.company_service import (edit_company_description_service,
                                           get_company_name_by_username_service,
@@ -12,30 +15,20 @@ from app.services.company_service import (edit_company_description_service,
                                           show_company_description_service)
 company_router = APIRouter(prefix="/companies", tags=["Companies"])
 
+
 @company_router.get("/info", response_model=List[ShowCompanyModel])
-def show_company_description(token: str = Header(..., alias="token")):
-    try:
-        payload = decode_access_token(token)
-        username = payload.get("sub")
-        if username is None:
-            raise HTTPException(
-                status_code=401,
-                detail="Could not validate credentials"
-            )
-    except Exception as e:
-        raise HTTPException(
-            status_code=401,
-            detail="Could not validate credentials",
-            headers={"WWW-Authenticate": "Bearer"}
-        )
-    show_company = show_company_description_service(username)
+def show_company_description_(
+        current_user: User = Depends(auth.get_current_user),
+        db: Session = Depends(get_db)
+):
+    show_company = show_company_description_service(user=current_user, db=db)
 
     if show_company:
         return [show_company]
     else:
         raise HTTPException(
             status_code=400,
-            detail="Error occurred while updating the company description"
+            detail="Error occurred while #fixthis company description"
         )
 
 @company_router.put('/info')

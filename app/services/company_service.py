@@ -9,37 +9,38 @@ from app.data.database import Session
 import bcrypt
 
 
-def show_company_description_service(user_username: str):
-    with Session() as s:
-        user = s.query(User).filter(User.username == user_username).first()
-        company = s.query(Companies).filter(Companies.user_id == user.id).first()
+def show_company_description_service(user: User, db: Session):
+    company = db.query(Companies).filter(Companies.user_id == user.id).first()
 
-        if company is None:
-            raise HTTPException(
-                status_code=404,
-                detail="Company not found"
-            )
+    if company is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Company not found"
+        )
 
-        company_ads = s.query(CompanyOffers).filter(CompanyOffers.status == "Active",
-                                                    CompanyOffers.company_id == company.id).all()
+    company_ads = db.query(CompanyOffers).filter(CompanyOffers.status == "Active",
+                                                 CompanyOffers.company_id == company.id).all()
 
-        return {
-            "company_name": company.name,
-            "company_description": company.description,
-            "company_address": company.address,
-            "company_contacts": company.contacts,
-            "company_logo": company.company_logo,
-            "company_active_job_ads": [CompanyAdModel(
-                company_name=company.name,
-                company_ad_id=str(ad.id),
-                position_title=ad.position_title,
-                min_salary=ad.min_salary,
-                max_salary=ad.max_salary,
-                description=ad.description,
-                location=ad.location,
-                status=ad.status
-            ) for ad in company_ads],
-        }
+    return {
+        "company_name": company.name,
+        "company_description": company.description,
+        "company_location": company.location.city_name if company.location else "N/A",
+        "company_contacts": company.contacts,
+        "company_phone": company.phone,
+        "company_email": company.email,
+        "company_website": company.website,
+        "company_logo": company.picture,
+        "company_active_job_ads": [CompanyAdModel(
+            company_name=company.name,
+            company_ad_id=str(ad.id),
+            position_title=ad.title,
+            min_salary=ad.min_salary,
+            max_salary=ad.max_salary,
+            description=ad.description,
+            location=ad.location.city_name if ad.location else "N/A",
+            status=ad.status
+        ) for ad in company_ads],
+    }
 
 
 def edit_company_description_service(company_info: CompanyInfoModel, company_username: str):

@@ -2,7 +2,7 @@ import cloudinary
 import cloudinary.uploader
 from cloudinary.utils import cloudinary_url
 from fastapi import File, UploadFile
-from data.models import Companies, Professional, User
+from app.data.models import Companies, Professional, User
 from sqlalchemy.orm import Session
 from dotenv import load_dotenv
 import os
