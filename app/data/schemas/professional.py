@@ -1,4 +1,4 @@
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, EmailStr, HttpUrl
 from typing import Optional
 from uuid import UUID
 
@@ -47,13 +47,17 @@ class ProfessionalOut(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
+#added optional str for partial update
 class ProfessionalUpdate(BaseModel):
-    first_name: Optional[str]
-    last_name: Optional[str]
-    location: str
-    phone: str
-    email: str
-    website: str
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
+    location: Optional[str] = None
+    phone: Optional[str] = None
+    email: Optional[str] = None
+    website: Optional[str] = None
     status: Optional[str] = None
-    summary: Optional[str]
-    picture: Optional[str]
+    summary: Optional[str] = None
+    picture: Optional[str] = None
+    
+    class Config:
+        orm_mode = True

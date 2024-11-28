@@ -140,28 +140,34 @@ def view_own_profile(db: Session, user_id: UUID):
     return ProfessionalResponse.from_orm(professional)
 
 
-def update_own_profile(db: Session, user_id: UUID, data: ProfessionalUpdate):
+#WORKS - added partial update
+def update_own_profile(db: Session, user_id: UUID, data: ProfessionalUpdate) -> ProfessionalResponse:
     professional = db.query(Professional).filter(Professional.user_id == user_id).first()
     if not professional:
         raise HTTPException(status_code=404, detail="Professional profile not found")
 
-    if data.first_name:
+    if data.first_name is not None:
         professional.first_name = data.first_name
-    if data.last_name:
+    if data.last_name is not None:
         professional.last_name = data.last_name
-    if data.location:
+    if data.location is not None:
         location = db.query(Location).filter(Location.city_name == data.location).first()
-        if not location:
+        if location:
+            professional.location_id = location.id
+        else:
             raise HTTPException(status_code=404, detail="Location not found")
-        professional.location_id = location.id
-    if data.phone:
+    if data.phone is not None:
         professional.phone = data.phone
-    if data.email:
+    if data.email is not None:
         professional.email = data.email
-    if data.website:
+    if data.website is not None:
         professional.website = data.website
-    if data.summary:
+    if data.summary is not None:
         professional.summary = data.summary
+    if data.status is not None:
+        professional.status = data.status
+    if data.picture is not None:
+        professional.picture = data.picture
 
     db.commit()
     db.refresh(professional)

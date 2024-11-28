@@ -3,14 +3,14 @@ from http.client import HTTPException
 from typing import Optional, List
 from uuid import UUID
 
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 
 from app.data.models import ProfessionalProfile, ProfessionalProfileSkills, Skills, RequestsAndMatches, CompanyOffers, \
     Location
 from app.data.schemas.job_application import JobApplicationResponse
 from app.data.schemas.skills import SkillCreate
 
-
+#WORKS
 def create_job_application(
     db: Session,
     professional_id: str,
@@ -18,17 +18,22 @@ def create_job_application(
     description: str,
     min_salary: int,
     max_salary: int,
-    location_id: int,
+    city_name: str,
     status: str,
     skills: List[SkillCreate]
 ):
+    location = db.query(Location).filter(Location.city_name == city_name).first()
+    if not location:
+        raise HTTPException(status_code=400, detail=f"Location '{city_name}' does not exist.")
+
+
     job_application = ProfessionalProfile(
         professional_id=professional_id,
         user_id=user_id,
         description=description,
         min_salary=min_salary,
         max_salary=max_salary,
-        location_id=location_id,
+        location_id=location.id,
         status=status
     )
     db.add(job_application)
@@ -55,7 +60,7 @@ def create_job_application(
 
 
 
-
+#WORKS
 def get_job_application(db: Session, job_application_id: UUID):
     profile = db.query(ProfessionalProfile).filter(ProfessionalProfile.id == job_application_id).first()
     if not profile:
@@ -85,8 +90,8 @@ def set_main_job_application_service(db: Session, job_application_id: UUID, prof
     return application
 
 
-
-def get_all_job_applications_service(db: Session, professional_id: UUID):
+#WORKS
+def get_all_job_applications_service(db: Session, professional_id: UUID) -> List[JobApplicationResponse]:
     applications = db.query(ProfessionalProfile).filter(
         ProfessionalProfile.professional_id == professional_id
     ).all()
@@ -98,19 +103,43 @@ def get_all_job_applications_service(db: Session, professional_id: UUID):
             "min_salary": app.min_salary,
             "max_salary": app.max_salary,
             "status": app.status,
-            "location_name": app.location.cityn_name if app.location else None,
+            "location_name": app.location.city_name if app.location else None,
             "skills": [s.skill.name for s in app.skills],
         }
         for app in applications
     ]
 
+# def search_job_ads_service(db: Session, query: Optional[str] = None, location: Optional[str] = None):
+#     job_ads = db.query(CompanyOffers).filter(CompanyOffers.status == "active")
+# #Here, CompanyOffers.location is a relationship to the Location model,
+# #  not a direct column containing string data.
+# #  Therefore, applying ilike on it is invalid.
+#     if query:
+#         job_ads = job_ads.filter(CompanyOffers.description.ilike(f"%{query}%"))
+#     if location:
+#         job_ads = job_ads.filter(CompanyOffers.location.ilike(f"%{location}%"))
+
+#     return [
+#         {
+#             "id": ad.id,
+#             "description": ad.description,
+#             "min_salary": ad.min_salary,
+#             "max_salary": ad.max_salary,
+#             "location": ad.location,
+#         }
+#         for ad in job_ads.all()
+    # ]
+
 def search_job_ads_service(db: Session, query: Optional[str] = None, location: Optional[str] = None):
-    job_ads = db.query(CompanyOffers).filter(CompanyOffers.status == "active")
+    job_ads_query = db.query(CompanyOffers).filter(CompanyOffers.status == "active")
 
     if query:
-        job_ads = job_ads.filter(CompanyOffers.description.ilike(f"%{query}%"))
+        job_ads_query = job_ads_query.filter(CompanyOffers.description.ilike(f"%{query}%"))
+    
     if location:
-        job_ads = job_ads.filter(CompanyOffers.location.ilike(f"%{location}%"))
+        job_ads_query = job_ads_query.join(Location).filter(Location.city_name.ilike(f"%{location}%"))
+
+    job_ads = job_ads_query.options(joinedload(CompanyOffers.location)).all()
 
     return [
         {
@@ -118,11 +147,11 @@ def search_job_ads_service(db: Session, query: Optional[str] = None, location: O
             "description": ad.description,
             "min_salary": ad.min_salary,
             "max_salary": ad.max_salary,
-            "location": ad.location,
+            "location": ad.location.city_name if ad.location else "N/A",
+            "status": ad.status
         }
-        for ad in job_ads.all()
+        for ad in job_ads
     ]
-
 
 def get_archived_job_applications_service(db: Session):
     archived_job_apps = db.query(ProfessionalProfile).filter(ProfessionalProfile.status == "Matched").all()

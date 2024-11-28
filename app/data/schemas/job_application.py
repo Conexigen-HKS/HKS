@@ -9,8 +9,8 @@ class JobApplicationCreate(BaseModel):
     min_salary: int
     max_salary: int
     status: str
-    location_id: Optional[int] = None
-    location_name: Optional[str] = None
+    # location_id: Optional[int] = None
+    city_name: Optional[str] = None #primenuvano ot location_name
     skills: List[SkillCreate]
 
 class JobApplicationResponse(BaseModel):

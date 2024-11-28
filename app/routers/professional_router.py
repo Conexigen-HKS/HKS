@@ -25,8 +25,8 @@ def view_profile(
 ):
     return view_own_profile(db, current_user.id)
 
-
-@professional_router.put("/profile", response_model=ProfessionalResponse)
+#WORKS - changed http method to patch. Prev was put.
+@professional_router.patch("/profile", response_model=ProfessionalResponse)
 def edit_profile(
     data: ProfessionalUpdate,
     current_user: User = Depends(get_current_user),
