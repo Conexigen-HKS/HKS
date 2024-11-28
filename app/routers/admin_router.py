@@ -1,10 +1,9 @@
 from typing import Literal
-from uuid import UUID
-from fastapi import APIRouter, Depends, FastAPI, HTTPException, Header, Query
+from fastapi import APIRouter, Depends, FastAPI, HTTPException, Query
 from sqlalchemy.orm import Session
 from app.common import auth
-from HKS.data.database import get_db
-from HKS.data.models import User
+from app.data.database import get_db
+from app.data.models import User
 from app.services.admin_service import waiting_approvals, approve_user, delete_user
 
 app = FastAPI()

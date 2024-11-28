@@ -1,11 +1,11 @@
 from typing import Literal
-from fastapi import APIRouter, Depends, FastAPI, File, HTTPException, Query, Request, UploadFile
+from fastapi import APIRouter, Depends, FastAPI, File, HTTPException, Query, UploadFile
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
-from HKS.data.database import get_db
-from HKS.data.models import User, Professional
-from HKS.data.schemas.user import CompanyRegister, ProfessionalRegister, TokenResponse
+from app.data.database import get_db
+from app.data.models import User, Professional
+from app.data.schemas.user import CompanyRegister, ProfessionalRegister, TokenResponse
 from app.common import auth
 from app.services.cloudinary_service import upload_image_to_cloudinary
 from app.services.user_service import create_company, create_professional, get_all_users

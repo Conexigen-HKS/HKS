@@ -3,11 +3,10 @@ from sqlalchemy.orm import Session
 from uuid import UUID
 
 from app.common.auth import get_current_user
-from app.services.skills_service import get_profile_skills_service, \
-    create_skill_service, assign_skill_to_job_application_service
-from HKS.data.database import get_db
-from HKS.data.models import ProfessionalProfile, User, Professional, Skills, ProfessionalProfileSkills
-from HKS.data.schemas.skills import SkillCreate, SkillAssignment, ProfessionalSkillResponse, SkillResponse
+from app.services.skills_service import create_skill_service, assign_skill_to_job_application_service
+from app.data.database import get_db
+from app.data.models import ProfessionalProfile, User, Professional, ProfessionalProfileSkills
+from app.data.schemas.skills import SkillCreate, SkillAssignment, ProfessionalSkillResponse, SkillResponse
 
 skills_router = APIRouter(prefix="/skills", tags=["Skills"])
 

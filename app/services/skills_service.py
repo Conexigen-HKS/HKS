@@ -3,9 +3,9 @@ from uuid import UUID
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
 
-from HKS.data.models import ProfessionalProfileSkills, Skills
-from HKS.data.queries import create_skill, get_skills_for_profile
-from HKS.data.schemas.skills import SkillCreate, SkillAssignment
+from app.data.models import ProfessionalProfileSkills, Skills
+from app.data.queries import create_skill, get_skills_for_profile
+from app.data.schemas.skills import SkillCreate, SkillAssignment
 
 
 def create_skill_service(db: Session, skill_data: SkillCreate):

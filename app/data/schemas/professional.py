@@ -30,3 +30,11 @@ class ProfessionalOut(BaseModel):
     username: Optional[str]
 
     model_config = ConfigDict(from_attributes=True)
+
+class ProfessionalUpdate(BaseModel):
+    first_name: Optional[str]
+    last_name: Optional[str]
+    address: Optional[str]
+    status: Optional[str]
+    summary: Optional[str]
+    picture: Optional[str]

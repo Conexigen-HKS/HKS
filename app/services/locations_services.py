@@ -2,8 +2,8 @@ from uuid import UUID
 
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
-from HKS.data.models import Locations
-from HKS.data.schemas.locations import LocationCreate
+from app.data.models import Locations
+from app.data.schemas.locations import LocationCreate
 
 
 def create_location(db: Session, location_data: LocationCreate):

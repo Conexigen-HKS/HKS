@@ -8,10 +8,10 @@ from sqlalchemy.orm import Session
 
 from app.common.responses import Forbidden
 from app.common.utils import verify_password, verify_token, get_password_hash
-from HKS.config import ALGORITHM, ACCESS_TOKEN_EXPIRE_MINUTES, SECRET_KEY
-from HKS.data.database import get_db
-from HKS.data.models import User
-from HKS.data.queries import get_user_by_username
+from app.config import ALGORITHM, ACCESS_TOKEN_EXPIRE_MINUTES, SECRET_KEY
+from app.data.database import get_db
+from app.data.models import User
+from app.data.queries import get_user_by_username
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl='/api/users/login', auto_error=False)
 token_blacklist = set()

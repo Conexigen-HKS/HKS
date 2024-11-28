@@ -1,10 +1,10 @@
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from typing import List
-from HKS.data.database import get_db
-from HKS.data.schemas.locations import LocationCreate, LocationResponse
+from app.data.database import get_db
+from app.data.schemas.locations import LocationCreate, LocationResponse
 from app.services.locations_services import create_location, get_all_locations, get_location_by_id
 
 locations_router = APIRouter(tags=["Locations"], prefix="/locations")

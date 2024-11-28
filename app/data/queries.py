@@ -1,14 +1,13 @@
 import logging
 from uuid import UUID
-from venv import logger
 
 from fastapi import HTTPException
 from pydantic import UUID4
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
-from HKS.data.models import User, Professional, CompanyOffers, Companies, ProfessionalProfile, Skills, \
+from app.data.models import User, Professional, Companies, Skills, \
     ProfessionalProfileSkills, RequestsAndMatches
-from HKS.data.schemas.user import UserResponse
+from app.data.schemas.user import UserResponse
 
 
 # USER QUERIES

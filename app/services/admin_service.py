@@ -3,10 +3,10 @@ from sqlalchemy.orm import Session
 
 from fastapi import HTTPException, status
 
-from HKS.data.models import Professional, Companies, User
-from HKS.data.schemas.company import CompanyOut
-from HKS.data.schemas.professional import ProfessionalOut
-from HKS.data.schemas.user import WaitingApproval
+from app.data.models import Professional, Companies, User
+from app.data.schemas.company import CompanyOut
+from app.data.schemas.professional import ProfessionalOut
+from app.data.schemas.user import WaitingApproval
 
 
 def approve_user(id: str, entity_type: str, db: Session):

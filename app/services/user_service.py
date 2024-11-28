@@ -1,12 +1,11 @@
-from uuid import UUID
 from sqlalchemy.orm import Session
-from fastapi import Depends, HTTPException
+from fastapi import HTTPException
 from sqlalchemy.exc import SQLAlchemyError
 
-from HKS.data.models import User, Professional, Companies
-from HKS.data.schemas.company import CompanyResponse
-from HKS.data.schemas.professional import ProfessionalResponse
-from HKS.data.schemas.user import ProfessionalRegister, CompanyRegister, UserResponse
+from app.data.models import User, Professional, Companies
+from app.data.schemas.contacts import CompanyResponse
+from app.data.schemas.professional import ProfessionalResponse
+from app.data.schemas.user import ProfessionalRegister, CompanyRegister, UserResponse
 from app.common.utils import get_password_hash
 
 
@@ -60,17 +59,18 @@ def create_company(db: Session, company_data: CompanyRegister) -> Companies:
     hashed_password = get_password_hash(company_data.password)
 
     try:
+        # Create the user
         user = User(username=company_data.username, hashed_password=hashed_password, role="company")
         db.add(user)
         db.commit()
         db.refresh(user)
 
+        # Create the company without directly setting `contacts`
         company = Companies(
             user_id=user.id,
             name=company_data.company_name,
             description=company_data.description,
             address=company_data.address,
-            contacts="",
             is_approved=False
         )
 
@@ -83,7 +83,6 @@ def create_company(db: Session, company_data: CompanyRegister) -> Companies:
     except SQLAlchemyError as e:
         db.rollback()
         raise Exception(f"Error occurred while creating company: {str(e)}")
-
 
 def get_company(db: Session, username: str) -> Companies:
     company = db.query(Companies).filter(Companies.username == username).first()

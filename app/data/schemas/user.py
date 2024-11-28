@@ -1,10 +1,10 @@
 from datetime import datetime
-from typing import Literal, Optional
+from typing import Literal
 from uuid import UUID
 from pydantic import BaseModel, ConfigDict, field_validator, Field
 
-from HKS.data.schemas.company import CompanyOut
-from HKS.data.schemas.professional import ProfessionalOut
+from app.data.schemas.company import CompanyOut
+from app.data.schemas.professional import ProfessionalOut
 
 
 class UserResponse(BaseModel):

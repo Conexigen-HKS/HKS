@@ -1,17 +1,16 @@
-from typing import Optional
+from typing import Optional, List
 from uuid import UUID
-from venv import logger
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from HKS.data.schemas.job_application import JobApplicationResponse, JobApplicationCreate
+from app.data.schemas.job_application import JobApplicationResponse, JobApplicationCreate
 from app.common.auth import get_current_user
 from app.services.job_application_service import get_job_application, assign_skill_to_job_application_by_name, \
-    create_job_application
+    create_job_application, search_job_ads_service, get_all_job_applications_service, set_main_job_application_service
 
-from HKS.data.database import get_db
-from HKS.data.models import ProfessionalProfile, Professional, Locations
+from app.data.database import get_db
+from app.data.models import ProfessionalProfile, Professional, Locations
 
 job_app_router = APIRouter(tags=["Job Applications"], prefix="/job_applications")
 
@@ -87,3 +86,24 @@ def get_job_application_endpoint(job_application_id: UUID, db: Session = Depends
         status=profile.status,
         skills=[s.skill.name for s in profile.skills]
     )
+
+@job_app_router.patch("/{job_application_id}/set-main")
+def set_main_job_application(job_application_id: UUID, db: Session = Depends(get_db), current_user: Professional = Depends(get_current_user)):
+    application = set_main_job_application_service(db, job_application_id, current_user.id)
+    return {"message": "Main application set successfully", "application_id": application.id}
+
+
+@job_app_router.get("/", response_model=List[JobApplicationResponse])
+def get_all_job_applications(db: Session = Depends(get_db), current_user: Professional = Depends(get_current_user)):
+    applications = get_all_job_applications_service(db, current_user.id)
+    return applications
+
+
+@job_app_router.get("/search")
+def search_job_ads(
+    query: Optional[str] = None,
+    location: Optional[str] = None,
+    db: Session = Depends(get_db)
+):
+    job_ads = search_job_ads_service(db, query, location)
+    return job_ads

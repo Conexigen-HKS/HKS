@@ -2,9 +2,9 @@ from fastapi import APIRouter, Depends, FastAPI, HTTPException
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
-from HKS.data.database import get_db
-from HKS.data.models import User
-from HKS.data.queries import user_exists
+from app.data.database import get_db
+from app.data.models import User
+from app.data.queries import user_exists
 from app.common import auth
 from app.services.message_service import create_message, get_all_conversations, update_message
 

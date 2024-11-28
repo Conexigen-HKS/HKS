@@ -2,11 +2,10 @@ from http.client import HTTPException
 from typing import Optional
 from uuid import UUID
 
-from pydantic import UUID4
 from sqlalchemy.orm import Session
 
-from HKS.data.models import ProfessionalProfile, CompanyOffers, ProfessionalProfileSkills, Skills, RequestsAndMatches
-from HKS.data.schemas.job_application import JobApplicationCreate
+from app.data.models import ProfessionalProfile, ProfessionalProfileSkills, Skills, RequestsAndMatches, CompanyOffers
+
 
 def create_job_application(db: Session, professional_id: str, min_salary: int, max_salary: int, location_id: UUID, description: str):
     job_application = ProfessionalProfile(
@@ -64,3 +63,59 @@ def get_job_application(db: Session, job_application_id: UUID):
         RequestsAndMatches.professional_profile_id == job_application_id
     ).all()
     return profile, [match.company_offers_id for match in matches]
+
+def set_main_job_application_service(db: Session, job_application_id: UUID, professional_id: UUID):
+    application = db.query(ProfessionalProfile).filter(
+        ProfessionalProfile.id == job_application_id,
+        ProfessionalProfile.professional_id == professional_id
+    ).first()
+
+    if not application:
+        raise HTTPException(status_code=404, detail="Application not found")
+
+    db.query(ProfessionalProfile).filter(
+        ProfessionalProfile.professional_id == professional_id
+    ).update({"chosen_company_offer_id": None})
+
+    application.chosen_company_offer_id = application.id
+    db.commit()
+    return application
+
+
+
+def get_all_job_applications_service(db: Session, professional_id: UUID):
+    applications = db.query(ProfessionalProfile).filter(
+        ProfessionalProfile.professional_id == professional_id
+    ).all()
+
+    return [
+        {
+            "id": app.id,
+            "description": app.description,
+            "min_salary": app.min_salary,
+            "max_salary": app.max_salary,
+            "status": app.status,
+            "location_name": app.location.name if app.location else None,
+            "skills": [s.skill.name for s in app.skills],
+        }
+        for app in applications
+    ]
+
+def search_job_ads_service(db: Session, query: Optional[str] = None, location: Optional[str] = None):
+    job_ads = db.query(CompanyOffers).filter(CompanyOffers.status == "active")
+
+    if query:
+        job_ads = job_ads.filter(CompanyOffers.description.ilike(f"%{query}%"))
+    if location:
+        job_ads = job_ads.filter(CompanyOffers.location.ilike(f"%{location}%"))
+
+    return [
+        {
+            "id": ad.id,
+            "description": ad.description,
+            "min_salary": ad.min_salary,
+            "max_salary": ad.max_salary,
+            "location": ad.location,
+        }
+        for ad in job_ads.all()
+    ]

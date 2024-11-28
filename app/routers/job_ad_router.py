@@ -1,153 +1,123 @@
+from typing import Optional, List
 from fastapi import APIRouter, Depends, HTTPException, Header
-from typing import List, Optional
 from sqlalchemy.orm import Session
-from HKS.data.database import get_db
-from HKS.data.models import CompanyOffers, User
-from HKS.data.schemas.job_ad import CompanyAdModel, CompanyAdModel2
-from app.common.auth import get_current_user
-from app.services.job_ad_service import add_or_validate_contact
+
+from app.services.company_service import get_company_id_by_user_id_service
+from app.services.job_ad_service import (
+    create_new_ad_service,
+    edit_company_ad_by_position_title_service,
+    get_company_ads_service,
+)
+from app.data.schemas.job_ad import CompanyAdModel, CompanyAdModel2
+from app.data.database import get_db
+from app.common.auth import get_current_user, UserAuthDep
+from app.data.models import User, CompanyOffers
 
 company_ad_router = APIRouter(prefix="/ads", tags=["Company Ads"])
+@company_ad_router.post('/new_ad')
+def create_new_ad(
+    company_ad: CompanyAdModel,
+    current_user: UserAuthDep,
+    db: Session = Depends(get_db)
+):
+    try:
+        user_id = current_user.id
+        company_id = get_company_id_by_user_id_service(user_id, db)
+        company_name = current_user.company_name
 
-@company_ad_router.post("/new_ad", response_model=CompanyAdModel)
-def create_new_ad(company_ad: CompanyAdModel, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    if current_user.role != "company":
-        raise HTTPException(status_code=403, detail="Only companies can create job ads")
+        new_ad = CompanyOffers(
+            company_id=str(company_id),
+            position_title=company_ad.position_title,
+            min_salary=company_ad.min_salary,
+            max_salary=company_ad.max_salary,
+            description=company_ad.description,
+            location=company_ad.location,
+            status=company_ad.status
+        )
 
-    company_id = current_user.company.id
+        db.add(new_ad)
+        db.commit()
 
-    contact_id = None
-    if company_ad.contacts:
-        contact_id = add_or_validate_contact(db, company_id, company_ad.contacts)
+        return {
+            "message": "Ad added successfully",
+            "Company name": company_name,
+            "Title": company_ad.position_title,
+            "Minimum Salary": company_ad.min_salary,
+            "Maximum Salary": company_ad.max_salary,
+            "Description": company_ad.description,
+            "Location": company_ad.location,
+            "Status": company_ad.status
+        }
 
-    new_ad = CompanyOffers(
-        company_id=company_id,
-        position_title=company_ad.position_title,
-        min_salary=company_ad.min_salary,
-        max_salary=company_ad.max_salary,
-        description=company_ad.description,
-        location=company_ad.location,
-        status=company_ad.status,
-        contacts_id=contact_id
-    )
-    db.add(new_ad)
-    db.commit()
-    db.refresh(new_ad)
-
-    return CompanyAdModel(
-        company_ad_id=str(new_ad.id),
-        position_title=new_ad.position_title,
-        min_salary=new_ad.min_salary,
-        max_salary=new_ad.max_salary,
-        description=new_ad.description,
-        location=new_ad.location,
-        status=new_ad.status,
-        contacts=company_ad.contacts
-    )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
-@company_ad_router.put("/ad/{ad_id}", response_model=CompanyAdModel2)
+@company_ad_router.get('/info', response_model=List[Optional[CompanyAdModel]])
+def get_company_ads(
+    current_user: UserAuthDep,
+    db: Session = Depends(get_db)
+):
+    try:
+        company_id = get_company_id_by_user_id_service(current_user.id, db)
+        ads = db.query(CompanyOffers).filter(CompanyOffers.company_id == company_id).all()
+        return [
+            CompanyAdModel(
+                company_ad_id=str(ad.id),
+                position_title=ad.position_title,
+                min_salary=ad.min_salary,
+                max_salary=ad.max_salary,
+                description=ad.description,
+                location=ad.location,
+                status=ad.status
+            ) for ad in ads
+        ]
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@company_ad_router.put('/ad/{ad_id}', response_model=CompanyAdModel2)
 def update_company_ad(
     ad_id: str,
     ad_info: CompanyAdModel2,
-    current_user: User = Depends(get_current_user),
+    current_user: UserAuthDep,
     db: Session = Depends(get_db)
 ):
-    if current_user.role != "company":
-        raise HTTPException(status_code=403, detail="Only companies can update job ads")
+    try:
+        company_id = get_company_id_by_user_id_service(current_user.id, db)
 
-    ad = db.query(CompanyOffers).filter(
-        CompanyOffers.id == ad_id,
-        CompanyOffers.company_id == current_user.company.id
-    ).first()
+        # Find the ad
+        ad = db.query(CompanyOffers).filter(
+            CompanyOffers.id == ad_id,
+            CompanyOffers.company_id == company_id
+        ).first()
 
-    if not ad:
-        raise HTTPException(status_code=404, detail="Ad not found")
+        if not ad:
+            raise HTTPException(status_code=404, detail="Ad not found")
 
-    if ad_info.contacts:
-        contact_id = add_or_validate_contact(db, ad.company_id, ad_info.contacts)
-        ad.contacts_id = contact_id
+        # Update fields
+        if ad_info.position_title:
+            ad.position_title = ad_info.position_title
+        if ad_info.min_salary:
+            ad.min_salary = ad_info.min_salary
+        if ad_info.max_salary:
+            ad.max_salary = ad_info.max_salary
+        if ad_info.description:
+            ad.description = ad_info.description
+        if ad_info.location:
+            ad.location = ad_info.location
+        if ad_info.status is not None:
+            ad.status = ad_info.status
 
-    for key, value in ad_info.dict(exclude_unset=True).items():
-        if key != "contacts":
-            setattr(ad, key, value)
+        db.commit()
 
-    db.commit()
-    db.refresh(ad)
-
-    return ad_info
-
-
-@company_ad_router.put("/ad/{ad_id}", response_model=CompanyAdModel2)
-def update_company_ad(ad_id: str, ad_info: CompanyAdModel2, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    if current_user.role != "company":
-        raise HTTPException(status_code=403, detail="Only companies can update job ads")
-
-    ad = db.query(CompanyOffers).filter(
-        CompanyOffers.id == ad_id,
-        CompanyOffers.company_id == current_user.company.id
-    ).first()
-
-    if not ad:
-        raise HTTPException(status_code=404, detail="Ad not found")
-
-    for key, value in ad_info.dict(exclude_unset=True).items():
-        setattr(ad, key, value)
-
-    db.commit()
-    db.refresh(ad)
-
-    return ad_info
-
-@company_ad_router.get("/info", response_model=List[CompanyAdModel])
-def get_company_ads(
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
-):
-    if current_user.role != "company":
-        raise HTTPException(status_code=403, detail="Only companies can view their ads")
-
-    ads = db.query(CompanyOffers).filter(CompanyOffers.company_id == current_user.company.id).all()
-    return [
-        CompanyAdModel(
-            company_ad_id=str(ad.id),
+        return CompanyAdModel2(
             position_title=ad.position_title,
             min_salary=ad.min_salary,
             max_salary=ad.max_salary,
             description=ad.description,
             location=ad.location,
             status=ad.status
-        ) for ad in ads
-    ]
-
-
-@company_ad_router.put("/ad/{ad_id}", response_model=CompanyAdModel2)
-def update_company_ad(ad_id: str, ad_info: CompanyAdModel2, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    if current_user.role != "company":
-        raise HTTPException(status_code=403, detail="Only companies can update job ads")
-
-    ad = db.query(CompanyOffers).filter(
-        CompanyOffers.id == ad_id,
-        CompanyOffers.company_id == current_user.company.id
-    ).first()
-
-    if not ad:
-        raise HTTPException(status_code=404, detail="Ad not found")
-
-    if ad_info.position_title:
-        ad.position_title = ad_info.position_title
-    if ad_info.min_salary:
-        ad.min_salary = ad_info.min_salary
-    if ad_info.max_salary:
-        ad.max_salary = ad_info.max_salary
-    if ad_info.description:
-        ad.description = ad_info.description
-    if ad_info.location:
-        ad.location = ad_info.location
-    if ad_info.status:
-        ad.status = ad_info.status
-
-    db.commit()
-    db.refresh(ad)
-
-    return ad_info
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

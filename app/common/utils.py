@@ -2,7 +2,7 @@ import re
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 
-from HKS.config import SECRET_KEY, ALGORITHM
+from app.config import SECRET_KEY, ALGORITHM
 
 ValidUsername = re.compile(r'^[a-zA-Z0-9_]{4,20}$')
 ValidPassword = re.compile(r'^[a-zA-Z0-9!@$_?.]{8,}$')

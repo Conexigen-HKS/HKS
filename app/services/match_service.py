@@ -1,9 +1,8 @@
-from uuid import UUID
 from sqlalchemy.orm import Session
-from fastapi import Depends, HTTPException
+from fastapi import HTTPException
 from sqlalchemy.exc import SQLAlchemyError
 
-from HKS.data.models import User, ProfessionalProfile, CompanyOffers, RequestsAndMatches, Companies, Professional
+from app.data.models import User, ProfessionalProfile, CompanyOffers, RequestsAndMatches, Companies, Professional
 
 
 def send_match_request(

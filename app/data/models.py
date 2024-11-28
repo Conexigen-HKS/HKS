@@ -1,5 +1,5 @@
 import uuid
-from sqlalchemy import Column, ForeignKey, Integer, String, DateTime, Boolean
+from sqlalchemy import Column, ForeignKey, Integer, String, DateTime, Boolean, Float
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
@@ -84,7 +84,8 @@ class Companies(Base):
     name = Column(String(45), unique=True, nullable=False)
     address = Column(String(255), nullable=False)
     description = Column(String(255), nullable=False)
-    contacts_id = Column(UUID(as_uuid=True), ForeignKey("contacts.id"))  # New Field
+    contacts = Column(UUID(as_uuid=True), ForeignKey("contacts.id"))
+    company_logo = Column(String(255))# New Field
     is_approved = Column(Boolean, default=False)
 
     user = relationship("User", back_populates="company", uselist=False)
@@ -96,12 +97,11 @@ class CompanyOffers(Base):
     id = Column(UUID(as_uuid=True), default=uuid.uuid4, primary_key=True, nullable=False)
     company_id = Column(UUID(as_uuid=True), ForeignKey("companies.id"), nullable=False)
     position_title = Column(String(255), nullable=False)
-    min_salary = Column(Integer, nullable=False)
-    max_salary = Column(Integer, nullable=False)
-    description = Column(String, nullable=False)
+    min_salary = Column(Float, nullable=True)
+    max_salary = Column(Float, nullable=True)
+    description = Column(String(255))
     location = Column(String, nullable=False)  # Store location as a string for simplicity
     status = Column(String, nullable=False)  # Status like "open", "closed", etc.
-    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
     company = relationship("Companies", back_populates="company_offers")
     requirements = relationship("CompaniesRequirements", back_populates="company_offer")
@@ -110,7 +110,7 @@ class CompanyOffers(Base):
 
 class CompaniesRequirements(Base):
     __tablename__ = "companies_requirements"
-    title = Column(String, nullable=False)
+    title = Column(String, nullable=False )
     requirements_id = Column(UUID(as_uuid=True), ForeignKey("skills.id"), primary_key=True)
     company_offers_id = Column(UUID(as_uuid=True), ForeignKey("company_offers.id"), primary_key=True)
     level = Column(Integer, nullable=True)

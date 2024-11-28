@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 
+from app.routers.job_ad_router import company_ad_router
 from app.routers.job_application_router import job_app_router
 from app.routers.locations_router import locations_router
 from app.routers.skills import skills_router
@@ -11,6 +12,7 @@ app.include_router(users_router)
 app.include_router(job_app_router)
 app.include_router(skills_router)
 app.include_router(locations_router)
+app.include_router(company_ad_router)
 
 
 if __name__ == "__main__":

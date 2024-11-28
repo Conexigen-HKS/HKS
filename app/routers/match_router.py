@@ -1,8 +1,8 @@
-from fastapi import APIRouter, Depends, FastAPI, HTTPException
+from fastapi import APIRouter, Depends, FastAPI
 from sqlalchemy.orm import Session
 
-from HKS.data.database import get_db
-from HKS.data.models import User
+from app.data.database import get_db
+from app.data.models import User
 from app.common import auth
 from app.services.match_service import view_matches, send_match_request
 
