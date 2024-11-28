@@ -1,5 +1,5 @@
 from pydantic import BaseModel, ConfigDict
-from typing import Optional
+from typing import List, Optional
 from uuid import UUID
 
 class CompanyResponse(BaseModel):
@@ -31,24 +31,16 @@ class CompanyOut(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-class ShowCompanyModel(BaseModel):
-    company_name: str
-    company_description: str
-    company_location: str
-    company_contacts: str
-    company_logo: str
-    company_active_job_ads: list
-
-    model_config = ConfigDict(from_attributes=True)
-
-
 
 class CompanyInfoModel(BaseModel):
     company_name: str
     company_description: str
     company_address: str
     company_contacts: str
-    company_logo: str
+    company_logo: Optional[str]
+    phone: Optional[str]
+    email: Optional[str]
+    website: Optional[str]
     company_active_job_ads: list | int
 
     model_config = ConfigDict(from_attributes=True)
@@ -66,6 +58,20 @@ class CompanyAdModel(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
+
+class ShowCompanyModel(BaseModel):
+    company_name: str
+    company_description: str
+    company_location: str
+    company_contacts: str
+    company_phone: Optional[str]
+    company_email: Optional[str]
+    company_website: Optional[str]
+    company_logo: Optional[str]
+    company_active_job_ads: List[CompanyAdModel]
+
+
+    model_config = ConfigDict(from_attributes=True)
 
 
 class CompanyAdModel2(BaseModel):

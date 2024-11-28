@@ -6,7 +6,7 @@ from data.models import Location, Companies, User, CompanyOffers
 from data.schemas.company import CompanyAdModel, CompanyOut, CompanyResponse
 
 
-def show_company_description(user: User, db: Session):
+def show_company_description(user: User, db: Session) -> Companies:
         company = db.query(Companies).filter(Companies.user_id == user.id).first()
 
         if company is None:
@@ -23,6 +23,9 @@ def show_company_description(user: User, db: Session):
             "company_description": company.description,
             "company_location": company.location.city_name if company.location else "N/A",
             "company_contacts": company.contacts,
+            "company_phone": company.phone,
+            "company_email": company.email,
+            "company_website": company.website,
             "company_logo": company.picture,
             "company_active_job_ads": [CompanyAdModel(
                 company_name=company.name,

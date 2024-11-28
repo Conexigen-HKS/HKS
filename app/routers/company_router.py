@@ -25,5 +25,5 @@ def show_company_description_(
     else:
         raise HTTPException(
             status_code=400,
-            detail="Error occurred while updating the company description"
+            detail="Error occurred while #fixthis company description"
         )
