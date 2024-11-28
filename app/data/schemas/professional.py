@@ -41,7 +41,19 @@ class ProfessionalOut(BaseModel):
     location: str
     phone: str
     email: str
+    website: str
     is_approved: bool
     username: Optional[str]
 
     model_config = ConfigDict(from_attributes=True)
+
+class ProfessionalUpdate(BaseModel):
+    first_name: Optional[str]
+    last_name: Optional[str]
+    location: str
+    phone: str
+    email: str
+    website: str
+    status: Optional[str]
+    summary: Optional[str]
+    picture: Optional[str]

@@ -1,10 +1,12 @@
+
 import uuid
 from typing import Optional
 from fastapi import Depends, HTTPException
 from sqlalchemy import func
 from app.data.schemas.company import (CompanyInfoModel,
                                       CompanyAdModel, CompanyAdModel2, ShowCompanyModel)
-from app.data.models import Companies, User, CompanyOffers
+from app.data.models import Companies, User, CompanyOffers, Location
+
 from app.data.database import Session
 import bcrypt
 
@@ -55,6 +57,26 @@ def edit_company_description_service(company_info: CompanyInfoModel, company_use
             )
 
         company_info_data = s.query(Companies).filter(Companies.id == company.id).first()
+        location = s.query(Location).filter(Location.city_name == company_info.company_location).first()
+        if not location:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Location '{company_info.company_location}' not found. Please provide a valid location."
+            )
+
+        company.description = company_info.company_description
+        company.contacts = company_info.company_contacts
+        company.picture = company_info.company_logo
+        company.phone = company_info.phone
+        company.email = company_info.email
+        company.website = company_info.website
+        company.location_id = location.id
+
+        s.commit()
+
+        company_ads_count = s.query(func.count(CompanyOffers.id)).filter(
+            CompanyOffers.status == "Active", CompanyOffers.company_id == company.id
+        ).scalar()
 
         if company_info_data is None:
             raise HTTPException(
@@ -68,7 +90,6 @@ def edit_company_description_service(company_info: CompanyInfoModel, company_use
         if company_info.company_logo:
             company_info_data.company_logo = company_info.company_logo
 
-        # company_info_data.company_active_job_ads = company_info.company_active_job_ads
         if company_info.company_address:
             company_info_data.address = company_info.company_address
         s.commit()
@@ -84,6 +105,7 @@ def edit_company_description_service(company_info: CompanyInfoModel, company_use
             "company_logo": company_info_data.company_logo,
             "company_active_job_ads": company_ads_by_len
         }
+
 
 
 def count_job_ads(company_id):
