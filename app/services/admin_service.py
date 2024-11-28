@@ -1,13 +1,23 @@
 from uuid import UUID
 from sqlalchemy.orm import Session
+<<<<<<< Updated upstream
 from app.data.models import Professional, Companies, User
 from app.common.responses import NotFound
 from app.data.schemas.users import WaitingApproval
 from app.data.schemas.professional import ProfessionalOut
 from app.data.schemas.company import CompanyInfoModel
 from app.services.user_services import get_user_by_id, get_username_from_id, user_exists
+=======
+
+>>>>>>> Stashed changes
 
 from fastapi import HTTPException, status
+
+from app.data.models import Professional, Companies, User
+from app.data.schemas.company import CompanyOut
+from app.data.schemas.professional import ProfessionalOut
+from app.data.schemas.users import WaitingApproval
+
 
 def approve_user(id: str, entity_type: str, db: Session):
     if entity_type == 'professional':

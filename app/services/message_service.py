@@ -1,9 +1,15 @@
 from sqlalchemy import Boolean, and_, or_
+<<<<<<< Updated upstream
 from app.data.models import Message
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 from app.data.models import User
+=======
+from fastapi import HTTPException
+from sqlalchemy.orm import Session
+>>>>>>> Stashed changes
 
+from app.data.models import Message, User
 
 
 #WORKS
