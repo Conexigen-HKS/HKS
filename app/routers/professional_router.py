@@ -43,13 +43,14 @@ def view_job_applications(
     return get_own_job_applications(db, current_user.id)
 
 
+#WORKS
 @professional_router.patch("/job-applications/{job_application_id}/set-main")
 def set_main_application(
     job_application_id: UUID,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    return set_main_job_application_service(db, job_application_id, current_user.id)
+    return set_main_job_application_service(db=db,job_application_id=job_application_id,current_user=current_user)
 
 
 

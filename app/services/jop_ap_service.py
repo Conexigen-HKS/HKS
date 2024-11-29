@@ -1,12 +1,12 @@
 
-from http.client import HTTPException
+from fastapi import HTTPException
 from typing import Optional, List
 from uuid import UUID
 
 from sqlalchemy.orm import Session, joinedload
 
-from app.data.models import ProfessionalProfile, ProfessionalProfileSkills, Skills, RequestsAndMatches, CompanyOffers, \
-    Location
+from app.data.models import Professional, ProfessionalProfile, ProfessionalProfileSkills, Skills, RequestsAndMatches, CompanyOffers, \
+    Location, User
 from app.data.schemas.job_application import JobApplicationResponse
 from app.data.schemas.skills import SkillCreate
 
@@ -71,23 +71,31 @@ def get_job_application(db: Session, job_application_id: UUID):
     ).all()
     return profile, [match.company_offers_id for match in matches]
 
+#WORKS
+def set_main_job_application_service(db: Session, job_application_id: str, current_user: User):
+    professional = db.query(Professional).filter(
+        Professional.user_id == current_user.id
+    ).first()
 
-def set_main_job_application_service(db: Session, job_application_id: UUID, professional_id: UUID):
+    if not professional:
+        raise HTTPException(status_code=404, detail="Professional profile not found")
+
     application = db.query(ProfessionalProfile).filter(
         ProfessionalProfile.id == job_application_id,
-        ProfessionalProfile.professional_id == professional_id
+        ProfessionalProfile.professional_id == professional.id
     ).first()
 
     if not application:
-        raise HTTPException(status_code=404, detail="Application not found")
+        raise HTTPException(status_code=404, detail="ProfessionalProfile not found")
 
     db.query(ProfessionalProfile).filter(
-        ProfessionalProfile.professional_id == professional_id
-    ).update({"chosen_company_offer_id": None})
+        ProfessionalProfile.professional_id == professional.id
+    ).update({"status": "Hidden"}, synchronize_session="fetch")
 
-    application.chosen_company_offer_id = application.id
+    application.status = "Active"
     db.commit()
-    return application
+
+    return HTTPException(status_code=200, detail='Main application set successfully')
 
 
 #WORKS
