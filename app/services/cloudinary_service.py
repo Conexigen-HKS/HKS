@@ -31,16 +31,27 @@ def generate_auto_crop_url(public_id, width=500, height=500):
 
 #da dobavq i za companies.
 def delete_picture(current_user: User, db: Session):
-    user = db.query(Professional).filter(Professional.user_id == current_user.id).first()
-    user_pic = user.picture
-    if user_pic:
-        cloudinary.uploader.destroy(user_pic)
+    if current_user.role == 'professional':
+        user = db.query(Professional).filter(Professional.user_id == current_user.id).first()
+        user_pic = user.picture
+        if user_pic:
+            cloudinary.uploader.destroy(user_pic)
 
-        user.picture = None
-        db.commit()
-        db.refresh(user)
+            user.picture = None
+            db.commit()
+            db.refresh(user)
+            return {"message": "Picture deleted successfully"}
+        
+    elif current_user.role == 'company':
+        company = db.query(Companies).filter(Companies.user_id == current_user.id).first()
+        company_pic = company.picture
+        if company_pic:
+            cloudinary.uploader.destroy(company_pic)
 
-        return {"message": "Picture deleted successfully"}
+            company.picture = None
+            db.commit()
+            db.refresh(user)
+            return {"message": "Picture deleted successfully"}
     else:
         return {"message": "No picture to be deleted."}
     

@@ -1,4 +1,5 @@
-from pydantic import BaseModel, UUID4
+from uuid import UUID
+from pydantic import BaseModel, UUID4, ConfigDict
 from typing import Optional, List
 
 from app.data.schemas.skills import SkillCreate
@@ -14,13 +15,12 @@ class JobApplicationCreate(BaseModel):
     skills: List[SkillCreate]
 
 class JobApplicationResponse(BaseModel):
-    id: UUID4
+    id: UUID
     description: str
     min_salary: int
     max_salary: int
     status: str
     location_name: Optional[str]
-    skills: list[str]
+    skills: List[str]
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)

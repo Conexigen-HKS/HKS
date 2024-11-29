@@ -130,6 +130,7 @@ def get_all_job_applications_service(db: Session, professional_id: UUID) -> List
 #         for ad in job_ads.all()
     # ]
 
+#WORKS
 def search_job_ads_service(db: Session, query: Optional[str] = None, location: Optional[str] = None):
     job_ads_query = db.query(CompanyOffers).filter(CompanyOffers.status == "active")
 
@@ -142,14 +143,15 @@ def search_job_ads_service(db: Session, query: Optional[str] = None, location: O
     job_ads = job_ads_query.options(joinedload(CompanyOffers.location)).all()
 
     return [
-        {
-            "id": ad.id,
-            "description": ad.description,
-            "min_salary": ad.min_salary,
-            "max_salary": ad.max_salary,
-            "location": ad.location.city_name if ad.location else "N/A",
-            "status": ad.status
-        }
+        JobApplicationResponse(
+            id=ad.id,
+            description=ad.description,
+            min_salary=ad.min_salary,
+            max_salary=ad.max_salary,
+            status=ad.status,
+            location_name=ad.location.city_name if ad.location else None,
+            skills=[]
+        )
         for ad in job_ads
     ]
 
