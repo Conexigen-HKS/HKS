@@ -18,26 +18,36 @@ class CompanyInfoModel(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 class CompanyInfoRequestModel(BaseModel):
-    company_description: str
-    company_location: str
-    company_contacts: str
-    company_logo: Optional[str]
-    phone: Optional[str]
-    email: Optional[str]
-    website: Optional[str]
-    company_active_job_ads: Optional[list | int]
+    company_description: Optional[str] = None
+    company_location: Optional[str] = None
+    company_contacts: Optional[str] = None
+    company_logo: Optional[str] = None
+    phone: Optional[str] = None
+    email: Optional[str] = None
+    website: Optional[str] = None
+
+    model_config = ConfigDict(from_attributes=True)
+
+class SearchCompaniesModel(BaseModel):
+    company_name: Optional[str] = None
+    company_description: Optional[str] = None
+    company_location: Optional[str] = None
+    company_logo: Optional[str] = None
+    phone: Optional[str] = None
+    email: Optional[str] = None
+    website: Optional[str] = None
 
     model_config = ConfigDict(from_attributes=True)
 
 class CompanyAdModel(BaseModel):
-    company_name: str
+    company_name: Optional[str]
     company_ad_id: UUID
-    title: str
+    title: Optional[str]
     min_salary: int
     max_salary: int
-    description: str
-    location: str
-    status: str
+    description: Optional[str]
+    location: Optional[str]
+    status: Optional[str]
 
     model_config = ConfigDict(from_attributes=True)
 

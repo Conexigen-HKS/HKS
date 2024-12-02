@@ -117,26 +117,6 @@ def get_all_job_applications_service(db: Session, professional_id: UUID) -> List
         for app in applications
     ]
 
-# def search_job_ads_service(db: Session, query: Optional[str] = None, location: Optional[str] = None):
-#     job_ads = db.query(CompanyOffers).filter(CompanyOffers.status == "active")
-# #Here, CompanyOffers.location is a relationship to the Location model,
-# #  not a direct column containing string data.
-# #  Therefore, applying ilike on it is invalid.
-#     if query:
-#         job_ads = job_ads.filter(CompanyOffers.description.ilike(f"%{query}%"))
-#     if location:
-#         job_ads = job_ads.filter(CompanyOffers.location.ilike(f"%{location}%"))
-
-#     return [
-#         {
-#             "id": ad.id,
-#             "description": ad.description,
-#             "min_salary": ad.min_salary,
-#             "max_salary": ad.max_salary,
-#             "location": ad.location,
-#         }
-#         for ad in job_ads.all()
-    # ]
 
 #WORKS
 def search_job_ads_service(db: Session, query: Optional[str] = None, location: Optional[str] = None):
@@ -163,6 +143,7 @@ def search_job_ads_service(db: Session, query: Optional[str] = None, location: O
         for ad in job_ads
     ]
 
+#DONT KNOW IF WORKS
 def get_archived_job_applications_service(db: Session):
     archived_job_apps = db.query(ProfessionalProfile).filter(ProfessionalProfile.status == "Matched").all()
 
@@ -179,35 +160,23 @@ def get_archived_job_applications_service(db: Session):
         for job_app in archived_job_apps
     ]
 
-
-def get_active_job_applications_service(db: Session):
-    active_job_apps = db.query(ProfessionalProfile).filter(ProfessionalProfile.status == "Active").all()
-
-    return [
-        JobApplicationResponse(
-            id=job_app.id,
-            description=job_app.description,
-            min_salary=job_app.min_salary,
-            max_salary=job_app.max_salary,
-            status=job_app.status,
-            location_name=job_app.location.city_name if job_app.location else "N/A",
-            skills=[skill.skill.name for skill in job_app.skills]
-        )
-        for job_app in active_job_apps
-    ]
-
-
+#WORKS
 def search_job_applications_service(
         db: Session,
         query: Optional[str] = None,
-        location: Optional[str] = None
+        location: Optional[str] = None,
+        skill: Optional[str] = None
 ):
     job_applications_query = db.query(ProfessionalProfile).filter(ProfessionalProfile.status == "Active")
 
     if query:
         job_applications_query = job_applications_query.filter(ProfessionalProfile.description.ilike(f"%{query}%"))
+    
     if location:
         job_applications_query = job_applications_query.join(Location).filter(Location.city_name.ilike(f"%{location}%"))
+    
+    if skill:
+        job_applications_query = job_applications_query.join(ProfessionalProfile.skills).join(Skills).filter(Skills.name.ilike(f"%{skill}%"))
 
     job_apps = job_applications_query.all()
 
@@ -224,6 +193,7 @@ def search_job_applications_service(
         for job_app in job_apps
     ]
 
+#DONT KNOW IF WORKS OR NOT
 def view_job_application(db: Session, job_application_id: UUID, user_id: UUID):
     job_application = db.query(ProfessionalProfile).filter(
         ProfessionalProfile.id == job_application_id,
