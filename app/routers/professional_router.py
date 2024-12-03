@@ -8,7 +8,7 @@ from app.data.database import get_db
 from app.data.models import User
 from app.data.schemas.professional import ProfessionalUpdate, ProfessionalResponse
 from app.data.schemas.job_application import JobApplicationResponse, JobApplicationCreate
-from app.services.jop_ap_service import set_main_job_application_service, create_job_application, view_job_application, \
+from app.services.job_app_service import set_main_job_application_service, create_job_application, view_job_application, \
     search_job_ads_service
 from app.services.professional_service import (
     view_own_profile,

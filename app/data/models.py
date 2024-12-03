@@ -60,7 +60,7 @@ class ProfessionalProfile(Base):
     location = relationship("Location", back_populates="professional_profiles")  # Add this line
     professional = relationship("Professional", back_populates="professional_profile")
     chosen_offer = relationship("CompanyOffers", foreign_keys=[chosen_company_offer_id])
-    skills = relationship("ProfessionalProfileSkills", back_populates="professional_profile")
+    skills = relationship("ProfessionalProfileSkills", back_populates="professional_profile",cascade="all, delete-orphan")
     requests_and_matches = relationship("RequestsAndMatches", back_populates="professional_profile")
 
 

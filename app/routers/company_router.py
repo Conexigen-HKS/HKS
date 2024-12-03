@@ -9,7 +9,7 @@ from app.data.schemas.company import ShowCompanyModel, CompanyInfoRequestModel
 from app.data.schemas.job_application import JobApplicationResponse
 from app.services.company_service import (edit_company_description_service,
 find_all_companies_service,show_company_description_service)
-from app.services.jop_ap_service import search_job_applications_service
+from app.services.job_app_service import search_job_applications_service
 
 
 company_router = APIRouter(prefix="/companies", tags=["Companies"])

@@ -1,4 +1,3 @@
-
 from fastapi import HTTPException
 from typing import Optional, List
 from uuid import UUID
@@ -7,7 +6,7 @@ from sqlalchemy.orm import Session, joinedload
 
 from app.data.models import Professional, ProfessionalProfile, ProfessionalProfileSkills, Skills, RequestsAndMatches, CompanyOffers, \
     Location, User
-from app.data.schemas.job_application import JobApplicationResponse
+from app.data.schemas.job_application import JobApplicationEdit, JobApplicationResponse
 from app.data.schemas.skills import SkillCreate
 
 #WORKS
@@ -106,6 +105,7 @@ def get_all_job_applications_service(db: Session, professional_id: UUID) -> List
 
     return [
         {
+            "user_id": app.professional_id,
             "id": app.id,
             "description": app.description,
             "min_salary": app.min_salary,
@@ -212,3 +212,72 @@ def view_job_application(db: Session, job_application_id: UUID, user_id: UUID):
         location_name=job_application.location.city_name if job_application.location else None,
         skills=[s.skill.name for s in job_application.skills]
     )
+
+def edit_job_app(
+    job_application_id: UUID,
+    job_app_info: JobApplicationEdit,
+    db: Session,
+    current_user: User
+):
+    user = db.query(User).filter(User.id == current_user.id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail='User not found')
+    
+    professional_app = db.query(ProfessionalProfile).filter(
+        ProfessionalProfile.id == job_application_id,  # Use the ID here
+        ProfessionalProfile.user_id == user.id
+    ).first()
+    if not professional_app:
+        raise HTTPException(
+            status_code=404,
+            detail='Job application not found'
+        )
+    
+    # Update fields
+    if job_app_info.location:
+        location = db.query(Location).filter(Location.city_name == job_app_info.location).first()
+        if not location:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Location '{job_app_info.location}' not found."
+            )
+        professional_app.location_id = location.id
+
+    if job_app_info.description is not None:
+        professional_app.description = job_app_info.description
+    if job_app_info.min_salary is not None:
+        professional_app.min_salary = job_app_info.min_salary
+    if job_app_info.max_salary is not None:
+        professional_app.max_salary = job_app_info.max_salary
+    if job_app_info.status is not None:
+        professional_app.status = job_app_info.status
+
+    if job_app_info.skills is not None:
+        # Clear existing skills
+        professional_app.skills.clear()
+        # Add new skills
+        for skill_data in job_app_info.skills:
+            skill = db.query(Skills).filter(Skills.name == skill_data.name).first()
+            if not skill:
+                skill = Skills(name=skill_data.name)
+                db.add(skill)
+                db.commit()
+                db.refresh(skill)
+            skill_assignment = ProfessionalProfileSkills(
+                professional_profile_id=professional_app.id,
+                skills_id=skill.id,
+                level=skill_data.level
+            )
+            db.add(skill_assignment)
+
+    db.commit()
+    db.refresh(professional_app)
+    
+    return {
+        "description": professional_app.description,
+        "min_salary": professional_app.min_salary,
+        "max_salary": professional_app.max_salary,
+        "status": professional_app.status,
+        "location": professional_app.location.city_name if professional_app.location else "N/A",
+        "skills": [s.skill.name for s in professional_app.skills]
+    }

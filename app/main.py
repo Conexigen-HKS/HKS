@@ -5,7 +5,7 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from app.routers.company_ad_router import company_ad_router
 from app.routers.company_router import company_router
-from app.routers.jop_ap_router import job_app_router
+from app.routers.job_app_router import job_app_router
 from app.routers.professional_router import professional_router
 from app.routers.user_router import users_router
 from app.routers.admin_router import admin_router
