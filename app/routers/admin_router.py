@@ -14,17 +14,27 @@ app = FastAPI()
 admin_router = APIRouter(prefix='/api/admins', tags=['Admins'])
 
 @admin_router.get("/")
-def get_waiting_approvals(db: Session = Depends(get_db)):
+def get_waiting_approvals(db: Session = Depends(get_db), current_user: User = Depends(auth.get_current_user)):
+    if current_user.role != 'admin':
+        raise HTTPException(
+            status_code=401
+        )
+    
     waiting_appr = waiting_approvals(db)
-
     return waiting_appr
 
 @admin_router.patch("/{id}")
 def approve_user_(
     id: str,
     role: Literal['professional', 'company'] = Query(...),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(auth.get_current_user)
     ):
+    if current_user.role != 'admin':
+        raise HTTPException(
+            status_code=401
+        )
+    
     try:
         user_to_be_approved = approve_user(id=id, entity_type=role, db=db)
         return {"message": f"{role.capitalize()} approved successfully", "data": user_to_be_approved}
@@ -32,14 +42,23 @@ def approve_user_(
         raise e
 
 @admin_router.delete("/{user_id}")
-async def delete_user_(
+def delete_user_(
     id: str,
     db: Session = Depends(get_db),
-    current_user: User = Depends(auth.get_current_admin_user)
+    current_user: User = Depends(auth.get_current_user)
 ):
+    if current_user.role != 'admin':
+        raise HTTPException(
+            status_code=401
+        )
+    
     try:
-        result = delete_user(id=id, db=db)
-        return result
+       delete_user(id=id, db=db)
+       return HTTPException(
+           status_code=200,
+           detail='User deleted successfully'
+       )
+    
     except HTTPException as e:
         raise e
 

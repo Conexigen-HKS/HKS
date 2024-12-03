@@ -1,10 +1,10 @@
 from uuid import UUID
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from app.data.models import Professional, Companies, User
 from app.common.responses import NotFound
 from app.data.schemas.users import WaitingApproval
 from app.data.schemas.professional import ProfessionalOut
-from app.data.schemas.company import CompanyInfoModel
+from app.data.schemas.company import CompanyInfoModel, CompanyOut
 from app.services.user_services import get_user_by_id, get_username_from_id, user_exists
 
 from fastapi import HTTPException, status
@@ -30,6 +30,7 @@ def waiting_approvals(db: Session) -> WaitingApproval:
     waiting_professionals = (
         db.query(Professional, User.username)
         .join(User, Professional.user_id == User.id)
+        .options(joinedload(Professional.location))
         .filter(Professional.is_approved.is_(False))
         .all()
     )
@@ -37,31 +38,39 @@ def waiting_approvals(db: Session) -> WaitingApproval:
     waiting_companies = (
         db.query(Companies, User.username)
         .join(User, Companies.user_id == User.id)
+        .options(joinedload(Companies.location))
         .filter(Companies.is_approved.is_(False))
         .all()
     )
 
+    
+
     professionals_out = [
         ProfessionalOut(
             id= professional.id,
-            first_name = professional.first_name,
-            last_name = professional.last_name,
-            address = professional.address,
-            is_approved = professional.is_approved,
+            first_name=professional.first_name,
+            last_name=professional.last_name,
+            location_name=professional.location.city_name if professional.location else "N/A",
+            phone=professional.phone,
+            email=professional.email,
+            website=professional.website,
+            is_approved=professional.is_approved,
             username=username
         )
         for professional, username in waiting_professionals
     ]
 
     company_out = [
-       CompanyInfoModel(
-           id= company.id,
-           name= company.name,
-           address= company.address,
-           description= company.description,
-           contacts= company.contacts,
-           is_approved= company.is_approved,
-           username=username
+        CompanyOut(
+            id=company.id,
+            name=company.name,
+            description=company.description,
+            location=company.location.city_name if company.location else "N/A",
+            phone=company.phone,
+            email=company.email,
+            website=company.website,
+            is_approved=company.is_approved,
+            username=username
        )
        for company, username in waiting_companies
    ]

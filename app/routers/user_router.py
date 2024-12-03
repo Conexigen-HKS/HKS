@@ -19,7 +19,7 @@ users_router = APIRouter(prefix='/api/users', tags=['Users'])
 def register_company(company_data: CompanyRegister, db: Session = Depends(get_db)):
     try:
         company = create_company(db, company_data)
-        return {"message": "Company registered successfully", "company": company}
+        return {"message": "Company registered successfully"}
     except HTTPException as e:
         raise e
     

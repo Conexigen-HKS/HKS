@@ -38,7 +38,7 @@ class ProfessionalOut(BaseModel):
     id: UUID
     first_name: str
     last_name: str
-    location: str
+    location_name: str
     phone: str
     email: str
     website: str

@@ -15,6 +15,7 @@ class JobApplicationCreate(BaseModel):
     skills: List[SkillCreate]
 
 class JobApplicationResponse(BaseModel):
+    user_id: UUID
     id: UUID
     description: str
     min_salary: int

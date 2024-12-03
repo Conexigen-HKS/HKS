@@ -1,28 +1,38 @@
+from uuid import UUID
 from sqlalchemy.orm import Session
-from fastapi import Depends, HTTPException
-from sqlalchemy import func
-from app.data.schemas.company import (CompanyAdUpdateModel, CompanyInfoModel,CompanyAdModel, CompanyAdModel2, ShowCompanyModel)
+from fastapi import HTTPException
+from app.data.schemas.company import CompanyAdUpdateModel, CompanyAdModel
 from app.data.models import Companies, Location, User, CompanyOffers
 # from app.services.company_service import get_company_id_by_user_id_service, get_company_name_by_username_service
 
-
-def create_new_ad_service(company_id: str, title: str,
-                          min_salary: int, max_salary: int, job_description: str,
-                          location: str, status: str, db: Session) -> CompanyOffers:
+#WORKS
+def create_new_ad(
+    title: str,
+    min_salary: int,
+    max_salary: int,
+    job_description: str,
+    location: str,
+    status: str,
+    current_user: User,
+    db: Session
+) -> CompanyOffers:
     try:
-        # Lookup the Location by city_name
         location_obj = db.query(Location).filter(Location.city_name.ilike(location)).first()
         if not location_obj:
             raise HTTPException(status_code=404, detail=f"Location '{location}' not found.")
 
+        company = db.query(Companies).filter(Companies.user_id == current_user.id).first()
+        if not company:
+            raise HTTPException(status_code=404, detail="Company not found.")
+
         new_ad = CompanyOffers(
-            company_id=str(company_id),
             title=title,
             min_salary=min_salary,
             max_salary=max_salary,
             description=job_description,
             location_id=location_obj.id,
-            status=status
+            status=status,
+            company_id=company.id
         )
 
         db.add(new_ad)
@@ -35,8 +45,8 @@ def create_new_ad_service(company_id: str, title: str,
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-
-def get_company_ads_service(current_user: User, db: Session):
+#WORKS
+def get_company_ads(current_user: User, db: Session):
         company = db.query(Companies).filter(Companies.user_id == current_user.id).first()
         company_ads = db.query(CompanyOffers).filter(CompanyOffers.company_id == company.id).all()
 
@@ -54,6 +64,7 @@ def get_company_ads_service(current_user: User, db: Session):
         for ad in company_ads
     ]
 
+#WORKS
 def edit_company_ad_by_id(
         job_ad_id: str,
         ad_info: CompanyAdUpdateModel,
@@ -107,27 +118,27 @@ def edit_company_ad_by_id(
     except Exception as e:
         raise HTTPException(status_code=500, detail="Internal Server Error")
 
-# def get_company_all_ads_service():
-#     with Session() as session:
-#         ads = session.query(CompanyOffers).filter().all()
 
-#         return [CompanyAdModel(
-#             company_name=session.query(Companies).filter(Companies.id == ad.company_id).first().name,
-#             company_ad_id=str(ad.id),
-#             position_title=ad.position_title,
-#             min_salary=ad.min_salary,
-#             max_salary=ad.max_salary,
-#             description=ad.description,
-#             location=ad.location,
-#             status=ad.status
-#         ) for ad in ads]
+def delete_company_ad(ad_id: UUID, current_user: User, db: Session):
+    company = db.query(Companies).filter(Companies.user_id == current_user.id).first()
+    if not company:
+        raise HTTPException(
+            status_code=404,
+            detail='Company not found.'
+        )
 
+    ad_to_delete = db.query(CompanyOffers).filter(
+        CompanyOffers.id == ad_id,
+        CompanyOffers.company_id == company.id
+    ).first()
 
-# def delete_company_ad_service(ad_id: uuid, user_id: uuid, company_name: str):
-#     with Session() as session:
-#         company_id = get_company_id_by_user_id_service(user_id)
-#         ad = session.query(CompanyOffers).filter(CompanyOffers.company_id == company_id,
-#                                                  CompanyOffers.id == ad_id).one()
-#         session.delete(ad)
-#         session.commit()
-#         return {'success': True}
+    if not ad_to_delete:
+        raise HTTPException(
+            status_code=404,
+            detail='Ad not found.'
+        )
+
+    db.delete(ad_to_delete)
+    db.commit()
+
+    return {"detail": "Ad deleted successfully"}

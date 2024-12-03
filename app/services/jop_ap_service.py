@@ -182,6 +182,7 @@ def search_job_applications_service(
 
     return [
         JobApplicationResponse(
+            user_id = job_app.user_id,
             id=job_app.id,
             description=job_app.description,
             min_salary=job_app.min_salary,

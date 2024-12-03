@@ -50,7 +50,7 @@ def delete_picture(current_user: User, db: Session):
 
             company.picture = None
             db.commit()
-            db.refresh(user)
+            db.refresh(company)
             return {"message": "Picture deleted successfully"}
     else:
         return {"message": "No picture to be deleted."}

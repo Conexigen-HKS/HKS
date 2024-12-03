@@ -83,9 +83,8 @@ class ShowCompanyModel(BaseModel):
 class CompanyOut(BaseModel):
     id: UUID
     name: str
-    address: str
     description: str
-    contacts: str
+    location: str
     phone: str
     email: str
     website: str
@@ -105,7 +104,6 @@ class CompanyAdModel2(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 class CreateCompanyAdModel(BaseModel):
-    company_name: str
     title: str
     min_salary: int
     max_salary: int
