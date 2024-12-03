@@ -9,7 +9,7 @@ from app.common.auth import get_current_user
 
 from app.data.database import get_db
 from app.data.models import Location, ProfessionalProfile, User
-from app.services.job_app_service import create_job_application, get_job_application, get_all_job_applications_service, edit_job_app
+from app.services.job_app_service import create_job_application, delete_job_application, get_job_application, get_all_job_applications_service, edit_job_app
 from app.services.professional_service import get_professional_by_user_id
 
 job_app_router = APIRouter(tags=["Job Applications"], prefix="/api/job_applications")
@@ -102,3 +102,15 @@ def edit_job_app_(
         db=db,
         current_user=current_user
     )
+
+@job_app_router.delete("/{id}")
+def delete_job_app(
+    job_app_id: UUID,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    
+    return delete_job_application(
+        job_application_id=job_app_id,
+        db=db,
+        current_user=current_user)

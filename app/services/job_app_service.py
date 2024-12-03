@@ -132,6 +132,7 @@ def search_job_ads_service(db: Session, query: Optional[str] = None, location: O
 
     return [
         JobApplicationResponse(
+            user_id=ad.company.user_id,
             id=ad.id,
             description=ad.description,
             min_salary=ad.min_salary,
@@ -224,7 +225,7 @@ def edit_job_app(
         raise HTTPException(status_code=404, detail='User not found')
     
     professional_app = db.query(ProfessionalProfile).filter(
-        ProfessionalProfile.id == job_application_id,  # Use the ID here
+        ProfessionalProfile.id == job_application_id,
         ProfessionalProfile.user_id == user.id
     ).first()
     if not professional_app:
@@ -233,7 +234,6 @@ def edit_job_app(
             detail='Job application not found'
         )
     
-    # Update fields
     if job_app_info.location:
         location = db.query(Location).filter(Location.city_name == job_app_info.location).first()
         if not location:
@@ -253,9 +253,7 @@ def edit_job_app(
         professional_app.status = job_app_info.status
 
     if job_app_info.skills is not None:
-        # Clear existing skills
         professional_app.skills.clear()
-        # Add new skills
         for skill_data in job_app_info.skills:
             skill = db.query(Skills).filter(Skills.name == skill_data.name).first()
             if not skill:
@@ -281,3 +279,31 @@ def edit_job_app(
         "location": professional_app.location.city_name if professional_app.location else "N/A",
         "skills": [s.skill.name for s in professional_app.skills]
     }
+
+#WORKS
+def delete_job_application(
+    job_application_id: UUID,
+    db: Session,
+    current_user: User
+):
+    professional = db.query(Professional).filter(Professional.user_id == current_user.id).first()
+    if not professional:
+        raise HTTPException(
+            status_code=404,
+            detail='Professional not found.'
+        )
+    
+    app_to_delete = db.query(ProfessionalProfile).filter(
+        ProfessionalProfile.id == job_application_id,
+        ProfessionalProfile.professional_id == professional.id
+    ).first()
+    
+    if not app_to_delete:
+        raise HTTPException(
+            status_code=404,
+            detail='Application not found.'
+        )
+    db.delete(app_to_delete)
+    db.commit()
+
+    return {"detail": "Application deleted successfully"}

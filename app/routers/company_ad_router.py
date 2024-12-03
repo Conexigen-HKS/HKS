@@ -75,7 +75,7 @@ def update_company_ad(
 
 #     return ads or []
 
-
+#WORKS ? Check it again
 @company_ad_router.delete('/{id}')
 def delete_company_ad_(
     ad_id: str,
