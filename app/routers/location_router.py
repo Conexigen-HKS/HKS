@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from typing import List
 from app.data.database import get_db
-from app.data.schemas.location import LocationResponse, LocationCreate
+from app.data.schemas.locations import LocationResponse, LocationCreate
 from app.services.location_service import create_location, get_all_locations, get_location_by_id
 
 locations_router = APIRouter(tags=["Locations"], prefix="/locations")

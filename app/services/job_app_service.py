@@ -50,7 +50,7 @@ def create_job_application(
         skill_assignment = ProfessionalProfileSkills(
             professional_profile_id=job_application.id,
             skills_id=skill.id,
-            level=skill_data.level
+            level=skill_data.level or None
         )
         db.add(skill_assignment)
 

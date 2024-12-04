@@ -2,7 +2,7 @@ from uuid import UUID
 from pydantic import BaseModel, UUID4, ConfigDict, Field, model_validator
 from typing import Optional, List
 
-from app.data.schemas.skills import SkillCreate
+from app.data.schemas.skills import SkillCreate, SkillResponse
 
 
 class JobApplicationCreate(BaseModel):
@@ -13,21 +13,17 @@ class JobApplicationCreate(BaseModel):
     city_name: Optional[str] = None
     skills: List[SkillCreate]
 
+
+
 class JobApplicationResponse(BaseModel):
-    user_id: UUID
-    id: UUID
+    user_id: UUID4
+    id: UUID4
     description: str
     min_salary: int
     max_salary: int
     status: str
     location_name: Optional[str]
-    skills: List[str]
-
-    model_config = ConfigDict(from_attributes=True)
-
-class SkillCreate(BaseModel):
-    name: str
-    level: Optional[str] = None
+    skills: List[SkillResponse]
 
 class JobApplicationEdit(BaseModel):
     description: Optional[str] = Field(None, example="Description of the job position", description="Job position description.")
