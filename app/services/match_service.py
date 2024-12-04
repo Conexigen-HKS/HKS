@@ -6,9 +6,9 @@ from app.data.models import Companies, Professional, RequestsAndMatches, Profess
 
 
 def send_match_request(
-        db: Session,
-        offer_id: str,
-        current_user: User
+    db: Session,
+    target_id: str,
+    current_user: User
 ):
     if current_user.role == 'professional':
         professional_profile = db.query(ProfessionalProfile).filter(
@@ -17,43 +17,75 @@ def send_match_request(
         if not professional_profile:
             raise HTTPException(status_code=404, detail='Professional profile not found')
 
-        company_offer = db.query(CompanyOffers).filter(CompanyOffers.id == offer_id).first()
+        company_offer = db.query(CompanyOffers).filter(CompanyOffers.id == target_id).first()
         if not company_offer:
             raise HTTPException(status_code=404, detail='Company offer not found')
 
-        match_request = RequestsAndMatches(
+        existing_match = db.query(RequestsAndMatches).filter_by(
             professional_profile_id=professional_profile.id,
-            company_offer_id=company_offer.id,
-            match=False
-        )
-        db.add(match_request)
-        db.commit()
+            company_offers_id=company_offer.id
+        ).first()
 
-        return {"message": "Match request sent successfully"}
+        if existing_match:
+            if not existing_match.match:
+                existing_match.match = True
+                db.commit()
+                return {"message": "Match confirmed!"}
+            else:
+                return {"message": "Match already confirmed."}
+        else:
+            match_request = RequestsAndMatches(
+                professional_profile_id=professional_profile.id,
+                company_offers_id=company_offer.id,
+                match=False
+            )
+            db.add(match_request)
+            db.commit()
+
+            return {"message": "Match request sent successfully"}
 
     elif current_user.role == 'company':
         company_profile = db.query(Companies).filter(Companies.user_id == current_user.id).first()
         if not company_profile:
             raise HTTPException(status_code=404, detail="Company profile not found")
 
-        company_offer = db.query(CompanyOffers).filter(CompanyOffers.id == offer_id).first()
-        if not company_offer:
-            raise HTTPException(status_code=404, detail="Company offer not found")
-
         professional_profile = db.query(ProfessionalProfile).filter(
-            ProfessionalProfile.id == company_offer.chosen_professional_offer_id).first()
+            ProfessionalProfile.id == target_id
+        ).first()
         if not professional_profile:
-            raise HTTPException(status_code=404, detail="Professional profile not found")
+            raise HTTPException(status_code=404, detail='Professional profile not found')
 
-        match_request = RequestsAndMatches(
+        company_offer = db.query(CompanyOffers).filter(
+            CompanyOffers.company_id == company_profile.id
+        ).first()
+        if not company_offer:
+            raise HTTPException(status_code=404, detail='Company offer not found')
+
+        existing_match = db.query(RequestsAndMatches).filter_by(
             professional_profile_id=professional_profile.id,
-            company_offer_id=company_offer.id,
-            match=False
-        )
-        db.add(match_request)
-        db.commit()
+            company_offers_id=company_offer.id
+        ).first()
 
-        return {"message": "Match request sent successfully"}
+        if existing_match:
+            if not existing_match.match:
+                existing_match.match = True
+                db.commit()
+                return {"message": "Match confirmed!"}
+            else:
+                return {"message": "Match already confirmed."}
+        else:
+            match_request = RequestsAndMatches(
+                professional_profile_id=professional_profile.id,
+                company_offers_id=company_offer.id,
+                match=False
+            )
+            db.add(match_request)
+            db.commit()
+
+            return {"message": "Match request sent successfully"}
+
+    else:
+        raise HTTPException(status_code=403, detail="Invalid user role")
 
 
 def view_matches(db: Session, current_user: User):
@@ -72,9 +104,7 @@ def view_matches(db: Session, current_user: User):
             matches = (
                 db.query(RequestsAndMatches)
                 .filter(
-                    RequestsAndMatches.professional_profile_id == professional_profile.id,
-                    RequestsAndMatches.match == True
-                )
+                    RequestsAndMatches.professional_profile_id == professional_profile.id                )
                 .all()
             )
 
@@ -124,9 +154,7 @@ def view_matches(db: Session, current_user: User):
                 matches = (
                     db.query(RequestsAndMatches)
                     .filter(
-                        RequestsAndMatches.company_offers_id == offer.id,
-                        RequestsAndMatches.match == True
-                    )
+                        RequestsAndMatches.company_offers_id == offer.id                    )
                     .all()
                 )
 

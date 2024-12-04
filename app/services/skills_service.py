@@ -15,7 +15,8 @@ def create_skill(db: Session, name: str) -> Skills:
     db.refresh(skill)
     return skill
 
-def get_skill_by_id(db: Session, skill_id: UUID4) -> Skills:
+
+def get_skill_by_id(db: Session, skill_id: UUID) -> Skills:
     return db.query(Skills).filter(Skills.id == skill_id).first()
 
 
@@ -46,3 +47,16 @@ def get_profile_skills_service(db: Session, profile_id: UUID):
         }
         for link, skill in skill_links
     ]
+def associate_skills_with_profile(db: Session, profile_id: UUID, skills: list[SkillCreate]):
+    for skill_data in skills:
+        skill = get_skill_by_name(db, skill_data.name)
+        if not skill:
+            skill = create_skill(db, skill_data.name)
+
+        skill_assignment = ProfessionalProfileSkills(
+            professional_profile_id=profile_id,
+            skills_id=skill.id,
+            level=skill_data.level
+        )
+        db.add(skill_assignment)
+    db.commit()

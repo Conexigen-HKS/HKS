@@ -9,6 +9,7 @@ from app.common.auth import get_current_user
 
 from app.data.database import get_db
 from app.data.models import Location, ProfessionalProfile, User
+from app.data.schemas.skills import SkillResponse
 from app.services.job_app_service import create_job_application, delete_job_application, get_job_application, get_all_job_applications_service, edit_job_app
 from app.services.professional_service import get_professional_by_user_id
 
@@ -35,14 +36,17 @@ def create_job_application_(
     )
 
     return JobApplicationResponse(
-        user_id=current_user.id,  # Added user_id here
+        user_id=current_user.id,
         id=job_application.id,
         description=job_application.description,
         min_salary=job_application.min_salary,
         max_salary=job_application.max_salary,
         status=job_application.status,
         location_name=job_application.location.city_name if job_application.location else None,
-        skills=[s.skill.name for s in job_application.skills]
+        skills=[
+            SkillResponse(skill_id=s.skills_id, name=s.skill.name, level=s.level)
+            for s in job_application.skills
+        ]
     )
 
 #WORKS
@@ -65,7 +69,7 @@ def get_job_application_(
         location_name = location.city_name if location else None
 
     return JobApplicationResponse(
-        user_id=current_user.id,  # Added user_id here
+        user_id=current_user.id,
         id=profile.id,
         description=profile.description,    
         min_salary=profile.min_salary,

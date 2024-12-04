@@ -10,4 +10,4 @@ class SkillCreate(BaseModel):
 class SkillResponse(BaseModel):
     skill_id: UUID4
     name: str
-    level: str
+    level: Optional[str]

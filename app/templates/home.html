@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WorkScout - Find Your Dream Job</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+  <link href="/app/static/style_home.css" rel="stylesheet"> <!-- Link to CSS -->
+</head>
+<body>
+
+<!-- Transparent Sticky Header -->
+<header class="transparent">
+  <div class="container">
+    <!-- Logo -->
+    <div id="logo">
+      <h1><a href="/"><img src="/app/static/images/logo.png" alt="Work Scout"></a></h1>
+    </div>
+
+    <!-- Navigation -->
+    <nav id="navigation">
+      <ul id="responsive">
+        <li><a id="current" href="/">Home</a></li>
+        <li><a href="#">Pages</a></li>
+        <li><a href="#">Browse Listings</a></li>
+        <li><a href="#">Dashboard</a></li>
+      </ul>
+      <ul class="float-right">
+        <li>Welcome, {{ user.username }}</li>
+        <li><a href="/logout"><i class="fa fa-lock"></i> Log Out</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<!-- Hero Banner -->
+<div id="banner">
+  <div class="search-container">
+    <h2>Find Job</h2>
+    <form>
+      <input type="text" placeholder="Job title, keywords or company name">
+      <input type="text" placeholder="City, province or region">
+      <button><i class="fa fa-search"></i> Search</button>
+    </form>
+    <div class="browse-jobs">
+      Browse job offers by <a href="#">category</a> or <a href="#">location</a>
+    </div>
+  </div>
+</div>
+
+<!-- Categories Section -->
+<section class="categories">
+  <h2>Popular Categories</h2>
+  <div class="category-grid">
+    <div class="category">
+      <a href="#accounting-finance">
+        <i class="fas fa-calculator"></i>
+        <h4>Accounting / Finance</h4>
+        <span>32</span>
+      </a>
+    </div>
+    <div class="category">
+      <a href="#automotive-jobs">
+        <i class="fas fa-car"></i>
+        <h4>Automotive Jobs</h4>
+        <span>76</span>
+      </a>
+    </div>
+    <div class="category">
+      <a href="#construction-facilities">
+        <i class="fas fa-hard-hat"></i>
+        <h4>Construction / Facilities</h4>
+        <span>31</span>
+      </a>
+    </div>
+    <div class="category">
+      <a href="#education-training">
+        <i class="fas fa-graduation-cap"></i>
+        <h4>Education / Training</h4>
+        <span>76</span>
+      </a>
+    </div>
+    <div class="category">
+      <a href="#healthcare">
+        <i class="fas fa-heartbeat"></i>
+        <h4>Healthcare</h4>
+        <span>32</span>
+      </a>
+    </div>
+  </div>
+  <a href="#all-categories" class="browse-all">Browse All Categories</a>
+</section>
+
+<!-- Job Listings -->
+<div class="jobs-container">
+  {% if user.role == "company" %}
+    <div class="job-listings">
+      <h1>Recent Job Applications</h1>
+      {% for app in job_applications %}
+        <div class="job-card">
+          <div class="job-header">
+            <img src="{{ app.logo_url or '/static/images/default-logo.png' }}" alt="Logo">
+            <div>
+              <h2>{{ app.description }}</h2>
+              <p>{{ app.location_name }}</p>
+            </div>
+          </div>
+          <div class="job-details">
+            <span class="salary">${{ app.min_salary }} - ${{ app.max_salary }}</span>
+            <span class="job-type {{ app.status | lower }}">{{ app.status }}</span>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% elif user.role == "professional" %}
+    <div class="job-listings">
+      <h1>Recent Job Ads</h1>
+      {% for ad in job_ads %}
+        <div class="job-card">
+          <div class="job-header">
+            <img src="{{ ad.logo_url or '/static/images/default-logo.png' }}" alt="Logo">
+            <div>
+              <h2>{{ ad.description }}</h2>
+              <p>{{ ad.location_name }}</p>
+            </div>
+          </div>
+          <div class="job-details">
+            <span class="salary">${{ ad.min_salary }} - ${{ ad.max_salary }}</span>
+            <span class="job-type {{ ad.status | lower }}">{{ ad.status }}</span>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+</div>
+
+<!-- Footer Section -->
+<footer>
+  <div class="footer-container">
+    <div class="footer-subscription">
+      <h3>Get New Jobs Notification!</h3>
+      <p>Subscribe & get all related jobs notification.</p>
+      <form>
+        <input type="email" placeholder="Enter your email">
+        <button type="submit">Subscribe</button>
+      </form>
+    </div>
+    <div class="footer-links">
+      <div>
+        <h4>Company</h4>
+        <ul>
+          <li><a href="#">About Us</a></li>
+          <li><a href="#">Contact Us</a></li>
+          <li><a href="#">Blog</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2024 WorkScout. All rights reserved.</p>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

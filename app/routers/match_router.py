@@ -19,8 +19,8 @@ def get_matches(
 
 @match_router.post('/match_request')
 def send_match(
-    company_offer_id: str,
+    target_id: str,
     db: Session = Depends(get_db),
     current_user: User = Depends(auth.get_current_user)
 ):
-    return send_match_request(db=db, offer_id=company_offer_id, current_user=current_user)
+    return send_match_request(db=db, target_id=target_id, current_user=current_user)
