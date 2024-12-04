@@ -11,6 +11,7 @@ from app.routers.user_router import users_router
 from app.routers.admin_router import admin_router
 from app.routers.message_router import messages_router
 from app.routers.match_router import match_router
+from app.routers.skills_router import skills_router
 import uvicorn
 
 
@@ -23,6 +24,7 @@ app.include_router(company_router)
 app.include_router(company_ad_router)
 app.include_router(job_app_router)
 app.include_router(professional_router)
+app.include_router(skills_router)
 
 
 @app.exception_handler(RequestValidationError)
