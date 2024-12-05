@@ -7,22 +7,29 @@ from app.data.schemas.company import CompanyOut
 
 from fastapi import HTTPException, status
 
+
 def approve_user(id: str, entity_type: str, db: Session):
-    if entity_type == 'professional':
+    if entity_type == "professional":
         entity = db.query(Professional).filter(Professional.id == id).first()
-    elif entity_type == 'company':
+    elif entity_type == "company":
         entity = db.query(Companies).filter(Companies.id == id).first()
     else:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Entity type '{entity_type}' is not valid")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Entity type '{entity_type}' is not valid",
+        )
 
     if entity:
         entity.is_approved = True
         db.commit()
         db.refresh(entity)
         return entity
-        
-    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"{entity_type.capitalize()} with ID {id} not found")
-    
+
+    raise HTTPException(
+        status_code=status.HTTP_404_NOT_FOUND,
+        detail=f"{entity_type.capitalize()} with ID {id} not found",
+    )
+
 
 def waiting_approvals(db: Session) -> WaitingApproval:
     waiting_professionals = (
@@ -41,19 +48,19 @@ def waiting_approvals(db: Session) -> WaitingApproval:
         .all()
     )
 
-    
-
     professionals_out = [
         ProfessionalOut(
-            id= professional.id,
+            id=professional.id,
             first_name=professional.first_name,
             last_name=professional.last_name,
-            location_name=professional.location.city_name if professional.location else "N/A",
+            location_name=professional.location.city_name
+            if professional.location
+            else "N/A",
             phone=professional.phone,
             email=professional.email,
             website=professional.website,
             is_approved=professional.is_approved,
-            username=username
+            username=username,
         )
         for professional, username in waiting_professionals
     ]
@@ -68,12 +75,13 @@ def waiting_approvals(db: Session) -> WaitingApproval:
             email=company.email,
             website=company.website,
             is_approved=company.is_approved,
-            username=username
-       )
-       for company, username in waiting_companies
-   ]
+            username=username,
+        )
+        for company, username in waiting_companies
+    ]
 
     return WaitingApproval(professionals=professionals_out, companies=company_out)
+
 
 def delete_user(id: str, db: Session):
     try:
@@ -81,11 +89,8 @@ def delete_user(id: str, db: Session):
         user = db.query(User).filter(User.id == user_id).first()
 
         if not user:
-            raise HTTPException(
-                status_code=404, 
-                detail=f"User with ID {id} not found"
-            )
-        
+            raise HTTPException(status_code=404, detail=f"User with ID {id} not found")
+
         db.delete(user)
         try:
             db.commit()
@@ -93,16 +98,65 @@ def delete_user(id: str, db: Session):
         except Exception as e:
             db.rollback()
             raise HTTPException(
-                status_code=500, 
-                detail=f"Error while deleting user: {str(e)}"
+                status_code=500, detail=f"Error while deleting user: {str(e)}"
             )
     except ValueError:
-        raise HTTPException(
-            status_code=400, 
-            detail="Invalid UUID format"
-        )
-    
+        raise HTTPException(status_code=400, detail="Invalid UUID format")
+
+
 def approve_requirement(id: str, db: Session, current_user: User):
     if not current_user.is_admin:
         raise HTTPException(status_code=403, detail="You are not authorized.")
-#COULD REQUIREMENTS - DA SE APPROVE REQUIREMENTS. TRQBVA DA SE DOBAQT PURVO V MODELS.
+
+
+# COULD REQUIREMENTS - DA SE APPROVE REQUIREMENTS. TRQBVA DA SE DOBAQT PURVO V MODELS.
+
+def block_or_unblock_user(user_id: str, db: Session, current_user: User):
+    if not current_user.is_admin:
+        raise HTTPException(status_code=403, detail="You are not authorized.")
+
+    try:
+        user_id = UUID(user_id)
+        user = db.query(User).filter(User.id == user_id).first()
+
+        if not user:
+            raise HTTPException(
+                status_code=404,
+                detail=f"User with ID {user_id} not found"
+            )
+
+        if user.role == 'professional':
+            professional = db.query(Professional).options(
+                joinedload(Professional.location),
+                joinedload(Professional.user)
+            ).filter(Professional.user_id == user_id).first()
+
+            if professional:
+                professional.status = 'blocked' if professional.status == 'active' else 'active'
+                db.commit()
+                db.refresh(professional)
+                return professional
+
+        elif user.role == 'company':
+            company = db.query(Companies).options(
+                joinedload(Companies.location),
+                joinedload(Companies.user)
+            ).filter(Companies.user_id == user_id).first()
+
+            if company:
+                company.status = 'blocked' if company.status == 'active' else 'active'
+                db.commit()
+                db.refresh(company)
+                return company
+
+    except ValueError:
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid UUID format"
+        )
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error while blocking/unblocking user: {str(e)}"
+        ) from e

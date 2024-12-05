@@ -1,4 +1,4 @@
-from pydantic import BaseModel, ConfigDict, EmailStr, HttpUrl
+from pydantic import BaseModel, ConfigDict, EmailStr, HttpUrl, field_serializer, field_validator
 from typing import Optional
 from uuid import UUID
 #NOTE : Status - ACTIVE/BUSY. IF BUSY - COMPANIES CAN'T SEE JOB_APPLICATIONS FROM THIS PROFESSIONAL.
@@ -72,3 +72,24 @@ class ReturnProfessional(BaseModel):
     website: Optional[str] = None
     summary: Optional[str] = None
     picture: Optional[str] = None
+
+class ProfessionalOutput(BaseModel):
+    id: UUID
+    first_name: str
+    last_name: str
+    location: Optional[str] = None
+    phone: Optional[str] = None
+    email: Optional[str] = None
+    website: Optional[str] = None
+    summary: Optional[str] = None
+    picture: Optional[str] = None
+    status: Optional[str] = None
+    is_approved: bool
+
+    model_config = ConfigDict(from_attributes=True)
+
+    @field_validator('location', mode='before')
+    def validate_location(cls, value):  # Use cls here, making it a class method
+        if value:
+            return value.city_name  # Adjust to the correct field you're expecting
+        return None

@@ -1,15 +1,13 @@
 from typing import Literal
-from fastapi import APIRouter, Depends, FastAPI, File, HTTPException, Query, Request, UploadFile
+from fastapi import APIRouter, Depends, FastAPI, File, HTTPException, Query, UploadFile, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
-from starlette.exceptions import HTTPException as StarletteHTTPException
-from app.services.cloudinary_service import ALLOWED_EXTENSIONS, change_picture, delete_picture, upload_image_to_cloudinary
+from app.services.cloudinary_service import ALLOWED_EXTENSIONS, change_picture, delete_picture
 from app.data.models import Companies, Professional, User
 from app.data.database import get_db
 from app.common import auth
 from app.data.schemas.users import CompanyRegister, ProfessionalRegister, TokenResponse
 from app.services.user_services import create_company, create_professional, get_all_users
-from app.common.responses import BadRequest
 
 app = FastAPI()
 
@@ -56,9 +54,28 @@ def login_user(
     db: Session = Depends(get_db)
 ):
     user = auth.authenticate_user(db, data.username, data.password)
+    
     if not user:
         raise HTTPException(status_code=401, detail='Invalid username or password')
     
+    user = db.query(User).filter(User.username == data.username).first()
+
+    if user.role == 'professional':
+        prof = db.query(Professional).filter(Professional.user_id == user.id).first()
+        if prof.status == 'blocked':
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail='Your account has been blocked. Please contact the administrator for more information.'
+            )
+        
+    elif user.role == 'company':
+        comp = db.query(Companies).filter(Companies.user_id == user.id).first()
+        if comp.status == 'blocked':
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail='Your account has been blocked. Please contact the administrator for more information.'
+            )
+        
     access_token = auth.create_access_token(data={
         'sub': user.username,
         'id': str(user.id),

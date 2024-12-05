@@ -21,9 +21,9 @@ ALGORITHM = os.getenv('ALGORITHM')
 #ACCESS_TOKEN_EXPIRE_MINUTES= int(os.getenv('ACCESS_TOKEN_EXPIRE_MINUTES'))
 
 #CLOUDINARY
-# CLOUD_NAME = os.getenv('CLOUD_NAME')
-# API_KEY = os.getenv('API_KEY')
-# API_SECRET = os.getenv('API_SECRET')
+CLOUD_NAME = os.getenv('CLOUD_NAME')
+API_KEY = os.getenv('API_KEY')
+API_SECRET = os.getenv('API_SECRET')
 # CLOUDINARY_URL= os.getenv('CLOUDINARY_URL')
 #
 # #MAILJET

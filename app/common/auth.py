@@ -9,7 +9,7 @@ from app.common.responses import Forbidden
 from app.data.schemas.users import UserResponse
 from app.config import ALGORITHM, SECRET_KEY
 from sqlalchemy.orm import Session
-from app.data.models import User
+from app.data.models import Professional, User
 from app.data.database import get_db
 from app.services.user_services import get_user
 from app.common.utils import get_password_hash, verify_password, verify_token
