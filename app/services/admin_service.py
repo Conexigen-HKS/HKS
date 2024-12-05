@@ -1,14 +1,34 @@
+"""
+Admin service module.
+In this file, we define the service functions for the admin service.
+We have the following functions:
+- approve_user: This function is used to approve a user.
+- waiting_approvals: This function is used to get all waiting approvals.
+- delete_user: This function is used to delete a user.
+- approve_requirement: This function is used to approve a requirement.
+- block_or_unblock_user: This function is used to block or unblock a user.
+"""
 from uuid import UUID
+
+
 from sqlalchemy.orm import Session, joinedload
-from app.data.models import Professional, Companies, User
-from app.data.schemas.users import WaitingApproval
-from app.data.schemas.professional import ProfessionalOut
-from app.data.schemas.company import CompanyOut
 
 from fastapi import HTTPException, status
 
+from app.data.models import Companies, Professional, User
+from app.data.schemas.company import CompanyOut
+from app.data.schemas.professional import ProfessionalOut
+from app.data.schemas.users import WaitingApproval
+
 
 def approve_user(id: str, entity_type: str, db: Session):
+    """
+    Approve a user
+    :param id: The ID of the user to approve
+    :param entity_type: The type of entity to approve
+    :param db: The database session
+    :return: The approved entity
+    """
     if entity_type == "professional":
         entity = db.query(Professional).filter(Professional.id == id).first()
     elif entity_type == "company":
@@ -32,6 +52,11 @@ def approve_user(id: str, entity_type: str, db: Session):
 
 
 def waiting_approvals(db: Session) -> WaitingApproval:
+    """
+    Get all waiting approvals
+    :param db: The database session
+    :return: A WaitingApproval object
+    """
     waiting_professionals = (
         db.query(Professional, User.username)
         .join(User, Professional.user_id == User.id)
@@ -84,6 +109,12 @@ def waiting_approvals(db: Session) -> WaitingApproval:
 
 
 def delete_user(id: str, db: Session):
+    """
+    Delete a user
+    :param id: The ID of the user to delete
+    :param db: The database session
+    :return: A message indicating the user was deleted successfully
+    """
     try:
         user_id = UUID(id)
         user = db.query(User).filter(User.id == user_id).first()
@@ -99,19 +130,31 @@ def delete_user(id: str, db: Session):
             db.rollback()
             raise HTTPException(
                 status_code=500, detail=f"Error while deleting user: {str(e)}"
-            )
-    except ValueError:
-        raise HTTPException(status_code=400, detail="Invalid UUID format")
+            ) from e
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail="Invalid UUID format") from exc
 
 
 def approve_requirement(id: str, db: Session, current_user: User):
+    """
+    Approve a requirement
+    :param id: The ID of the requirement to approve
+    :param db: The database session
+    :param current_user: The current user
+    :return: The approved requirement
+    """
     if not current_user.is_admin:
         raise HTTPException(status_code=403, detail="You are not authorized.")
 
 
-# COULD REQUIREMENTS - DA SE APPROVE REQUIREMENTS. TRQBVA DA SE DOBAQT PURVO V MODELS.
-
 def block_or_unblock_user(user_id: str, db: Session, current_user: User):
+    """
+    Block or unblock a user
+    :param user_id: The ID of the user to block/unblock
+    :param db: The database session
+    :param current_user: The current user
+    :return: The blocked/unblocked user
+    """
     if not current_user.is_admin:
         raise HTTPException(status_code=403, detail="You are not authorized.")
 
@@ -149,11 +192,11 @@ def block_or_unblock_user(user_id: str, db: Session, current_user: User):
                 db.refresh(company)
                 return company
 
-    except ValueError:
+    except ValueError as exc:
         raise HTTPException(
             status_code=400,
             detail="Invalid UUID format"
-        )
+        ) from exc
     except Exception as e:
         db.rollback()
         raise HTTPException(

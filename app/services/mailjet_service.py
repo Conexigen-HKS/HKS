@@ -1,4 +1,4 @@
-# from mailjet_rest import Client
+#TODO from mailjet_rest import Client
 # from config import MJ_APIKEY_PRIVATE, MJ_APIKEY_PUBLIC
 
 # api_key = MJ_APIKEY_PUBLIC

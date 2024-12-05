@@ -1,3 +1,11 @@
+"""
+This module contains the service functions for the Location model.
+We have three functions:
+- create_location: This function is used to create a new location.
+- get_all_locations: This function is used to get all locations.
+- get_location_by_id: This function is used to get a location by its ID.
+"""
+
 from uuid import UUID
 
 from sqlalchemy.orm import Session
@@ -8,7 +16,15 @@ from app.data.schemas.locations import LocationCreate
 
 
 def create_location(db: Session, location_data: LocationCreate):
-    existing_location = db.query(Location).filter(Location.city_name == location_data.city_name).first()
+    """
+    Create a new location
+    :param db: Database session
+    :param location_data: Location data
+    :return: New location
+    """
+    existing_location = (
+        db.query(Location).filter(Location.city_name == location_data.city_name).first()
+    )
     if existing_location:
         raise HTTPException(status_code=400, detail="Location already exists")
 
@@ -20,10 +36,21 @@ def create_location(db: Session, location_data: LocationCreate):
 
 
 def get_all_locations(db: Session):
+    """
+    Get all locations
+    :param db: Database session
+    :return: List of locations
+    """
     return db.query(Location).all()
 
 
 def get_location_by_id(db: Session, location_id: UUID):
+    """
+    Get a location by its ID
+    :param db: Database session
+    :param location_id: Location ID
+    :return: Location
+    """
     location = db.query(Location).filter(Location.id == location_id).first()
     if not location:
         raise HTTPException(status_code=404, detail="Location not found")
