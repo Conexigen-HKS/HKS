@@ -6,15 +6,14 @@ from app.common import auth
 from app.data.database import get_db
 from app.data.models import User
 from app.data.schemas.company import CompanyAdModel, CompanyAdUpdateModel, CreateCompanyAdModel
-from app.services.company_ad_service import delete_company_ad, get_company_ads, edit_company_ad_by_id
-# , get_company_all_ads_service, delete_company_ad_service
+from app.services.company_ad_service import create_new_ad, delete_company_ad, get_company_ads, edit_company_ad_by_id
 
 
 company_ad_router = APIRouter(prefix="/ads", tags=["Company Ads"])
 
 #WORKS
 @company_ad_router.post('/new_ad')
-def create_new_ad(
+def create_new_ad_(
     company_ad: CreateCompanyAdModel,
     current_user: User = Depends(auth.get_current_user),
     db: Session = Depends(get_db)

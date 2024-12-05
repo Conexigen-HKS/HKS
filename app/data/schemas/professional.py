@@ -1,7 +1,7 @@
 from pydantic import BaseModel, ConfigDict, EmailStr, HttpUrl
 from typing import Optional
 from uuid import UUID
-
+#NOTE : Status - ACTIVE/BUSY. IF BUSY - COMPANIES CAN'T SEE JOB_APPLICATIONS FROM THIS PROFESSIONAL.
 
 class ProfessionalResponse(BaseModel):
     id: UUID
@@ -11,7 +11,7 @@ class ProfessionalResponse(BaseModel):
     phone: Optional[str]
     email: Optional[str]
     website: Optional[str]
-    status: Optional[str]
+    status: Optional[str] # ACTIVE/BUSY
     summary: Optional[str]
     is_approved: bool
     user_id: UUID
@@ -61,3 +61,14 @@ class ProfessionalUpdate(BaseModel):
     
     class Config:
         orm_mode = True
+
+class ReturnProfessional(BaseModel):
+    id: Optional[UUID] = None
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
+    location: Optional[str] = None
+    phone: Optional[str] = None
+    email: Optional[str] = None
+    website: Optional[str] = None
+    summary: Optional[str] = None
+    picture: Optional[str] = None

@@ -1,7 +1,7 @@
 from uuid import UUID
 from pydantic import BaseModel, UUID4, ConfigDict, Field, model_validator
 from typing import Optional, List
-
+# TODO да направя един валидатор за статусите на апликациите, active/hidden/private и тн.
 from app.data.schemas.skills import SkillCreate, SkillResponse
 
 

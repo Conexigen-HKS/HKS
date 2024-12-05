@@ -1,11 +1,9 @@
 from uuid import UUID
 from sqlalchemy.orm import Session, joinedload
 from app.data.models import Professional, Companies, User
-from app.common.responses import NotFound
 from app.data.schemas.users import WaitingApproval
 from app.data.schemas.professional import ProfessionalOut
-from app.data.schemas.company import CompanyInfoModel, CompanyOut
-from app.services.user_services import get_user_by_id, get_username_from_id, user_exists
+from app.data.schemas.company import CompanyOut
 
 from fastapi import HTTPException, status
 

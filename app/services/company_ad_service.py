@@ -3,7 +3,11 @@ from sqlalchemy.orm import Session
 from fastapi import HTTPException
 from app.data.schemas.company import CompanyAdUpdateModel, CompanyAdModel
 from app.data.models import Companies, Location, User, CompanyOffers
-# from app.services.company_service import get_company_id_by_user_id_service, get_company_name_by_username_service
+#TODO - Implement a way for companies to add requirements with levels to their job ads.
+#TODO - Add functionality to allow adding new skills/requirements and consider an approval workflow.
+#NOTE - Status
+# Active – visible
+# Archived – matched with professional and no longer active
 
 #WORKS
 def create_new_ad(

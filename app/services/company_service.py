@@ -8,10 +8,22 @@ from app.data.schemas.company import (
     CompanyInfoRequestModel,
     SearchCompaniesModel
 )
-from app.data.models import Companies, User, CompanyOffers, Location
+from app.data.models import Companies, Professional, User, CompanyOffers, Location
+from app.data.schemas.professional import ProfessionalOut, ReturnProfessional
+#TODO Professionals Search for Companies and Vice Versa (Should Have):
+#TODO View Archived Job Applications (Must Have):
+# Missing Functionality: Companies should be able to view all archived (matched) job applications.
+# Recommended Action: Implement functionality to list archived job applications for companies.
+#TODO Currently Active Number of Job Ads and Successful Matches:
+# Missing Functionality: Display the number of active job ads and successful matches in the company info.
+#TODO Salary search range (must)
+# Match threshold – percent of adds range increase (should)
+# List of Skills/Requirements (must)
+# Match threshold – number of skills that may miss from the add (should)
+# Location (must)
 
 #WORKS
-def show_company_description_service(user: User, db: Session):
+def show_company_description_service(user: User, db: Session): # DA MAHNEM OBQVITE ZA RABOTA OT DESCRIPTION
     company = db.query(Companies).filter(Companies.user_id == user.id).first()
 
     if company is None:
@@ -154,5 +166,24 @@ def find_all_companies_service(db: Session) -> List[CompanyInfoRequestModel]:
             email=company.email,
             website=company.website,
             company_logo=company.picture
+        ).model_dump())
+    return result
+
+#WORKS
+def get_all_professionals(db: Session) -> List[ReturnProfessional]:
+    professionals = db.query(Professional).all()
+
+    result = []
+    for prof in professionals:
+        result.append(ReturnProfessional(
+            id=prof.id,
+            first_name=prof.first_name,
+            last_name=prof.last_name,
+            location=prof.location.city_name if prof.location else "N/A",
+            phone=prof.phone,
+            email=prof.email,
+            website=prof.website,
+            summary=prof.summary,
+            picture=prof.picture
         ).model_dump())
     return result

@@ -8,7 +8,7 @@ from app.data.models import User
 from app.data.schemas.company import ShowCompanyModel, CompanyInfoRequestModel
 from app.data.schemas.job_application import JobApplicationResponse
 from app.services.company_service import (edit_company_description_service,
-find_all_companies_service,show_company_description_service)
+find_all_companies_service, get_all_professionals,show_company_description_service)
 from app.services.job_app_service import search_job_applications_service
 
 
@@ -74,3 +74,7 @@ def search_or_get_job_applications(
         raise HTTPException(status_code=403, detail="Only companies can access this endpoint")
     
     return search_job_applications_service(db, query, location, skill)
+
+@company_router.get("/professionals-list")
+def get_all_professionals_(db: Session = Depends(get_db)):
+    return get_all_professionals(db=db)

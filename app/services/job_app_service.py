@@ -1,13 +1,17 @@
 from fastapi import HTTPException
-from typing import Optional, List
+from typing import Literal, Optional, List
 from uuid import UUID
-
 from sqlalchemy.orm import Session, joinedload
-
 from app.data.models import Professional, ProfessionalProfile, ProfessionalProfileSkills, Skills, RequestsAndMatches, CompanyOffers, \
     Location, User
 from app.data.schemas.job_application import JobApplicationEdit, JobApplicationResponse
-from app.data.schemas.skills import SkillCreate
+from app.data.schemas.skills import SkillCreate, SkillResponse
+#TODO - Add functionality to allow adding new skills/requirements and consider an approval workflow.
+#NOTE - Status
+# Active – the Job application is visible in searches by the Company
+# Hidden – the Job application is not visible for anyone but the creator
+# Private – the Job application can be viewed by id, but do not appear in searches should
+# Matched – when is matched by a company
 
 #WORKS
 def create_job_application(
@@ -119,7 +123,17 @@ def get_all_job_applications_service(db: Session, professional_id: UUID) -> List
 
 
 #WORKS
-def search_job_ads_service(db: Session, query: Optional[str] = None, location: Optional[str] = None):
+def search_job_ads_service(
+        db: Session, query: Optional[str] = None, 
+        location: Optional[str] = None, 
+        min_salary: Optional[int] = None,
+        max_salary: Optional[int] = None,
+        order_by: Literal["asc", "desc"] = "asc" 
+        ):
+    
+    if min_salary and max_salary and min_salary > max_salary:
+        raise ValueError("Minimum salary cannot be higher than maximum salary")
+    
     job_ads_query = db.query(CompanyOffers).filter(CompanyOffers.status == "active")
 
     if query:
@@ -127,6 +141,18 @@ def search_job_ads_service(db: Session, query: Optional[str] = None, location: O
     
     if location:
         job_ads_query = job_ads_query.join(Location).filter(Location.city_name.ilike(f"%{location}%"))
+
+    if min_salary:
+        job_ads_query = job_ads_query.filter(CompanyOffers.min_salary >= min_salary)
+
+    if max_salary:
+        job_ads_query = job_ads_query.filter(CompanyOffers.max_salary <= max_salary)  
+
+    if order_by == "desc":
+        job_ads_query = job_ads_query.order_by(CompanyOffers.min_salary.desc())
+    else:
+        job_ads_query = job_ads_query.order_by(CompanyOffers.min_salary.asc())  
+
 
     job_ads = job_ads_query.options(joinedload(CompanyOffers.location)).all()
 
@@ -161,14 +187,20 @@ def get_archived_job_applications_service(db: Session):
         for job_app in archived_job_apps
     ]
 
+#NOTE - Status
+# Active – the Job application is visible in searches by the Company
+# Hidden – the Job application is not visible for anyone but the creator
+# Private – the Job application can be viewed by id, but do not appear in searches should
+# Matched – when is matched by a company
+
 #WORKS
 def search_job_applications_service(
         db: Session,
         query: Optional[str] = None,
         location: Optional[str] = None,
         skill: Optional[str] = None
-):
-    job_applications_query = db.query(ProfessionalProfile).filter(ProfessionalProfile.status == "Active")
+): 
+    job_applications_query = db.query(ProfessionalProfile).filter(ProfessionalProfile.status == "Active") # da moje i s malka bukva da se tursi
 
     if query:
         job_applications_query = job_applications_query.filter(ProfessionalProfile.description.ilike(f"%{query}%"))
@@ -190,12 +222,19 @@ def search_job_applications_service(
             max_salary=job_app.max_salary,
             status=job_app.status,
             location_name=job_app.location.city_name if job_app.location else "N/A",
-            skills=[skill.skill.name for skill in job_app.skills]
+            skills=[
+                SkillResponse(
+                    skill_id=s.skill.id,
+                    name=s.skill.name,
+                    level=s.level
+                )
+                for s in job_app.skills
+            ]
         )
         for job_app in job_apps
     ]
 
-#DONT KNOW IF WORKS OR NOT
+# #DONT KNOW IF WORKS OR NOT
 def view_job_application(db: Session, job_application_id: UUID, user_id: UUID):
     job_application = db.query(ProfessionalProfile).filter(
         ProfessionalProfile.id == job_application_id,
@@ -205,13 +244,21 @@ def view_job_application(db: Session, job_application_id: UUID, user_id: UUID):
         raise HTTPException(status_code=404, detail="Job application not found")
 
     return JobApplicationResponse(
+        user_id=job_application.user_id,
         id=job_application.id,
         description=job_application.description,
         min_salary=job_application.min_salary,
         max_salary=job_application.max_salary,
         status=job_application.status,
         location_name=job_application.location.city_name if job_application.location else None,
-        skills=[s.skill.name for s in job_application.skills]
+        skills=[
+            SkillResponse(
+                skill_id=s.skill.id,
+                name=s.skill.name,
+                level=s.level
+            )
+            for s in job_application.skills
+        ]
     )
 
 def edit_job_app(

@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from fastapi import Depends, HTTPException
 from sqlalchemy.exc import SQLAlchemyError
 from app.data.models import Companies, Professional, RequestsAndMatches, ProfessionalProfile, CompanyOffers, User
-
+#TODO - See bottom of the file.
 
 def send_match_request(
     db: Session,
@@ -193,3 +193,15 @@ def view_matches(db: Session, current_user: User):
             status_code=500,
             detail=f"Database error: {str(e)}"
         )
+
+# Search with Thresholds (Should Have):
+
+# Missing Functionality: Searches should support thresholds for salary ranges and skills (e.g., accepting matches that are not exact).
+# Recommended Action: Enhance search endpoints to accept threshold parameters and adjust query logic accordingly.
+# 
+# 
+# 
+# Match Thresholds in Matching Logic (Should Have):
+
+# Missing Functionality: Matching should consider thresholds for salary ranges and number of matching skills.
+# Recommended Action: Update the matching services to include threshold logic as per the requirements.

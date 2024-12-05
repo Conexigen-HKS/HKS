@@ -1,17 +1,17 @@
 from typing import List
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 from app.data.schemas.job_application import JobApplicationEdit, JobApplicationResponse, JobApplicationCreate
 from app.common.auth import get_current_user
 
 from app.data.database import get_db
-from app.data.models import Location, ProfessionalProfile, User
+from app.data.models import User
 from app.data.schemas.skills import SkillResponse
-from app.services.job_app_service import create_job_application, delete_job_application, get_job_application, get_all_job_applications_service, edit_job_app
-from app.services.professional_service import get_professional_by_user_id
+from app.services.job_app_service import create_job_application, delete_job_application, edit_job_app, view_job_application
+from app.services.professional_service import get_own_job_applications, get_professional_by_user_id
 
 job_app_router = APIRouter(tags=["Job Applications"], prefix="/api/job_applications")
 
@@ -50,48 +50,21 @@ def create_job_application_(
     )
 
 #WORKS
-@job_app_router.get("/{job_application_id}", response_model=JobApplicationResponse)
-def get_job_application_(
+@job_app_router.get("/job-applications/{job_application_id}", response_model=JobApplicationResponse)
+def view_application(
     job_application_id: UUID,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
 ):
-    professional = get_professional_by_user_id(db, current_user.id)
-
-    profile, match_requests = get_job_application(db, job_application_id)
-
-    if profile.professional_id != professional.id:
-        raise HTTPException(status_code=403, detail="Not authorized to view this job application")
-
-    location_name = None
-    if profile.location_id:
-        location = db.query(Location).filter(Location.id == profile.location_id).first()
-        location_name = location.city_name if location else None
-
-    return JobApplicationResponse(
-        user_id=current_user.id,
-        id=profile.id,
-        description=profile.description,    
-        min_salary=profile.min_salary,
-        max_salary=profile.max_salary,
-        location_name=location_name,
-        status=profile.status,
-        skills=[s.skill.name for s in profile.skills]
-    )
-
+    return view_job_application(db=db, job_application_id=job_application_id, user_id=current_user.id)
 
 #WORKS
-@job_app_router.get("/", response_model=List[JobApplicationResponse])
-def get_all_job_applications(
-    db: Session = Depends(get_db),
-    current_user: ProfessionalProfile = Depends(get_current_user)
+@job_app_router.get("/job-applications", response_model=List[JobApplicationResponse])
+def view_job_applications(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
 ):
-    if not current_user.professional:
-        raise HTTPException(status_code=404, detail="Professional application not found for current user.")
-    
-    professional_id = current_user.professional.id
-    applications = get_all_job_applications_service(db, professional_id)
-    return applications
+    return get_own_job_applications(db, current_user)
 
 @job_app_router.put("/{id}")
 def edit_job_app_(

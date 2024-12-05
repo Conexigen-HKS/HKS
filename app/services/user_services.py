@@ -12,6 +12,7 @@ from app.common.utils import get_password_hash
 def get_user(db: Session, username: str) -> User:
     return db.query(User).filter(User.username == username).first()
     
+
 def create_professional(db: Session, professional_data: ProfessionalRegister) -> Professional:
     hashed_password = get_password_hash(professional_data.password)
 
@@ -70,6 +71,7 @@ def create_professional(db: Session, professional_data: ProfessionalRegister) ->
 
         return professional
 
+
 def get_professional(db: Session, username: str) -> Professional:
     professional = db.query(Professional).filter(Professional.username == username).first()
 
@@ -78,8 +80,6 @@ def get_professional(db: Session, username: str) -> Professional:
     
     return professional
 
-def return_professional_response():#трябва да се създаде проф модел в пайдантик
-    raise NotImplementedError
 
 def create_company(db: Session, company_data: CompanyRegister) -> Companies:
     hashed_password = get_password_hash(company_data.password)
@@ -154,8 +154,6 @@ def get_company(db: Session, username: str) -> Companies:
     
     return company
 
-def return_company_response():#трябва да се създаде компани модел в пайдантик
-    raise NotImplementedError
 
 def get_user_by_id(db: Session, user_id: str) -> User:
     user = db.query(User).filter(User.id == user_id).first()
@@ -164,6 +162,7 @@ def get_user_by_id(db: Session, user_id: str) -> User:
         return None
     
     return UserResponse.model_validate(user)
+
 
 def get_all_users(db: Session, role: str):
     print("Role inside get_all_entities:", role)
@@ -220,12 +219,14 @@ def get_all_users(db: Session, role: str):
     else:
         raise HTTPException(status_code=400, detail="Invalid role")
 
+
 def get_username_from_id(usr_id: str, db: Session):
     user = db.query(User).filter(User.id == usr_id).first()
 
     if not user:
         raise HTTPException(status_code=404, detail=f"User with ID {usr_id} not found !")
     return user.username
+
 
 def user_exists(id: str, db: Session):
     user = db.query(User).filter(User.id == id).first()

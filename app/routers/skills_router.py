@@ -1,10 +1,8 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from uuid import UUID
 
-from app.common.auth import get_current_user
 from app.data.database import get_db
-from app.data.models import ProfessionalProfile, User, Professional, ProfessionalProfileSkills
 from app.data.schemas.skills import SkillCreate, SkillResponse
 from app.services.skills_service import create_skill_service, get_profile_skills_service
 
