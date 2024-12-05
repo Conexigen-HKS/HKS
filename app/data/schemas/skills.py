@@ -1,11 +1,12 @@
 from typing import Optional
 
-from pydantic import BaseModel, UUID4, root_validator, model_validator
+from pydantic import BaseModel, UUID4
 
 
 class SkillCreate(BaseModel):
-    name: str  # Skill name
-    level: Optional[str] = None  # Optional skill level
+    name: str
+    level: Optional[str] = None
+
 
 class SkillResponse(BaseModel):
     skill_id: UUID4

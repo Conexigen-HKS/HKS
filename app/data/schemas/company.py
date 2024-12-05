@@ -1,7 +1,7 @@
 from typing import Optional, List
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field, field_serializer, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
 class CompanyInfoModel(BaseModel):
@@ -139,7 +139,7 @@ class CompanyOutput(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     @field_validator('location', mode='before')
-    def validate_location(cls, value):  # Use cls here, making it a class method
+    def validate_location(cls, value):
         if value:
-            return value.city_name  # Adjust to the correct field you're expecting
+            return value.city_name
         return None

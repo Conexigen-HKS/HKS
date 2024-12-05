@@ -1,6 +1,8 @@
-from pydantic import BaseModel, ConfigDict, EmailStr, HttpUrl, field_serializer, field_validator
 from typing import Optional
 from uuid import UUID
+
+from pydantic import BaseModel, ConfigDict, field_validator
+
 #NOTE : Status - ACTIVE/BUSY. IF BUSY - COMPANIES CAN'T SEE JOB_APPLICATIONS FROM THIS PROFESSIONAL.
 
 class ProfessionalResponse(BaseModel):
@@ -34,6 +36,7 @@ class ProfessionalResponse(BaseModel):
             user_id=professional.user_id
         )
 
+
 class ProfessionalOut(BaseModel):
     id: UUID
     first_name: str
@@ -47,7 +50,7 @@ class ProfessionalOut(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-#added optional str for partial update
+
 class ProfessionalUpdate(BaseModel):
     first_name: Optional[str] = None
     last_name: Optional[str] = None
@@ -58,9 +61,9 @@ class ProfessionalUpdate(BaseModel):
     status: Optional[str] = None
     summary: Optional[str] = None
     picture: Optional[str] = None
-    
-    class Config:
-        orm_mode = True
+
+    model_config = ConfigDict(from_attributes=True)
+
 
 class ReturnProfessional(BaseModel):
     id: Optional[UUID] = None
@@ -72,6 +75,7 @@ class ReturnProfessional(BaseModel):
     website: Optional[str] = None
     summary: Optional[str] = None
     picture: Optional[str] = None
+
 
 class ProfessionalOutput(BaseModel):
     id: UUID

@@ -6,16 +6,24 @@ It includes the following routes:
     - delete_user_
     - block_unblock_user
 """
+# TODO Admins can delete application data (profiles, job ads etc.)
 from typing import Literal, Union
+
 from fastapi import APIRouter, Depends, FastAPI, HTTPException, Query
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
+
 from app.data.models import Companies, Professional, User
 from app.data.database import get_db
 from app.common import auth
-from app.data.schemas.company import CompanyOut, CompanyOutput
-from app.data.schemas.professional import ProfessionalOut, ProfessionalOutput
-from app.services.admin_service import block_or_unblock_user, waiting_approvals, approve_user, delete_user
+from app.data.schemas.company import CompanyOutput
+from app.data.schemas.professional import ProfessionalOutput
+from app.services.admin_service import (
+    block_or_unblock_user,
+    waiting_approvals,
+    approve_user,
+    delete_user,
+)
 
 
 app = FastAPI()
@@ -59,12 +67,12 @@ def approve_user_(
     try:
         user_to_be_approved = approve_user(id=id, entity_type=role, db=db)
         return JSONResponse(
-        status_code=200,
-        content={
-            "message": f"{role.capitalize()} approved successfully",
-            "data": user_to_be_approved,
-        },
-    )
+            status_code=200,
+            content={
+                "message": f"{role.capitalize()} approved successfully",
+                "data": user_to_be_approved,
+            },
+        )
     except HTTPException as e:
         raise e
 
@@ -86,16 +94,21 @@ def delete_user_(
 
     try:
         delete_user(id=id, db=db)
-        return JSONResponse(status_code=200, content={"message": "User deleted successfully"})
+        return JSONResponse(
+            status_code=200, content={"message": "User deleted successfully"}
+        )
 
     except HTTPException as e:
         raise e
 
-@admin_router.patch("/block-unblock/{user_id}", response_model=Union[ProfessionalOutput, CompanyOutput])
+
+@admin_router.patch(
+    "/block-unblock/{user_id}", response_model=Union[ProfessionalOutput, CompanyOutput]
+)
 def block_unblock_user(
     user_id: str,
     db: Session = Depends(get_db),
-    current_user: User = Depends(auth.get_current_user)
+    current_user: User = Depends(auth.get_current_user),
 ):
     blocked_user = block_or_unblock_user(user_id, db, current_user)
 
@@ -105,15 +118,3 @@ def block_unblock_user(
         return CompanyOutput.model_validate(blocked_user)
     else:
         raise HTTPException(status_code=500, detail="Unexpected user type returned")
-# Administration (could)
-
-
-# Optionally, create application administration functionality
-
-# o Admins approve companies’ and professionals’ registration
-
-# o Admins can block/unblock companies and professionals
-
-# o Admins can delete application data (profiles, job ads etc.)
-
-# o Admins can add/delete or approve skills/requirements
