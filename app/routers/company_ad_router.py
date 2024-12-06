@@ -27,7 +27,7 @@ from app.services.company_ad_service import (
 )
 
 
-company_ad_router = APIRouter(prefix="/ads", tags=["Company Ads"])
+company_ad_router = APIRouter(prefix="/api/ads", tags=["Company Ads"])
 
 
 # WORKS

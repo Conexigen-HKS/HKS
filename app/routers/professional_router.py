@@ -29,7 +29,7 @@ from app.services.job_app_service import (
 from app.services.match_service import view_matches
 from app.services.professional_service import view_own_profile, update_own_profile
 
-professional_router = APIRouter(prefix="/professionals", tags=["Professionals"])
+professional_router = APIRouter(prefix="/api/professionals", tags=["Professionals"])
 
 
 @professional_router.get("/profile", response_model=ProfessionalResponse)

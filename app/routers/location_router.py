@@ -17,7 +17,7 @@ from app.services.location_service import (
     get_all_locations,
     get_location_by_id,
 )
-locations_router = APIRouter(tags=["Locations"], prefix="/locations")
+locations_router = APIRouter(tags=["Locations"], prefix="/api/locations")
 
 @locations_router.post("/", response_model=LocationResponse)
 def create_location_endpoint(location_data: LocationCreate, db: Session = Depends(get_db)):

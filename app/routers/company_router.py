@@ -27,7 +27,7 @@ from app.services.company_service import (
 from app.services.job_app_service import search_job_applications_service
 
 
-company_router = APIRouter(prefix="/companies", tags=["Companies"])
+company_router = APIRouter(prefix="/api/companies", tags=["Companies"])
 
 
 @company_router.get("/info", response_model=List[ShowCompanyModel])

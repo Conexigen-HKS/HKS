@@ -16,7 +16,7 @@ from app.services.skills_service import (
     get_profile_skills_service,
 )
 
-skills_router = APIRouter(prefix="/skills", tags=["Skills"])
+skills_router = APIRouter(prefix="/api/skills", tags=["Skills"])
 
 
 @skills_router.post("/", response_model=SkillResponse)
