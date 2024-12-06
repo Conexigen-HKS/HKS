@@ -1,88 +1,47 @@
-#TODO from mailjet_rest import Client
-# from config import MJ_APIKEY_PRIVATE, MJ_APIKEY_PUBLIC
+import os
 
-# api_key = MJ_APIKEY_PUBLIC
-# api_secret = MJ_APIKEY_PRIVATE
+from dotenv import load_dotenv
+from mailjet_rest import Client
 
-# mailjet = Client(auth=(api_key, api_secret))
-# data = {
-# 	'FromEmail': '$SENDER_EMAIL',
-# 	'FromName': '$SENDER_NAME',
-# 	'Subject': 'Your email flight plan!',
-# 	'Text-part': 'Dear passenger, welcome to Mailjet! May the delivery force be with you!',
-# 	'Html-part': '<h3>Dear passenger, welcome to <a href=\"https://www.mailjet.com/\">Mailjet</a>!<br />May the delivery force be with you!',
-# 	'Recipients': [{'Email': '$RECIPIENT_EMAIL'}]
-# }
-# result = mailjet.send.create(data=data)
-# print(result.status_code)
-# print(result.json())
+from app.config import MJ_APIKEY_PRIVATE, MJ_APIKEY_PUBLIC
 
-# #mailjet = Client(auth=(api_key, api_secret),api_url="https://api.us.mailjet.com/")
+load_dotenv()
 
-# # """
-# # Run:
-# # """
-# # from mailjet_rest import Client
-# # import os
-# # api_key = os.environ['MJ_APIKEY_PUBLIC']
-# # api_secret = os.environ['MJ_APIKEY_PRIVATE']
-# # mailjet = Client(auth=(api_key, api_secret), version='v3.1')
-# # data = {
-# #   'Messages': [
-# # 				{
-# # 						"From": {
-# # 								"Email": "$SENDER_EMAIL",
-# # 								"Name": "Me"
-# # 						},
-# # 						"To": [
-# # 								{
-# # 										"Email": "$RECIPIENT_EMAIL",
-# # 										"Name": "You"
-# # 								}
-# # 						],
-# # 						"Subject": "My first Mailjet Email!",
-# # 						"TextPart": "Greetings from Mailjet!",
-# # 						"HTMLPart": "<h3>Dear passenger 1, welcome to <a href=\"https://www.mailjet.com/\">Mailjet</a>!</h3><br />May the delivery force be with you!"
-# # 				}
-# # 		]
-# # }
-# # result = mailjet.send.create(data=data)
-# # print result.status_code
-# # print result.json()
+api_key = os.getenv('MJ_APIKEY_PUBLIC')
+api_secret = os.getenv('MJ_APIKEY_PRIVATE')
+mailjet = Client(auth=(MJ_APIKEY_PUBLIC, MJ_APIKEY_PRIVATE), version='v3.1')
 
+def send_email(to_email: str, to_name: str, subject: str, text_content: str, html_content: str):
+    data = {
+        'Messages': [
+            {
+                "From": {
+                    "Email": "kristinkaa891@gmail.com",  # Replace with your sender email
+                    "Name": "Conexigen team"
+                },
+                "To": [
+                    {
+                        "Email": to_email,
+                        "Name": to_name
+                    }
+                ],
+                "Subject": subject,
+                "TextPart": text_content,
+                "HTMLPart": html_content
+            }
+        ]
+    }
+    result = mailjet.send.create(data=data)
+    return result.status_code, result.json()
 
-# Retrieve sent messages
-# """
-# Run :
-# """
-# from mailjet_rest import Client
-# import os
-# api_key = os.environ['MJ_APIKEY_PUBLIC']
-# api_secret = os.environ['MJ_APIKEY_PRIVATE']
-# mailjet = Client(auth=(api_key, api_secret))
-# id = '$MESSAGE_ID'
-# result = mailjet.message.get(id=id)
-# print result.status_code
-# print result.json()
-
-# api response - 
-# {
-#   "Count": "1",
-#   "Data": [
-#     {
-#       "ArrivedAt": "2018-01-01T00:00:00",
-#       "AttachmentCount": "1",
-#       "AttemptCount": "1",
-#       "CampaignID": "123456789",
-#       "ContactAlt": "",
-#       "ContactID": "987654",
-#       "FilterTime": "111",
-#       "ID": "1234567890987654321",
-#       "Status": "clicked",
-#       "Subject": "",
-#       "UUID": "1ab23cd4-e567-8901-2345-6789f0gh1i2j"
-#       "........................."
+# def notify_user_registration(user_email: str, user_name: str):
+#     variables = {
+#         "subject": "Welcome to Our Service",
+#         "text_part": f"Hello {user_name}, welcome to our platform!",
+#         "html_part": f"<h3>Hello {user_name},</h3><p>Welcome to our platform!</p>"
 #     }
-#   ],
-#   "Total": "1"
-# }
+#     status, response = send_templated_email(user_email, user_name, variables)
+#     if status == 200:
+#         print("Email sent successfully.")
+#     else:
+#         print(f"Failed to send email: {response}")

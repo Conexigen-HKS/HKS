@@ -17,6 +17,7 @@ from app.data.models import (
     CompanyOffers,
     User,
 )
+from app.services.mailjet_service import send_email
 
 
 # TODO:
@@ -68,6 +69,20 @@ def send_match_request(db: Session, target_id: str, current_user: User):
             if not existing_match.match:
                 existing_match.match = True
                 db.commit()
+
+                company = db.query(Companies).filter(Companies.id == company_offer.company_id).first()
+                if company and company.email:
+                    subject = "New confirmed match"
+                    text_content = f"Hello {company.name},\n\You have new confirmed match with  {current_user.username}."
+                    html_content = f"<p>Hello {company.name},</p><p>You have new confirmed match with {current_user.username}.</p>"
+                    send_email(
+                        to_email=company.email,
+                        to_name=company.name,
+                        subject=subject,
+                        text_content=text_content,
+                        html_content=html_content
+                    )
+
                 return {"message": "Match confirmed!"}
             else:
                 return {"message": "Match already confirmed."}
@@ -79,6 +94,20 @@ def send_match_request(db: Session, target_id: str, current_user: User):
             )
             db.add(match_request)
             db.commit()
+
+            company = db.query(Companies).filter(Companies.id == company_offer.company_id).first()
+            if company and company.email:
+                subject = "New match request"
+                text_content = f"Hello {company.name},\n\nYou have new match request from {current_user.username}."
+                html_content = f"<p>Hello {company.name},</p><p>You have new match request from {current_user.username}.</p>"
+                send_email(
+                    to_email=company.email,
+                    to_name=company.name,
+                    subject=subject,
+                    text_content=text_content,
+                    html_content=html_content
+                )
+
 
             return {"message": "Match request sent successfully"}
 
@@ -120,6 +149,20 @@ def send_match_request(db: Session, target_id: str, current_user: User):
             if not existing_match.match:
                 existing_match.match = True
                 db.commit()
+
+                professional = db.query(Professional).filter(Professional.id == professional_profile.professional_id).first()
+                if professional and professional.email:
+                    subject = "New confirmed match"
+                    text_content = f"Hello {professional.first_name},\n\nYou have new confirmed match with {company_profile.name}."
+                    html_content = f"<p>Hello {professional.first_name},</p><p>You have new confirmed match with {company_profile.name}.</p>"
+                    send_email(
+                        to_email=professional.email,
+                        to_name=f"{professional.first_name} {professional.last_name}",
+                        subject=subject,
+                        text_content=text_content,
+                        html_content=html_content
+                    )
+
                 return {"message": "Match confirmed!"}
             else:
                 return {"message": "Match already confirmed."}
@@ -132,6 +175,18 @@ def send_match_request(db: Session, target_id: str, current_user: User):
             db.add(match_request)
             db.commit()
 
+            professional = db.query(Professional).filter(Professional.id == professional_profile.professional_id).first()
+            if professional and professional.email:
+                subject = "New match request"
+                text_content = f"Hello {professional.first_name},\n\nYou have new match request from {company_profile.name}."
+                html_content = f"<p>Hello {professional.first_name},</p><p>You have new match request from {company_profile.name}.</p>"
+                send_email(
+                    to_email=professional.email,
+                    to_name=f"{professional.first_name} {professional.last_name}",
+                    subject=subject,
+                    text_content=text_content,
+                    html_content=html_content
+                )
             return {"message": "Match request sent successfully"}
 
     else:
