@@ -37,6 +37,6 @@ def send_match(
 ):
     """
     Send a match request
-    Accepts a target id, a database session, and a current user object and returns a match request.
+    Accepts a target user id, a database session, and a current user object and returns a match request.
     """
     return send_match_request(db=db, target_id=target_id, current_user=current_user)

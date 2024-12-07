@@ -18,6 +18,7 @@ from app.data.database import get_db
 from app.data.models import User
 from app.data.schemas.company import ShowCompanyModel, CompanyInfoRequestModel
 from app.data.schemas.job_application import JobApplicationResponse
+from app.services.offer_service import send_offer_request
 from app.services.company_service import (
     edit_company_description_service,
     find_all_companies_service,
@@ -125,3 +126,11 @@ def get_all_professionals_(db: Session = Depends(get_db)):
     :return: List[User]
     """
     return get_all_professionals(db=db)
+
+@company_router.post("/send_offer")
+def send_offer(
+    target_id: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    return send_offer_request(db, target_id, current_user)
