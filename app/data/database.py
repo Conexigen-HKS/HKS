@@ -1,16 +1,19 @@
+"""
+Database connection and session management
+"""
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from app.data.models import Base
+from app.config import DB_USER, DB_PASSWORD, DB_ADDRESS, DB_PORT, DB_NAME
 
-DATABASE_URL = "postgresql+pg8000://postgres:Kristi2005@localhost:5432/postgres14"
 
+DATABASE_URL = f"postgresql+psycopg2://{DB_USER}:{DB_PASSWORD}@{DB_ADDRESS}:{DB_PORT}/{DB_NAME}"
+engine = create_engine(DATABASE_URL, echo=True)
+Base.metadata.create_all(engine)
+Session = sessionmaker(bind=engine)
 
-engine = create_engine(DATABASE_URL)
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-
-Base.metadata.create_all(bind=engine)
 def get_db():
-    db = SessionLocal()
+    db = Session()
     try:
         yield db
     finally:

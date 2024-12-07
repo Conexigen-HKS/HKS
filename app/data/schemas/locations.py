@@ -1,12 +1,12 @@
-from pydantic import BaseModel
-from uuid import UUID
+from pydantic import BaseModel, ConfigDict
+
 
 class LocationCreate(BaseModel):
-    name: str
+    city_name: str
+
 
 class LocationResponse(BaseModel):
-    id: UUID
-    name: str
+    id: int
+    city_name: str
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(orm_mode=True)

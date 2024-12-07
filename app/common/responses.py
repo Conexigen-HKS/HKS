@@ -1,5 +1,10 @@
-from fastapi import Response
+"""
+This module contains custom response classes that
+can be used to return responses from FastAPI endpoints.
+"""
+
 from typing import Any
+from fastapi import Response, HTTPException, status
 
 
 class Complete(Response):
@@ -9,7 +14,9 @@ class Complete(Response):
 
 class Accepted(Response):
     def __init__(self, content: Any = None):
-        super().__init__(status_code=202, content=content, media_type="application/json")
+        super().__init__(
+            status_code=202, content=content, media_type="application/json"
+        )
 
 
 class NoContent(Response):
@@ -17,26 +24,26 @@ class NoContent(Response):
         super().__init__(status_code=204, media_type="application/json")
 
 
-class BadRequest(Response):
+class BadRequest(HTTPException):
     def __init__(self, content: Any = None):
-        super().__init__(status_code=400, content=content, media_type="application/json")
+        super().__init__(status.HTTP_400_BAD_REQUEST, detail=content)
 
 
-class Unauthorized(Response):
+class Unauthorized(HTTPException):
     def __init__(self, content: Any = None):
-        super().__init__(status_code=401, content=content, media_type="application/json")
+        super().__init__(status.HTTP_401_UNAUTHORIZED, detail=content)
 
 
-class Forbidden(Response):
+class Forbidden(HTTPException):
     def __init__(self, content: Any = None):
-        super().__init__(status_code=403, content=content, media_type="application/json")
+        super().__init__(status.HTTP_403_FORBIDDEN, detail=content)
 
 
-class NotFound(Response):
+class NotFound(HTTPException):
     def __init__(self, content: Any = None):
-        super().__init__(status_code=404, content=content, media_type="application/json")
+        super().__init__(status.HTTP_404_NOT_FOUND, detail=content)
 
 
-class InternalServerError(Response):
+class InternalServerError(HTTPException):
     def __init__(self, content: Any = None):
-        super().__init__(status_code=500, content=content, media_type="application/json")
+        super().__init__(status.HTTP_500_INTERNAL_SERVER_ERROR, detail=content)
