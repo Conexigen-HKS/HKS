@@ -133,4 +133,4 @@ def send_offer(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    return send_offer_request(db, target_id, current_user)
+    return send_offer_request(db, professional_profile_id=target_id, current_user=current_user)

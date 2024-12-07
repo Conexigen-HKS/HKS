@@ -18,6 +18,7 @@ from uuid import UUID
 
 from fastapi import HTTPException
 from sqlalchemy.orm import Session, joinedload
+from sqlalchemy import func
 
 from app.data.models import (
     Professional,
@@ -274,8 +275,8 @@ def search_job_applications_service(
     Accepts a database session, a query, a location, and a skill and returns a list of job applications.
     """
     job_applications_query = db.query(ProfessionalProfile).filter(
-        ProfessionalProfile.status == "Active"
-    )  # FIXME da moje i s malka bukva da se tursi
+    func.lower(ProfessionalProfile.status) == "active"
+    )
 
     if query:
         job_applications_query = job_applications_query.filter(
