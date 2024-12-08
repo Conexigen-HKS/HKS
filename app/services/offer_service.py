@@ -166,7 +166,11 @@ def send_offer_request(
     return {"message": "Job offer sent successfully"}
 
 
-def accept_offer(offer_id: str, db: Session, current_user: User):
+def accept_offer(
+        offer_id: str, 
+        db: Session, 
+        current_user: User
+):
     if current_user.role != 'professional':
         raise HTTPException(
             status_code=403,
@@ -195,7 +199,7 @@ def accept_offer(offer_id: str, db: Session, current_user: User):
             status_code=404,
             detail=f'Company offer with id{offer_id} not found.'
         )
-    
+
     profile_ids = [profile.id for profile in professional_profiles]
 
     if offer.chosen_professional_offer_id not in profile_ids:
@@ -203,7 +207,7 @@ def accept_offer(offer_id: str, db: Session, current_user: User):
             status_code=400,
             detail='This offer is not made to you.'
         )
-    
+
     professional_profile = next(
         (profile for profile in professional_profiles if profile.id == offer.chosen_professional_offer_id), None
     )
@@ -241,12 +245,76 @@ def accept_offer(offer_id: str, db: Session, current_user: User):
     return {"message": "Offer accepted successfully"}
 
 
-def decline_offer(db: Session, current_user: User):
+def decline_offer(
+        offer_id: str, 
+        db: Session, 
+        current_user: User
+):
     if current_user.role != 'professional':
         raise HTTPException(
             status_code=403,
             detail='This feature is available only for professionals'
         )
+
+    professional_profiles = (
+        db.query(ProfessionalProfile)
+        .filter(ProfessionalProfile.user_id == current_user.id)
+        .all()
+    )
+
+    if not professional_profiles:
+        raise HTTPException(
+            status_code=404,
+            detail='Professional profiles not found.'
+        )
+
+    offer = (
+        db.query(CompanyOffers)
+        .filter(CompanyOffers.id == offer_id)
+        .first()
+    )
+    if not offer:
+        raise HTTPException(
+            status_code=404,
+            detail=f'Company offer with id{offer_id} not found.'
+        )
+
+    profile_ids = [profile.id for profile in professional_profiles]
+
+    if offer.chosen_professional_offer_id not in profile_ids:
+        raise HTTPException(
+            status_code=400,
+            detail='This offer is not made to you.'
+        )
+
+    professional_profile = next(
+        (profile for profile in professional_profiles if profile.id == offer.chosen_professional_offer_id), None
+    )
+
+    if not professional_profile:
+        raise HTTPException(
+            status_code=404,
+            detail='Professional profile associated with the offer not found.'
+        )
+
+    professional = db.query(Professional).filter(Professional.user_id == current_user.id).first()
+    if not professional:
+        raise HTTPException(
+            status_code=404,
+            detail='Professional not found.'
+        )
+
+    offer.chosen_professional_offer_id = None
+    offer.status = 'active'
+    professional_profile.status = 'active'
+
+    try:
+        db.commit()
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail='An error occurred while declining the offer.') from e
+
+    return {"message": "Offer declined successfully"}
 
 
 def my_offers(db: Session, current_user: User):
@@ -263,7 +331,7 @@ def company_sent_offers(db: Session, current_user: User):
             status_code=403,
             detail='This feature is available only for companies.'
         )
-    
+
 
 def withdraw_offer(target_user: str, db: Session, current_user: User):
     if current_user.role != 'company':
@@ -271,4 +339,3 @@ def withdraw_offer(target_user: str, db: Session, current_user: User):
             status_code=403,
             detail='This feature is available only for companies.'
         )
-    

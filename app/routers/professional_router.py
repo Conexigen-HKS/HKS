@@ -27,7 +27,7 @@ from app.services.job_app_service import (
     search_job_ads_service,
 )
 from app.services.match_service import view_matches
-from app.services.offer_service import accept_offer
+from app.services.offer_service import accept_offer, decline_offer
 from app.services.professional_service import view_own_profile, update_own_profile
 
 professional_router = APIRouter(prefix="/api/professionals", tags=["Professionals"])
@@ -140,3 +140,11 @@ def accept_offer_by_id(
     current_user: User = Depends(get_current_user)
     ):
     return accept_offer(offer_id=offer_id, db=db, current_user=current_user)
+
+@professional_router.post("/decline-offer")
+def decline_offer_by_id(
+    offer_id: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    return decline_offer(offer_id=offer_id,db=db,current_user=current_user)
