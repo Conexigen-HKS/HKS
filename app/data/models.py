@@ -227,7 +227,7 @@ class CompanyOffers(Base):
         UUID(as_uuid=True), default=uuid.uuid4, primary_key=True, nullable=False
     )
     title = Column(String, nullable=False)
-    company_id = Column(UUID(as_uuid=True), ForeignKey("companies.id"), nullable=False)
+    company_id = Column(UUID(as_uuid=True), ForeignKey("companies.id", ondelete="CASCADE"), nullable=False)
     chosen_professional_offer_id = Column(
         UUID(as_uuid=True), ForeignKey("professional_profile.id"), nullable=True
     )
@@ -241,7 +241,7 @@ class CompanyOffers(Base):
     location = relationship("Location", back_populates="company_offers")  # NEW
     requirements = relationship("CompaniesRequirements", back_populates="company_offer")
     requests_and_matches = relationship(
-        "RequestsAndMatches", back_populates="company_offer"
+        "RequestsAndMatches", back_populates="company_offer",cascade="all, delete"
     )
 
 
@@ -282,7 +282,9 @@ class RequestsAndMatches(Base):
         UUID(as_uuid=True), ForeignKey("professional_profile.id", ondelete="CASCADE"), primary_key=True
     )
     company_offers_id = Column(
-        UUID(as_uuid=True), ForeignKey("company_offers.id"), primary_key=True
+        UUID(as_uuid=True),
+        ForeignKey("company_offers.id", ondelete="CASCADE"),
+        primary_key=True
     )
     match = Column(Boolean, default=False)
     created_at = Column(

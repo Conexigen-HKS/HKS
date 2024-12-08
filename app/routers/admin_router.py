@@ -66,13 +66,10 @@ def approve_user_(
 
     try:
         user_to_be_approved = approve_user(id=id, entity_type=role, db=db)
-        return JSONResponse(
-            status_code=200,
-            content={
-                "message": f"{role.capitalize()} approved successfully",
-                "data": user_to_be_approved,
-            },
-        )
+        return {
+            "message": f"{role.capitalize()} approved successfully",
+            "data": user_to_be_approved
+        }
     except HTTPException as e:
         raise e
 
