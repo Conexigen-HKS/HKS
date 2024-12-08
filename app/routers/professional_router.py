@@ -139,7 +139,7 @@ def accept_offer_by_id(
     db: Session = Depends(get_db), 
     current_user: User = Depends(get_current_user)
     ):
-    return accept_offer(offer_id=offer_id, db=db, current_user=current_user)
+    return accept_offer(company_offer_id=offer_id, db=db, current_user=current_user)
 
 @professional_router.post("/decline-offer")
 def decline_offer_by_id(

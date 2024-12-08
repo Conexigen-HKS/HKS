@@ -32,6 +32,7 @@ def get_matches(
 @match_router.post('/match_request')
 def send_match(
     target_id: str,
+    profile_or_offer_id: str,
     db: Session = Depends(get_db),
     current_user: User = Depends(auth.get_current_user)
 ):
@@ -39,4 +40,4 @@ def send_match(
     Send a match request
     Accepts a target user id, a database session, and a current user object and returns a match request.
     """
-    return send_match_request(db=db, target_id=target_id, current_user=current_user)
+    return send_match_request(db=db, target_id=target_id, current_user=current_user, profile_or_offer_id=profile_or_offer_id)
