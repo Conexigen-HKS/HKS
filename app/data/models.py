@@ -130,7 +130,7 @@ class ProfessionalProfile(Base):
         cascade="all, delete-orphan",
     )
     requests_and_matches = relationship(
-        "RequestsAndMatches", back_populates="professional_profile"
+        "RequestsAndMatches", back_populates="professional_profile", cascade="all, delete-orphan"
     )
 
 
@@ -279,7 +279,7 @@ class RequestsAndMatches(Base):
     """
     __tablename__ = "requests_and_matches"
     professional_profile_id = Column(
-        UUID(as_uuid=True), ForeignKey("professional_profile.id"), primary_key=True
+        UUID(as_uuid=True), ForeignKey("professional_profile.id", ondelete="CASCADE"), primary_key=True
     )
     company_offers_id = Column(
         UUID(as_uuid=True), ForeignKey("company_offers.id"), primary_key=True
@@ -290,7 +290,7 @@ class RequestsAndMatches(Base):
     )
 
     professional_profile = relationship(
-        "ProfessionalProfile", back_populates="requests_and_matches"
+        "ProfessionalProfile", back_populates="requests_and_matches", passive_deletes=True
     )
     company_offer = relationship("CompanyOffers", back_populates="requests_and_matches")
 

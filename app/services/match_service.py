@@ -20,31 +20,21 @@ from app.data.models import (
 from app.services.mailjet_service import send_email
 
 
-# TODO:
-# Search with Thresholds (Should Have):
-# Missing Functionality: Searches should support thresholds for salary ranges and skills (e.g., accepting matches that are not exact).
-# Recommended Action: Enhance search endpoints to accept threshold parameters and adjust query logic accordingly.
-#
-# Match Thresholds in Matching Logic (Should Have):
-# Missing Functionality: Matching should consider thresholds for salary ranges and number of matching skills.
-# Recommended Action: Update the matching services to include threshold logic as per the requirements.
-
-
-def send_match_request(db: Session, target_id: str, current_user: User):
+def send_match_request(db: Session, target_id: str, current_user: User, profile_or_offer_id: str):
     """
     Send a match request
     :param db: Database session
-    :param target_id: Target ID
+    :param target_id: Target ID (company_offer_id or professional_profile_id depending on role)
     :param current_user: Current user
+    :param profile_or_offer_id: The ID of the profile or offer from which the match request is sent
     :return: Match request
     """
     if current_user.role == "professional":
         professional_profile = (
             db.query(ProfessionalProfile)
-            .filter(ProfessionalProfile.user_id == current_user.id)
+            .filter(ProfessionalProfile.id == profile_or_offer_id)
             .first()
         )
-
         if not professional_profile:
             raise HTTPException(
                 status_code=404, detail="Professional profile not found"
@@ -73,7 +63,7 @@ def send_match_request(db: Session, target_id: str, current_user: User):
                 company = db.query(Companies).filter(Companies.id == company_offer.company_id).first()
                 if company and company.email:
                     subject = "New confirmed match"
-                    text_content = f"Hello {company.name},\n\You have new confirmed match with  {current_user.username}."
+                    text_content = f"Hello {company.name},\n\nYou have new confirmed match with {current_user.username}."
                     html_content = f"<p>Hello {company.name},</p><p>You have new confirmed match with {current_user.username}.</p>"
                     send_email(
                         to_email=company.email,
@@ -107,7 +97,6 @@ def send_match_request(db: Session, target_id: str, current_user: User):
                     text_content=text_content,
                     html_content=html_content
                 )
-
 
             return {"message": "Match request sent successfully"}
 
@@ -188,9 +177,6 @@ def send_match_request(db: Session, target_id: str, current_user: User):
                     html_content=html_content
                 )
             return {"message": "Match request sent successfully"}
-
-    else:
-        raise HTTPException(status_code=403, detail="Invalid user role")
 
 
 def view_matches(db: Session, current_user: User):
