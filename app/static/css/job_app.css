@@ -1,0 +1,92 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f7f8fb;
+    color: #333;
+}
+
+.hero-banner {
+    background-color: #004e66; /* Greenish color */
+    color: white;
+    padding: 50px 0;
+    text-align: center;
+}
+
+.hero-title {
+    font-size: 36px;
+    margin: 0;
+}
+
+.breadcrumb {
+    margin-top: 10px;
+    color: #b7d4db;
+}
+
+.container {
+    max-width: 800px;
+    margin: 20px auto;
+    padding: 0 20px;
+}
+
+.form-container {
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+}
+
+.job-application-form .form-group {
+    margin-bottom: 20px;
+}
+
+.job-application-form label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+.job-application-form input,
+.job-application-form select,
+.job-application-form textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 14px;
+}
+
+.job-application-form textarea {
+    resize: vertical;
+}
+
+.btn-submit {
+    background-color: #0d6efd;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    text-align: center;
+}
+
+.btn-submit:hover {
+    background-color: #004bb5;
+}
+
+footer {
+    text-align: center;
+    padding: 20px;
+    background-color: #0d6efd;
+    color: white;
+    margin-top: 20px;
+}
+
+footer p {
+    margin: 0;
+}
+
+footer span {
+    color: red;
+}

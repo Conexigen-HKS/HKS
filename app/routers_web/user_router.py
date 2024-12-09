@@ -16,7 +16,7 @@ from app.services.user_services import create_company, create_professional, get_
 
 app = FastAPI()
 
-users_router_web= APIRouter(prefix='/users', tags=['Users'])
+users_router_web = APIRouter(prefix='/users', tags=['Users'])
 
 templates = Jinja2Templates(directory="app/templates")
 
@@ -29,7 +29,7 @@ def render_registration_page(request: Request, form_type: str = "professional", 
 
 
 @users_router_web.post("/register/company")
-def register_company(
+async def register_company(
         request: Request,
         username: str = Form(...),
         password: str = Form(...),
@@ -60,7 +60,12 @@ def register_company(
             website=website
         )
         create_company(db, company_data)
-        return RedirectResponse(url="/api/users/login", status_code=303)
+        return RedirectResponse(url="/users/login", status_code=303)
+    except ValidationError as e:
+        return templates.TemplateResponse(
+            "register.html",
+            {"request": request, "form_type": "company", "message": e.errors()}
+        )
     except HTTPException as e:
         return templates.TemplateResponse(
             "register.html",
@@ -68,8 +73,9 @@ def register_company(
         )
 
 
+
 @users_router_web.post("/register/professional")
-def register_professional(
+async def register_professional(
         request: Request,
         username: str = Form(...),
         password: str = Form(...),
@@ -83,6 +89,7 @@ def register_professional(
         summary: str = Form(...),
         db: Session = Depends(get_db)
 ):
+    # Check password confirmation
     if password != confirm_password:
         return templates.TemplateResponse(
             "register.html",
@@ -102,17 +109,18 @@ def register_professional(
             summary=summary
         )
         create_professional(db, professional_data)
-        return RedirectResponse(url="/api/users/login", status_code=303)
+        return RedirectResponse(url="/users/login", status_code=303)
     except ValidationError as e:
         return templates.TemplateResponse(
             "register.html",
-            {"request": request, "form_type": "professional", "message": str(e)}
+            {"request": request, "form_type": "professional", "message": e.errors()}
         )
     except HTTPException as e:
         return templates.TemplateResponse(
             "register.html",
             {"request": request, "form_type": "professional", "message": e.detail}
         )
+
 
 
 # ТРЯБВА ДА СЕ ДОБАВИ id от User
@@ -146,11 +154,11 @@ def login_user(
         password: str = Form(...),
         db: Session = Depends(get_db)
 ):
+    # Authenticate the user
     user = authenticate_user(db, username, password)
     if not user:
         raise HTTPException(status_code=401, detail="Invalid username or password")
 
-    # Generate the access token
     access_token = create_access_token(data={
         "sub": user.username,
         "id": str(user.id),
@@ -158,18 +166,15 @@ def login_user(
         "is_admin": user.is_admin
     })
 
-    # Set the token in an HTTP-only cookie
     response = JSONResponse(content={"message": "Login successful"})
     response.set_cookie(
         key="access_token",
-        value=f"Bearer {access_token}",
+        value=access_token,
         httponly=True,
         secure=False,
         samesite="Lax"
     )
     return response
-
-
 @users_router_web.post('/logout')
 def logout_user(
         token: str = Depends(auth.oauth2_scheme)
@@ -233,7 +238,7 @@ async def change_user_picture(
 async def process_register(request: Request):
     form_data = await request.form()
     form_type = form_data.get("form_type")
-    endpoint = "/api/users/register/professional" if form_type == "professional" else "/api/users/register/company"
+    endpoint = "/users/register/professional" if form_type == "professional" else "/users/register/company"
     response = await client.post(endpoint, data=form_data)
 
     if response.status_code == 200:

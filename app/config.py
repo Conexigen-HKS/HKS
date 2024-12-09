@@ -16,7 +16,7 @@ DB_PASSWORD = os.getenv("DB_PASSWORD", "Kristi2005")
 DB_ADDRESS = os.getenv("DB_ADDRESS", "localhost")
 
 DB_PORT = int(os.getenv("DB_PORT", 5432))
-DB_NAME = os.getenv("DB_NAME", "postgres13")
+DB_NAME = os.getenv("DB_NAME", "postgres14")
 
 # JWT
 SECRET_KEY = os.getenv('SECRET_KEY', "oskar4o")

@@ -1,7 +1,7 @@
 import os
 
-from django.test import Client
 from dotenv import load_dotenv
+from mailjet_rest import Client
 
 from app.config import MJ_APIKEY_PRIVATE, MJ_APIKEY_PUBLIC
 

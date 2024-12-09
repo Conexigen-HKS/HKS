@@ -1,0 +1,145 @@
+
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f9f9f9;
+      color: #333;
+    }
+
+    /* Header */
+    header {
+      background-color: #fff;
+      padding: 20px 40px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    header .logo {
+      font-size: 1.5em;
+      color: #28a745;
+      font-weight: bold;
+    }
+
+    header nav a {
+      margin: 0 15px;
+      text-decoration: none;
+      color: #333;
+      font-size: 0.9em;
+    }
+
+    header .buttons a {
+      padding: 8px 15px;
+      border: 1px solid #28a745;
+      border-radius: 5px;
+      text-decoration: none;
+      font-size: 0.9em;
+      color: #28a745;
+      margin-left: 10px;
+    }
+
+    header .buttons a.add-job {
+      background-color: #28a745;
+      color: #fff;
+    }
+
+    /* Main Section */
+    main {
+      display: flex;
+      padding: 20px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    /* Sidebar Filters */
+    .sidebar {
+      width: 25%;
+      background: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      margin-right: 20px;
+    }
+
+    .sidebar h3 {
+      font-size: 1.2em;
+      margin-bottom: 15px;
+    }
+
+    .sidebar input, .sidebar select {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 15px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+
+    .sidebar button {
+      width: 100%;
+      padding: 10px;
+      background-color: #28a745;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      font-size: 1em;
+      cursor: pointer;
+    }
+
+    /* Job Grid */
+    .job-grid {
+      width: 75%;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+    }
+
+    .job-card {
+      background: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      text-align: center;
+    }
+
+    .job-card h4 {
+      font-size: 1.2em;
+      margin: 10px 0;
+    }
+
+    .job-card p {
+      font-size: 0.9em;
+      color: #666;
+      margin-bottom: 10px;
+    }
+
+    .job-card button {
+      padding: 10px 15px;
+      background-color: #28a745;
+      border: none;
+      border-radius: 5px;
+      color: white;
+      font-size: 0.9em;
+      cursor: pointer;
+    }
+
+    /* Pagination */
+    .pagination {
+      text-align: center;
+      margin-top: 20px;
+    }
+
+    .pagination a {
+      margin: 0 5px;
+      text-decoration: none;
+      color: #28a745;
+      padding: 5px 10px;
+      border: 1px solid #28a745;
+      border-radius: 5px;
+    }
+
+    .pagination a.active {
+      background-color: #28a745;
+      color: white;
+    }

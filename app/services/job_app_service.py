@@ -6,7 +6,7 @@ from sqlalchemy import func
 from sqlalchemy.orm import Session, joinedload
 from app.data.models import Professional, ProfessionalProfile, ProfessionalProfileSkills, Skills, RequestsAndMatches, CompanyOffers, \
     Location, User
-from app.data.schemas.job_application import JobApplicationEdit, JobApplicationResponse
+from app.data.schemas.job_application import JobApplicationEdit, JobApplicationResponse, JobApplicationCreate
 from app.data.schemas.skills import SkillCreate, SkillResponse
 #TODO - Add functionality to allow adding new skills/requirements and consider an approval workflow.
 #NOTE - Status
@@ -16,35 +16,39 @@ from app.data.schemas.skills import SkillCreate, SkillResponse
 # Matched – when is matched by a company
 
 #WORKS
-def create_job_application(
-    db: Session,
-    professional_id: str,
-    user_id: str,
-    description: str,
-    min_salary: int,
-    max_salary: int,
-    city_name: str,
-    status: str,
-    skills: List[SkillCreate]
-):
-    location = db.query(Location).filter(Location.city_name == city_name).first()
+def create_job_application(db: Session, user_id: UUID, job_data: JobApplicationCreate):
+    # Extract data
+    description = job_data.description
+    min_salary = job_data.min_salary
+    max_salary = job_data.max_salary
+    status = job_data.status
+    city_name = job_data.city_name
+    skills = job_data.skills
+
+    # Handle location creation or fetching
+    location = db.query(Location).filter_by(city_name=city_name).first()
     if not location:
-        raise HTTPException(status_code=400, detail=f"Location '{city_name}' does not exist.")
+        location = Location(city_name=city_name)
+        db.add(location)
+        db.commit()
+        db.refresh(location)
 
-
-    job_application = ProfessionalProfile(
-        professional_id=professional_id,
+    # Create professional profile
+    professional = db.query(Professional).filter_by(user_id=user_id).first()
+    profile = ProfessionalProfile(
         user_id=user_id,
+        professional_id=professional.id,
         description=description,
         min_salary=min_salary,
         max_salary=max_salary,
+        status=status,
         location_id=location.id,
-        status=status
     )
-    db.add(job_application)
+    db.add(profile)
     db.commit()
-    db.refresh(job_application)
+    db.refresh(profile)
 
+    # Associate skills with levels
     for skill_data in skills:
         skill = db.query(Skills).filter(Skills.name == skill_data.name).first()
         if not skill:
@@ -54,14 +58,14 @@ def create_job_application(
             db.refresh(skill)
 
         skill_assignment = ProfessionalProfileSkills(
-            professional_profile_id=job_application.id,
+            professional_profile_id=profile.id,
             skills_id=skill.id,
-            level=skill_data.level or None
+            level=skill_data.level
         )
         db.add(skill_assignment)
 
     db.commit()
-    return job_application
+
 
 
 

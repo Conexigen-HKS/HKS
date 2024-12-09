@@ -102,14 +102,12 @@ def return_all_users(
         )
 
 
+from fastapi.responses import JSONResponse
+
 @users_router.post("/login", response_model=TokenResponse)
 def login_user(
     data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)
 ):
-    """
-    Log in a user
-    Accepts a data object and a database session and returns a token response.
-    """
     user = auth.authenticate_user(db, data.username, data.password)
 
     if not user:
@@ -142,7 +140,9 @@ def login_user(
         }
     )
 
-    return TokenResponse(access_token=access_token, token_type="bearer")
+    response = JSONResponse({"access_token": access_token, "token_type": "bearer"})
+    response.set_cookie(key="access_token", value=f"Bearer {access_token}", httponly=True)
+    return response
 
 
 @users_router.post("/logout")

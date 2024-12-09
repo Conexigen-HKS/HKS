@@ -7,7 +7,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 from app.data.models import User, Professional, Companies, Skills, \
     ProfessionalProfileSkills, RequestsAndMatches
-from app.data.schemas.user import UserResponse
+from app.data.schemas.users import UserResponse
 
 
 # USER QUERIES

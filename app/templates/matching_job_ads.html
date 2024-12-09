@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Job Matching</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(120deg, #b1f3ff, #b0ffff);
+      color: #333;
+    }
+    .container {
+      max-width: 600px;
+      margin: 40px auto;
+      padding: 20px;
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+    h2 {
+      margin: 10px 0;
+      color: #222;
+    }
+    .location {
+      font-size: 1.1em;
+      color: #555;
+    }
+    .meta p {
+      margin: 8px 0;
+    }
+    .requirements {
+      margin-top: 20px;
+    }
+    .requirements h3 {
+      margin-bottom: 10px;
+    }
+    .requirements ul {
+      padding-left: 20px;
+      margin: 0;
+    }
+    .requirements li {
+      margin-bottom: 5px;
+      color: #555;
+    }
+    .actions {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 20px;
+    }
+    .action-btn {
+      width: 100px;
+      padding: 10px;
+      border: none;
+      border-radius: 5px;
+      font-size: 16px;
+      color: #fff;
+      cursor: pointer;
+    }
+    .dislike {
+      background: #f34242;
+    }
+    .like {
+      background: #2d4ef5;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>{{ title }}</h2>
+    <p class="location">{{ company_name }}, {{ location }}</p>
+    <div class="meta">
+      <p><strong>Salary:</strong> ${{ min_salary }} - ${{ max_salary }}</p>
+      <p><strong>Description:</strong> {{ description }}</p>
+    </div>
+    <div class="requirements">
+      <h3>Requirements:</h3>
+      <ul>
+        {% for req in requirements %}
+          <li>{{ req.title }} (Level: {{ req.level }})</li>
+        {% endfor %}
+      </ul>
+    </div>
+    <div class="actions">
+      <form action="/matches/match_request" method="post" style="display:inline;">
+        <input type="hidden" name="target_id" value="{{ target_id }}">
+        <input type="hidden" name="action" value="false">
+        <button class="action-btn dislike" type="submit">Dislike</button>
+      </form>
+      <form action="/matches/match_request" method="post" style="display:inline;">
+        <input type="hidden" name="target_id" value="{{ target_id }}">
+        <input type="hidden" name="action" value="true">
+        <button class="action-btn like" type="submit">Like</button>
+      </form>
+    </div>
+  </div>
+</body>
+</html>
