@@ -16,7 +16,7 @@ class ProfessionalResponse(BaseModel):
     status: Optional[str]  # ACTIVE/BUSY
     summary: Optional[str]
     is_approved: bool
-    picture: Optional[str]  # Add this attribute
+    picture: Optional[str]
     user_id: UUID
 
     model_config = ConfigDict(from_attributes=True)
@@ -38,7 +38,7 @@ class ProfessionalResponse(BaseModel):
             status=professional.status,
             summary=professional.summary,
             is_approved=professional.is_approved,
-            picture=professional.picture,  # Ensure this is included
+            picture=professional.picture,
             user_id=professional.user_id,
         )
 

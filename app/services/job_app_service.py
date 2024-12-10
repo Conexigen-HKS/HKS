@@ -366,8 +366,9 @@ def get_recent_applications(db: Session, limit: int = 3):
     applications = (
         db.query(ProfessionalProfile)
         .options(
-            joinedload(ProfessionalProfile.location),  # Load location relationship
-            joinedload(ProfessionalProfile.skills).joinedload(ProfessionalProfileSkills.skill)  # Load skills
+            joinedload(ProfessionalProfile.location),
+            joinedload(ProfessionalProfile.skills).joinedload(ProfessionalProfileSkills.skill),
+            joinedload(ProfessionalProfile.professional)  # Load the related professional
         )
         .order_by(func.random())  # Randomize results
         .limit(limit)
@@ -385,7 +386,8 @@ def get_recent_applications(db: Session, limit: int = 3):
             "skills": [skill.skill.name for skill in app.skills],  # Extract skill names
             "min_salary": app.min_salary,
             "max_salary": app.max_salary,
-            "status": app.status
+            "status": app.status,
+            "picture": app.professional.picture or "/static/images/default-profile.png"
         }
         for app in applications
     ]
@@ -409,7 +411,7 @@ def get_spotlight_application(db: Session):
         "first_name": application.professional.first_name,
         "last_name": application.professional.last_name,
         "job_title": application.description,
-        "skills": [skill.skill.name for skill in application.skills],  # Extract skill names
+        "skills": [skill.skill.name for skill in application.skills],
         "min_salary": application.min_salary,
         "max_salary": application.max_salary,
         "summary": application.description or "",
