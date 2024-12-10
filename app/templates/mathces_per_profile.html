@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Matches</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f9f9f9;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 20px auto;
+      padding: 20px;
+    }
+
+    h1 {
+      font-size: 2rem;
+      color: #007bff;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .card {
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 15px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .card-header h2 {
+      margin: 0;
+      font-size: 1.5rem;
+      color: #333;
+    }
+
+    .card-header span {
+      padding: 5px 10px;
+      border-radius: 5px;
+      font-size: 0.9rem;
+      font-weight: bold;
+      color: #fff;
+    }
+
+    .status-pending {
+      background-color: #ffc107;
+    }
+
+    .status-confirmed {
+      background-color: #28a745;
+    }
+
+    .card-details {
+      font-size: 1rem;
+      color: #555;
+    }
+
+    .card-details p {
+      margin: 5px 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>My Matches</h1>
+    {% if matches %}
+      {% for match in matches %}
+      <div class="card">
+        <div class="card-header">
+          <h2>{{ match.company_offer.title }}</h2>
+          {% if match.match %}
+            <span class="status-confirmed">Confirmed</span>
+          {% else %}
+            <span class="status-pending">Pending</span>
+          {% endif %}
+        </div>
+        <div class="card-details">
+          <p><strong>Company:</strong> {{ match.company_offer.company.name }}</p>
+          <p><strong>Location:</strong> {{ match.company_offer.location.city_name }}</p>
+          <p><strong>Salary:</strong> ${{ match.company_offer.min_salary }} - ${{ match.company_offer.max_salary }}</p>
+          <p><strong>Description:</strong> {{ match.company_offer.description }}</p>
+        </div>
+      </div>
+      {% endfor %}
+    {% else %}
+      <p>No matches found.</p>
+    {% endif %}
+  </div>
+</body>
+</html>

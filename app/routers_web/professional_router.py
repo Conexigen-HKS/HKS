@@ -13,13 +13,14 @@ We have the following endpoints:
 from typing import List, Literal, Optional
 from uuid import UUID
 
-from fastapi import APIRouter, Query, Depends
+from fastapi import APIRouter, Query, Depends, Request
 from sqlalchemy.orm import Session
+from starlette.responses import HTMLResponse
 from starlette.templating import Jinja2Templates
 
 from app.common.auth import get_current_user
 from app.data.database import get_db
-from app.data.models import User
+from app.data.models import User, ProfessionalProfile
 from app.data.schemas.professional import ProfessionalUpdate, ProfessionalResponse
 from app.data.schemas.job_application import JobApplicationResponse
 from app.services.company_service import find_all_companies_service
@@ -31,23 +32,44 @@ from app.services.match_service import view_matches
 from app.services.offer_service import accept_offer, decline_offer
 from app.services.professional_service import view_own_profile, update_own_profile
 
+professional_router_web = APIRouter(prefix="/professionals", tags=["Professionals"])
 
-professional_router = APIRouter(prefix="/api/professionals", tags=["Professionals"])
+
+templates = Jinja2Templates(directory="app/templates")
 
 
-@professional_router.get("/profile", response_model=ProfessionalResponse)
+@professional_router_web.get("/profile", response_class=HTMLResponse)
 def view_profile(
-    current_user: User = Depends(get_current_user), db: Session = Depends(get_db)
+        request: Request,
+        current_user: User = Depends(get_current_user),
+        db: Session = Depends(get_db),
 ):
     """
     View profile
     Accepts a current user object and a database session.
-    Returns the profile of the current user.
+    Returns the profile page rendered with user data.
     """
-    return view_own_profile(db, current_user.id)
+    user_profile = view_own_profile(db, current_user.id)
 
 
-@professional_router.patch("/profile", response_model=ProfessionalResponse)
+    # Provide a default image if no picture is uploaded
+    profile_picture = user_profile.picture or "/static/images/default-profile.png"
+
+    return templates.TemplateResponse(
+        "professional_dashboard.html",
+        {
+            "request": request,
+            "email": user_profile.email,
+            "profile_picture": profile_picture,
+            "location": user_profile.location or "Unknown Location",
+            "phone": user_profile.phone or "N/A",
+            "website": user_profile.website or "N/A",
+        },
+    )
+
+
+
+@professional_router_web.patch("/profile", response_model=ProfessionalResponse)
 def edit_profile(
     data: ProfessionalUpdate,
     current_user: User = Depends(get_current_user),
@@ -61,7 +83,7 @@ def edit_profile(
     return update_own_profile(db, current_user.id, data)
 
 
-@professional_router.patch("/job-applications/{job_application_id}/set-main")
+@professional_router_web.patch("/job-applications/{job_application_id}/set-main")
 def set_main_application(
     job_application_id: UUID,
     current_user: User = Depends(get_current_user),
@@ -76,8 +98,39 @@ def set_main_application(
         db=db, job_application_id=job_application_id, current_user=current_user
     )
 
+@professional_router_web.get('/applications', response_class=HTMLResponse)
+def view_my_job_applications(
+    request: Request,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    # Fetch all job applications for the current user
+    job_apps = db.query(ProfessionalProfile).filter(
+        ProfessionalProfile.user_id == current_user.id
+    ).all()
 
-@professional_router.get("/search-job-ads", response_model=List[JobApplicationResponse])
+    # Prepare data for rendering in the template
+    job_apps_data = [
+        {
+            "id": app.id,
+            "description": app.description,
+            "first_name": app.first_name,
+            "last_name": app.last_name,
+            "location": app.location.city_name if app.location else "N/A",
+            "min_salary": app.min_salary,
+            "max_salary": app.max_salary,
+            "status": app.status,
+            "picture": app.picture or "/static/default-profile.png",  # Fallback for missing images
+        }
+        for app in job_apps
+    ]
+
+    return templates.TemplateResponse(
+        "my_job_applications.html",
+        {"request": request, "job_apps": job_apps_data},
+    )
+
+@professional_router_web.get("/search-job-ads", response_model=List[JobApplicationResponse])
 def search_job_ads(
     query: Optional[str] = Query(
         None, description="Search term to filter job ads by description"
@@ -113,7 +166,7 @@ def search_job_ads(
     )
 
 
-@professional_router.get("/companies-list")
+@professional_router_web.get("/companies-list")
 def get_all_companies(db: Session = Depends(get_db)):
     """
     Get all companies
@@ -124,7 +177,7 @@ def get_all_companies(db: Session = Depends(get_db)):
     return companies
 
 
-@professional_router.get("/matches")
+@professional_router_web.get("/matches")
 def get_all_matches(
     db: Session = Depends(get_db), current_user: User = Depends(get_current_user)
 ):
@@ -135,7 +188,7 @@ def get_all_matches(
     """
     return view_matches(db=db, current_user=current_user)
 
-@professional_router.post("/accept-offer")
+@professional_router_web.post("/accept-offer")
 def accept_offer_by_id(
     offer_id: str,
     db: Session = Depends(get_db),
@@ -143,7 +196,7 @@ def accept_offer_by_id(
     ):
     return accept_offer(company_offer_id=offer_id, db=db, current_user=current_user)
 
-@professional_router.post("/decline-offer")
+@professional_router_web.post("/decline-offer")
 def decline_offer_by_id(
     offer_id: str,
     db: Session = Depends(get_db),

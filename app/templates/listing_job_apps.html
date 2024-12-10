@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="/static/css/jobs_listing.css" rel="stylesheet">
+  <title>Job Applications - Search</title>
+</head>
+<body>
+<header>
+  <div class="logo">JobPath</div>
+  <nav>
+    <a href="#">Home</a>
+    <a href="#">Browse Jobs</a>
+    <a href="#">Candidates</a>
+    <a href="#">Pages</a>
+    <a href="#">Contact</a>
+  </nav>
+  <div class="buttons">
+    <a href="#" class="sign-in">Sign In</a>
+    <a href="#" class="add-job">Post Job</a>
+  </div>
+</header>
+
+<main>
+  <div class="sidebar">
+    <form method="get" action="/job_applications/search">
+      <h3>Search By Keywords</h3>
+      <input type="text" name="keyword" placeholder="Keyword" value="{{ keyword }}">
+
+      <h3>Search Location</h3>
+      <input type="text" name="location" placeholder="Location" value="{{ location }}">
+
+      <h3>Search By Skills</h3>
+      <input type="text" name="skill" placeholder="Skill" value="{{ skill }}">
+
+      <h3>Search By Salary Range</h3>
+      <input type="number" name="min_salary" placeholder="Min Salary" value="{{ min_salary }}">
+      <input type="number" name="max_salary" placeholder="Max Salary" value="{{ max_salary }}">
+
+      <button type="submit">Filter</button>
+    </form>
+  </div>
+
+  <div class="job-grid">
+    {% if job_apps %}
+      {% for app in job_apps %}
+        <div class="job-card">
+          <h4>{{ app.description }}</h4>
+          <p>Location: {{ app.location }}</p>
+          <p>Salary: ${{ app.min_salary }} - ${{ app.max_salary }}</p>
+          <p><strong>Skills:</strong> {{ app.skills | join(', ') }}</p>
+          <p>Status: {{ app.status }}</p>
+          <button>View Details</button>
+        </div>
+      {% endfor %}
+    {% else %}
+      <p>No job applications found matching your criteria.</p>
+    {% endif %}
+  </div>
+</main>
+
+<div class="pagination">
+  {% if current_page > 1 %}
+    <a href="/job_applications/search?page={{ current_page - 1 }}&keyword={{ keyword }}&location={{ location }}&skill={{ skill }}&min_salary={{ min_salary }}&max_salary={{ max_salary }}">Previous</a>
+  {% endif %}
+  {% for i in range(1, total_pages + 1) %}
+    <a href="/job_applications/search?page={{ i }}&keyword={{ keyword }}&location={{ location }}&skill={{ skill }}&min_salary={{ min_salary }}&max_salary={{ max_salary }}"
+       class="{% if i == current_page %}active{% endif %}">{{ i }}</a>
+  {% endfor %}
+  {% if current_page < total_pages %}
+    <a href="/job_applications/search?page={{ current_page + 1 }}&keyword={{ keyword }}&location={{ location }}&skill={{ skill }}&min_salary={{ min_salary }}&max_salary={{ max_salary }}">Next</a>
+  {% endif %}
+</div>
+
+</body>
+</html>

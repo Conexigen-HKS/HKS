@@ -13,12 +13,17 @@ class ProfessionalResponse(BaseModel):
     phone: Optional[str]
     email: Optional[str]
     website: Optional[str]
-    status: Optional[str] # ACTIVE/BUSY
+    status: Optional[str]  # ACTIVE/BUSY
     summary: Optional[str]
     is_approved: bool
+    picture: Optional[str]  # Add this attribute
     user_id: UUID
 
     model_config = ConfigDict(from_attributes=True)
+
+    @property
+    def name(self):
+        return f"{self.first_name} {self.last_name}"
 
     @classmethod
     def from_orm(cls, professional):
@@ -33,7 +38,8 @@ class ProfessionalResponse(BaseModel):
             status=professional.status,
             summary=professional.summary,
             is_approved=professional.is_approved,
-            user_id=professional.user_id
+            picture=professional.picture,  # Ensure this is included
+            user_id=professional.user_id,
         )
 
 

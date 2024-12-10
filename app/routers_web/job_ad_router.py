@@ -16,7 +16,7 @@ from starlette.templating import Jinja2Templates
 from app.common import auth
 from app.common.auth import get_current_user
 from app.data.database import get_db
-from app.data.models import User
+from app.data.models import User, CompanyOffers
 from app.data.schemas.company import (
     CompanyAdModel,
     CompanyAdUpdateModel,
@@ -36,6 +36,53 @@ job_ad_router = APIRouter(prefix="/ads", tags=["Company Ads"])
 
 # WORKS
 templates = Jinja2Templates(directory="app/templates")
+
+@job_ad_router.get("/search", response_class=HTMLResponse)
+async def search_jobs(
+    request: Request,
+    db: Session = Depends(get_db),
+    keyword: str = "",
+    location: str = "",
+    min_salary: int = 0,
+    max_salary: int = 0,
+    page: int = 1,
+    page_size: int = 10,
+):
+    """
+    Search job ads with filters for keyword, location, and salary range.
+    """
+    query = db.query(CompanyOffers).filter(CompanyOffers.status == "Active")
+
+    if keyword:
+        query = query.filter(CompanyOffers.title.ilike(f"%{keyword}%"))
+
+    if location:
+        query = query.filter(CompanyOffers.location.has(city_name=location))
+
+    if min_salary:
+        query = query.filter(CompanyOffers.min_salary >= min_salary)
+
+    if max_salary:
+        query = query.filter(CompanyOffers.max_salary <= max_salary)
+
+    total_ads = query.count()
+    ads = query.offset((page - 1) * page_size).limit(page_size).all()
+
+    total_pages = (total_ads + page_size - 1) // page_size
+
+    return templates.TemplateResponse(
+        "job_listings.html",
+        {
+            "request": request,
+            "ads": ads,
+            "keyword": keyword,
+            "location": location,
+            "min_salary": min_salary,
+            "max_salary": max_salary,
+            "current_page": page,
+            "total_pages": total_pages,
+        },
+    )
 # WORKS
 @job_ad_router.api_route("/create", methods=["GET", "POST"], response_class=HTMLResponse)
 async def create_company_ad(request: Request, db: Session = Depends(get_db),

@@ -26,7 +26,9 @@ import uvicorn
 
 from app.routers_web.job_ad_router import job_ad_router
 from app.routers_web.job_app_router import job_app_router_web
-from app.routers_web.mathing_router import match_router_web
+from app.routers_web.mathing_router import match_web_router
+from app.routers_web.professional_router import professional_router_web
+
 from app.routers_web.user_router import users_router_web
 from app.services.company_ad_service import get_spotlight_job_ad, get_recent_job_ads
 from app.services.job_app_service import get_recent_applications, get_spotlight_application
@@ -38,11 +40,12 @@ app.include_router(messages_router)
 app.include_router(match_router)
 app.include_router(company_router)
 app.include_router(company_ad_router)
-app.include_router(professional_router)
+app.include_router(users_router)
 app.include_router(locations_router)
 app.include_router(skills_router)
 app.include_router(users_router_web)
-app.include_router(match_router_web)
+app.include_router(match_web_router)
+app.include_router(professional_router_web)
 app.include_router(job_app_router_web)
 
 templates = Jinja2Templates(directory="app/templates")

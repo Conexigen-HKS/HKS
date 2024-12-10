@@ -4,97 +4,108 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Job Matching</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.2.0/axios.min.js"></script>
   <style>
     body {
       font-family: Arial, sans-serif;
+      background: #f5f5f5;
+      color: #333;
       margin: 0;
       padding: 0;
-      background: linear-gradient(120deg, #b1f3ff, #b0ffff);
-      color: #333;
     }
     .container {
       max-width: 600px;
-      margin: 40px auto;
-      padding: 20px;
+      margin: 20px auto;
       background: #fff;
       border-radius: 10px;
-      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      padding: 20px;
     }
     h2 {
-      margin: 10px 0;
-      color: #222;
+      margin-top: 0;
     }
-    .location {
-      font-size: 1.1em;
-      color: #555;
-    }
-    .meta p {
-      margin: 8px 0;
-    }
-    .requirements {
-      margin-top: 20px;
-    }
-    .requirements h3 {
+    .location, .meta, .requirements {
       margin-bottom: 10px;
-    }
-    .requirements ul {
-      padding-left: 20px;
-      margin: 0;
-    }
-    .requirements li {
-      margin-bottom: 5px;
-      color: #555;
     }
     .actions {
       display: flex;
       justify-content: space-between;
-      margin-top: 20px;
     }
     .action-btn {
-      width: 100px;
-      padding: 10px;
+      padding: 10px 20px;
+      font-size: 16px;
       border: none;
       border-radius: 5px;
-      font-size: 16px;
       color: #fff;
       cursor: pointer;
     }
-    .dislike {
-      background: #f34242;
-    }
     .like {
-      background: #2d4ef5;
+      background-color: #28a745;
+    }
+    .dislike {
+      background-color: #dc3545;
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <h2>{{ title }}</h2>
-    <p class="location">{{ company_name }}, {{ location }}</p>
+    <h2 id="job-title">Loading...</h2>
+    <p class="location" id="job-location"></p>
     <div class="meta">
-      <p><strong>Salary:</strong> ${{ min_salary }} - ${{ max_salary }}</p>
-      <p><strong>Description:</strong> {{ description }}</p>
+      <p id="job-salary"></p>
+      <p id="job-description"></p>
     </div>
     <div class="requirements">
       <h3>Requirements:</h3>
-      <ul>
-        {% for req in requirements %}
-          <li>{{ req.title }} (Level: {{ req.level }})</li>
-        {% endfor %}
-      </ul>
+      <ul id="job-requirements"></ul>
     </div>
     <div class="actions">
-      <form action="/matches/match_request" method="post" style="display:inline;">
-        <input type="hidden" name="target_id" value="{{ target_id }}">
-        <input type="hidden" name="action" value="false">
-        <button class="action-btn dislike" type="submit">Dislike</button>
-      </form>
-      <form action="/matches/match_request" method="post" style="display:inline;">
-        <input type="hidden" name="target_id" value="{{ target_id }}">
-        <input type="hidden" name="action" value="true">
-        <button class="action-btn like" type="submit">Like</button>
-      </form>
+      <button class="action-btn dislike" onclick="sendAction('dislike')">Dislike</button>
+      <button class="action-btn like" onclick="sendAction('like')">Like</button>
     </div>
   </div>
+
+  <script>
+    let currentJobId;
+
+    async function fetchRandomJob() {
+      try {
+        const response = await axios.get('/matches/random');
+        const job = response.data;
+        currentJobId = job.id;
+
+        document.getElementById('job-title').textContent = job.title;
+        document.getElementById('job-location').textContent = `${job.company_name}, ${job.location}`;
+        document.getElementById('job-salary').textContent = `Salary: $${job.min_salary} - $${job.max_salary}`;
+        document.getElementById('job-description').textContent = job.description;
+
+        const requirementsList = document.getElementById('job-requirements');
+        requirementsList.innerHTML = '';
+        job.requirements.forEach(req => {
+          const li = document.createElement('li');
+          li.textContent = `${req.title} (Level: ${req.level})`;
+          requirementsList.appendChild(li);
+        });
+      } catch (error) {
+        console.error('Error fetching job:', error);
+      }
+    }
+
+    async function sendAction(action) {
+      try {
+        const response = await axios.post('/matches/match_request', {
+          target_id: currentJobId,
+          action: action
+        });
+        alert(response.data.message);
+        fetchRandomJob();
+      } catch (error) {
+        console.error('Error sending action:', error);
+      }
+    }
+
+    // Load the first job on page load
+    window.onload = fetchRandomJob;
+  </script>
 </body>
 </html>

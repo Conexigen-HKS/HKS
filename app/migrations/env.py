@@ -4,11 +4,12 @@ from logging.config import fileConfig
 from sqlalchemy import engine_from_config, pool
 from alembic import context
 
+from app.data.models import Base
+
 # Add the project root to sys.path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 # Now import Base from data.database
-from data.models import Base
 
 # Alembic Config object
 config = context.config
