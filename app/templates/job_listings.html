@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="/static/css/jobs_listing.css" rel="stylesheet">
+  <title>Job Search - Employer</title>
+</head>
+<body>
+<header>
+  <div class="logo">JobPath</div>
+  <nav>
+    <a href="#">Home</a>
+    <a href="#">Browse Jobs</a>
+    <a href="#">Candidates</a>
+    <a href="#">Pages</a>
+    <a href="#">Contact</a>
+  </nav>
+  <div class="buttons">
+    <a href="#" class="sign-in">Sign In</a>
+    <a href="#" class="add-job">Add Job</a>
+  </div>
+</header>
+
+<main>
+  <div class="sidebar">
+    <form method="get" action="/ads/search">
+      <h3>Search By Keywords</h3>
+      <input type="text" name="keyword" placeholder="Keyword" value="{{ keyword }}">
+
+      <h3>Search Location</h3>
+      <input type="text" name="location" placeholder="Location" value="{{ location }}">
+
+
+
+      <h3>Search By Salary Range</h3>
+      <input type="number" name="min_salary" placeholder="Min Salary" value="{{ min_salary }}">
+      <input type="number" name="max_salary" placeholder="Max Salary" value="{{ max_salary }}">
+
+      <button type="submit">Filter</button>
+    </form>
+  </div>
+
+  <div class="job-grid">
+    {% if ads %}
+      {% for ad in ads %}
+        <div class="job-card">
+          <h4>{{ ad.title }}</h4>
+          <p>Company: {{ ad.company_name }}</p>
+          <p>Location: {{ ad.location }}</p>
+          <p>Salary: ${{ ad.min_salary }} - ${{ ad.max_salary }}</p>
+          <p>{{ ad.description }}</p>
+          <button>Apply Now</button>
+        </div>
+      {% endfor %}
+    {% else %}
+      <p>No jobs found matching your criteria.</p>
+    {% endif %}
+  </div>
+</main>
+
+<div class="pagination">
+  {% if current_page > 1 %}
+    <a href="/ads/search?page={{ current_page - 1 }}&keyword={{ keyword }}&location={{ location }}&category={{ category }}&min_salary={{ min_salary }}&max_salary={{ max_salary }}">Previous</a>
+  {% endif %}
+  {% if current_page < total_pages %}
+    <a href="/ads/search?page={{ current_page + 1 }}&keyword={{ keyword }}&location={{ location }}&category={{ category }}&min_salary={{ min_salary }}&max_salary={{ max_salary }}">Next</a>
+  {% endif %}
+</div>
+
+</body>
+</html>

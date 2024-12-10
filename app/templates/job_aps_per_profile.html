@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Job Applications</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f8fcf9;
+      color: #333;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: auto;
+    }
+
+    .job-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 20px;
+    }
+
+    .job-card {
+      background-color: #fff;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      text-align: center;
+    }
+
+    .job-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+
+    .job-header img {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    .job-header p {
+      padding: 5px 10px;
+      border-radius: 12px;
+      font-size: 0.8em;
+      background-color: #e0f7e9;
+      color: #1e9e49;
+    }
+
+    .job-card h3 {
+      margin: 10px 0;
+      font-size: 1.2em;
+    }
+
+    .job-price {
+      color: #007bff;
+      font-weight: bold;
+      margin: 10px 0;
+    }
+
+    .job-location {
+      font-size: 0.9em;
+      color: #777;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>My Job Applications</h1>
+    <div class="job-grid">
+      {% for job in job_apps %}
+      <div class="job-card">
+        <div class="job-header">
+          <img src="{{ job.picture }}" alt="User Picture">
+          <p>{{ job.status }}</p>
+        </div>
+        <h3>{{ job.name}}</h3>
+        <p class="job-price">${{ job.min_salary }} - ${{ job.max_salary }}</p>
+        <p class="job-location">{{ job.location }}</p>
+        <p>{{ job.description }}</p>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</body>
+</html>

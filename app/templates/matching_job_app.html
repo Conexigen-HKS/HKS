@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Job Matching</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+  <script src="/static/js/main.js"></script>
+</head>
+<body>
+
+<div class="container">
+  <h1>Job Applications</h1>
+
+  <!-- Loop through applications -->
+  {% for app in applications %}
+  <div class="job-card">
+    <h2>{{ app.description }}</h2>
+    <p class="location">{{ app.location_name }}</p>
+    <div class="meta">
+      <p><b>Salary:</b> {{ app.min_salary }} - {{ app.max_salary }}</p>
+      <p><b>Status:</b> {{ app.status }}</p>
+      <div class="skills">
+        {% for skill in app.skills %}
+        <span class="skill">{{ skill }}</span>
+        {% endfor %}
+      </div>
+    </div>
+    <div class="actions">
+      <button class="action-btn like" onclick="likeApplication('{{ app.id }}')">✔</button>
+      <button class="action-btn dislike" onclick="dislikeApplication('{{ app.id }}')">✖</button>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+<script>
+  function likeApplication(appId) {
+    fetch(`/api/matches/match_request`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ target_id: appId }),
+    })
+    .then(response => response.json())
+    .then(data => alert(data.message))
+    .catch(error => alert('Error liking application!'));
+  }
+
+  function dislikeApplication(appId) {
+    alert('Application disliked: ' + appId);
+  }
+</script>
+
+</body>
+</html>

@@ -1,53 +1,84 @@
 from datetime import datetime, timedelta
 from typing import Annotated, Optional
-from fastapi import Depends, HTTPException
-import jwt
+from fastapi import Depends, HTTPException, Request
+from jose import JWTError, jwt
+from jose.exceptions import ExpiredSignatureError
+from passlib.context import CryptContext
 from fastapi.security import OAuth2PasswordBearer
-from sqlalchemy.orm import Session
-
-
 from app.common.responses import Forbidden
-from app.common.utils import verify_password, verify_token, get_password_hash
-from HKS.config import ALGORITHM, ACCESS_TOKEN_EXPIRE_MINUTES, SECRET_KEY
-from HKS.data.database import get_db
-from HKS.data.models import User
-from HKS.data.queries import get_user_by_username
+from app.data.schemas.users import UserResponse
+from app.config import ALGORITHM, SECRET_KEY
+from sqlalchemy.orm import Session
+from app.data.models import User
+from app.data.database import get_db
+from app.services.user_services import get_user
+from app.common.utils import get_password_hash, verify_password, verify_token
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl='/api/users/login', auto_error=False)
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl='/users/login', auto_error=False)
 token_blacklist = set()
 
+# def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
+#     to_encode = data.copy()
+#     expire = datetime.now() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+#     to_encode.update({'exp': expire})
+#     to_encode['role'] = data.get('role')
+#     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+from datetime import datetime as dt, timezone, timedelta
 
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     to_encode = data.copy()
-    expire = datetime.now() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    to_encode.update({'exp': expire})
-    to_encode['role'] = data.get('role')
-    return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    if expires_delta:
+        expire = dt.now(timezone.utc) + expires_delta
+    else:
+        expire = dt.now(timezone.utc) + timedelta(hours=1)
+    to_encode.update({"exp": expire})
+    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    return encoded_jwt
 
 
-def authenticate_user(db: Session, username: str, password: str):
-    user = get_user_by_username(db, username)
-    if not user or not verify_password(password, user.hashed_password):
-        return None
-    return user
+def decode_access_token(token: str):
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        if payload.get("exp") < dt.now(timezone.utc).timestamp():
+            raise HTTPException(status_code=401, detail="Token has expired")
+        return payload
+    except ExpiredSignatureError:
+        raise HTTPException(status_code=401, detail="Token has expired")
+    except JWTError as e:
+        raise HTTPException(status_code=401, detail=f"Invalid token: {str(e)}")
 
 
-def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)) -> User:
-    if not token:
-        raise HTTPException(status_code=401, detail="Not authenticated")
-
-    payload = verify_token(token)
-    if not payload:
-        raise HTTPException(status_code=401, detail="Invalid token")
-
-    username = payload.get('sub')
+def authenticate_user(db: Session, username: str, password: str) -> Optional[UserResponse]:
     user = db.query(User).filter(User.username == username).first()
 
-    if not user:
-        raise HTTPException(status_code=401, detail="User not found")
+    if not user or not verify_password(password, user.hashed_password):
+        return None
 
-    return user
+    return UserResponse.model_validate(user)
+
+
+def get_current_user(request: Request, db: Session = Depends(get_db)) -> Optional[User]:
+    token = request.cookies.get("access_token")
+    if not token:
+        return None  # Allow unauthenticated access
+
+    # Remove "Bearer " prefix if present
+    if token.startswith("Bearer "):
+        token = token[7:]
+
+    try:
+        payload = decode_access_token(token)
+        username = payload.get("sub")
+
+        user = db.query(User).filter(User.username == username).first()
+        if not user:
+            return None  # Return None if user not found
+        return user
+    except HTTPException:
+        return None  # Return None if token is invalid or expired
+
+
 def get_current_admin_user(current_user: User = Depends(get_current_user)) -> User:
     if not current_user.is_admin:
         raise Forbidden("Not enough permissions")
