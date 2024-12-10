@@ -150,8 +150,8 @@ header #navigation ul.float-right li a:hover {
 }
 
 .category-grid {
-    display: grid; /* Use CSS Grid layout for better control */
-    grid-template-columns: repeat(5, 1fr); /* Create 5 equal columns */
+    display: grid; /* Use CSS Grid layout */
+    grid-template-columns: repeat(4, 1fr); /* Create 4 equal columns */
     gap: 20px; /* Add spacing between the categories */
 }
 
@@ -409,7 +409,7 @@ button.show-more:hover {
 
 .counter .counter-value {
     color: #fff;
-    background: linear-gradient(to right, #19bbd2, #2778ee);
+    background: linear-gradient(to right, #19bbd2, #9eee27);
     font-size: 38px;
     font-weight: 300;
     padding: 0 0 3px;
@@ -419,7 +419,7 @@ button.show-more:hover {
 }
 
 .counter h3 {
-    color: #2778ee;
+    color: #27ee84;
     font-size: 18px;
     font-weight: 900;
     letter-spacing: 0.5px;
@@ -429,7 +429,7 @@ button.show-more:hover {
 
 .counter .counter-icon {
     color: #fff;
-    background: linear-gradient(to right, #19bbd2, #2778ee);
+    background: linear-gradient(to right, #b5ffc7, #59ee27);
     font-size: 40px;
     line-height: 60px;
     width: 65px;
@@ -440,25 +440,25 @@ button.show-more:hover {
 
 .counter.purple .counter-value,
 .counter.purple .counter-icon {
-    background: linear-gradient(to right, #8f70e7, #c452ef);
+    background: linear-gradient(to right, #7bfd67, #52efb8);
 }
 
 .counter.purple h3 {
-    color: #c452ef;
+    color: #52ef6c;
 }
 
 .counter.magenta .counter-value,
 .counter.magenta .counter-icon {
-    background: linear-gradient(to right, #e84a94, #ae379b);
+    background: linear-gradient(to right, #4ae857, #82ae37);
 }
 
 .counter.magenta h3 {
-    color: #ae379b;
+    color: #a2e464;
 }
 
 .counter.yellow .counter-value,
 .counter.yellow .counter-icon {
-    background: linear-gradient(to right, #fecb4b, #e69814);
+    background: linear-gradient(to right, #228e30, #4fe614);
 }
 
 .counter.yellow h3 {

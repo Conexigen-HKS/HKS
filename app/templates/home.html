@@ -29,8 +29,11 @@
       </ul>
       <ul class="float-right">
         {% if user %}
-          <li>Welcome, {{ user.username }}</li>
-          <li><a href="/logout"><i class="fa fa-lock"></i> Log Out</a></li>
+        <li>
+          <form action="/users/logout" method="post" style="display: inline;">
+            <button type="submit" class="logout-btn"><i class="fa fa-lock"></i> Log Out</button>
+          </form>
+        </li>
         {% else %}
           <li><a href="/users/login"><i class="fa fa-user"></i> Log In</a></li>
           <li><a href="/users/register"><i class="fa fa-user-plus"></i> Sign Up</a></li>
@@ -57,91 +60,87 @@
 
 <!-- Categories Section -->
 <section class="categories">
-  <h2>Popular Categories</h2>
+  <h2>We have something for everyone</h2>
   <div class="category-grid">
     <div class="category">
       <a href="#accounting-finance">
         <i class="fas fa-calculator"></i>
         <h4>Accounting / Finance</h4>
-        <span>32</span>
       </a>
     </div>
     <div class="category">
       <a href="#automotive-jobs">
         <i class="fas fa-car"></i>
         <h4>Automotive Jobs</h4>
-        <span>76</span>
       </a>
     </div>
     <div class="category">
       <a href="#construction-facilities">
         <i class="fas fa-hard-hat"></i>
         <h4>Construction / Facilities</h4>
-        <span>31</span>
       </a>
     </div>
     <div class="category">
       <a href="#education-training">
         <i class="fas fa-graduation-cap"></i>
         <h4>Education / Training</h4>
-        <span>76</span>
       </a>
     </div>
     <div class="category">
       <a href="#healthcare">
         <i class="fas fa-heartbeat"></i>
         <h4>Healthcare</h4>
-        <span>32</span>
       </a>
     </div>
     <div class="category">
       <a href="#restaurant-food">
         <i class="fas fa-utensils"></i>
         <h4>Restaurant / Food Service</h4>
-        <span>67</span>
       </a>
     </div>
     <div class="category">
       <a href="#transportation-logistics">
         <i class="fas fa-truck"></i>
         <h4>Transportation / Logistics</h4>
-        <span>45</span>
       </a>
     </div>
     <div class="category">
       <a href="#telecommunication">
         <i class="fas fa-laptop"></i>
         <h4>Telecommunication</h4>
-        <span>96</span>
       </a>
     </div>
   </div>
-  <a href="#all-categories" class="browse-all">Browse All Categories</a>
+
 </section>
 
 <!-- Job Ads Section -->
 <div class="section-container">
   <!-- Recent Job Ads -->
-  <div class="listings">
-    <h1 style="margin-bottom: 20px;">Recent Jobs</h1>
-    {% for ad in recent_job_ads %}
-    <div class="card" style="padding: 20px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 8px; background: #fff; box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);">
-      <div class="card-header" style="display: flex; align-items: flex-start; margin-bottom: 15px;">
-        <img src="C:\Users\kalin\Documents\GitHub\HKS\app\static\images\logo.png" alt="Company Logo" style="width: 60px; height: 60px; border-radius: 8px; margin-right: 20px;">
-        <div>
-          <h2 style="margin: 0; font-size: 1.2rem; font-weight: bold;">{{ ad.title }}</h2>
-          <p style="margin: 5px 0; font-size: 1rem; color: #555;">{{ ad.company_name }} | {{ ad.location_name }}</p>
-        </div>
-      </div>
-      <div class="card-details" style="font-size: 1rem; line-height: 1.5; color: #333;">
-        <p style="margin: 5px 0;"><strong>Description:</strong> {{ ad.description }}</p>
-        <p style="margin: 5px 0;"><strong>Salary Range:</strong> ${{ ad.min_salary }} - ${{ ad.max_salary }}</p>
-        <span class="job-status {{ ad.status | lower }}" style="padding: 5px 10px; background-color: #28a745; color: #fff; border-radius: 5px;">{{ ad.status }}</span>
+<div class="listings">
+  <h1 style="margin-bottom: 20px;">Recent Jobs</h1>
+  {% for ad in recent_job_ads %}
+  <div class="card" style="padding: 20px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 8px; background: #fff; box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);">
+    <div class="card-header" style="display: flex; align-items: flex-start; margin-bottom: 15px;">
+      <!-- Display the real image of the job application -->
+      <img src="{{ ad.image_url }}" alt="Company Logo" style="width: 60px; height: 60px; border-radius: 8px; margin-right: 20px;">
+      <div>
+        <h2 style="margin: 0; font-size: 1.2rem; font-weight: bold;">{{ ad.title }}</h2>
+        <p style="margin: 5px 0; font-size: 1rem; color: #555;">{{ ad.company_name }} | {{ ad.location_name }}</p>
       </div>
     </div>
-    {% endfor %}
-    <button class="show-more">Show More Ads</button>
+    <div class="card-details" style="font-size: 1rem; line-height: 1.5; color: #333;">
+      <p style="margin: 5px 0;"><strong>Description:</strong> {{ ad.description }}</p>
+      <p style="margin: 5px 0;"><strong>Salary Range:</strong> ${{ ad.min_salary }} - ${{ ad.max_salary }}</p>
+      <span class="job-status {{ ad.status | lower }}" style="padding: 5px 10px; background-color: #28a745; color: #fff; border-radius: 5px;">{{ ad.status }}</span>
+    </div>
   </div>
+  {% endfor %}
+  <form action="/ads/search" method="get">
+  <button type="submit" class="show-more">Show More Ads</button>
+</form>
+</div>
+
 
 <!-- Job Spotlight -->
   <aside class="spotlight">
@@ -167,7 +166,7 @@
   {% for application in recent_applications %}
   <div class="card" style="padding: 20px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 8px; background: #fff; box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);">
     <div class="card-header" style="display: flex; align-items: flex-start; margin-bottom: 15px;">
-      <img src="{{ application.picture or '/static/images/default-profile.png' }}" alt="Applicant Image" style="width: 60px; height: 60px; border-radius: 50%; margin-right: 20px;">
+      <img src="{{ application.picture }}" alt="Applicant Image" style="width: 60px; height: 60px; border-radius: 50%; margin-right: 20px;">
       <div style="margin-left: 10px;">
         <h2 style="margin: 0; font-size: 1.2rem; font-weight: bold;">{{ application.first_name }} {{ application.last_name }}</h2>
         <p style="margin: 5px 0; font-size: 1rem; color: #555;">{{ application.description }}</p>
@@ -181,7 +180,9 @@
     </div>
   </div>
   {% endfor %}
-  <button class="show-more">Show More Applications</button>
+    <form action="/job_applications/search" method="get">
+  <button type="submit" class="show-more">Show More Apps</button>
+</form>
 </div>
 <aside class="spotlight">
   <h2>Spotlight Application</h2>
