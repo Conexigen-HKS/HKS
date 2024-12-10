@@ -147,7 +147,7 @@ def render_login_page(request: Request):
     return templates.TemplateResponse("login.html", {"request": request})
 
 
-@users_router_web.post("/login", response_model=dict)
+@users_router_web.post("/login")
 def login_user(
         response: Response,
         username: str = Form(...),
@@ -166,7 +166,7 @@ def login_user(
         "is_admin": user.is_admin
     })
 
-    response = JSONResponse(content={"message": "Login successful"})
+    response = RedirectResponse(url="/", status_code=303)
     response.set_cookie(
         key="access_token",
         value=access_token,
@@ -175,20 +175,15 @@ def login_user(
         samesite="Lax"
     )
     return response
-@users_router_web.post('/logout')
-def logout_user(
-        token: str = Depends(auth.oauth2_scheme)
-):
-    if not token:
-        raise HTTPException(status_code=401, detail="No user is currently logged in.")
 
-    payload = auth.verify_token(token)
-    if not payload:
-        raise HTTPException(status_code=401, detail="Invalid or expired token.")
-
-    auth.token_blacklist.add(token)
-
-    return {"detail": "Logged out successfully"}
+@users_router_web.post("/logout")
+def logout_user(request: Request):
+    """
+    Изход на потребител. Изтрива access_token куки.
+    """
+    response = RedirectResponse(url="/", status_code=303)
+    response.delete_cookie("access_token")
+    return response
 
 
 @users_router_web.post("/picture")

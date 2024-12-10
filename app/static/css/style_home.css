@@ -1,4 +1,6 @@
+/* app/static/css/style_home.css */
 
+/* Общи стилове */
 * {
     margin: 0;
     padding: 0;
@@ -39,25 +41,40 @@ header .container {
     padding: 20px 40px;
 }
 
+/* Стилизация за навигационните бутони */
 #navigation {
     display: flex;
-    list-style: none;
+    justify-content: space-between;
+    align-items: center;
 }
 
 #navigation ul {
     display: flex;
     padding: 0;
     margin: 0;
+    list-style: none;
 }
 
 #navigation ul li {
     margin: 0 15px;
+    display: flex;
+    align-items: center;
 }
 
-#navigation ul li a {
+#navigation ul li a, #navigation ul li form button {
     text-decoration: none;
     color: white;
     font-size: 0.9em;
+    background-color: rgba(255, 255, 255, 0.1);
+    padding: 8px 15px;
+    border-radius: 5px;
+    transition: background 0.3s;
+    border: none;
+    cursor: pointer;
+}
+
+#navigation ul li a:hover, #navigation ul li form button:hover {
+    background-color: rgba(255, 255, 255, 0.2);
 }
 
 #navigation .float-right {
@@ -479,9 +496,46 @@ button.show-more:hover {
     text-align: center;
 }
 
+header nav a {
+  margin: 0 15px;
+  text-decoration: none;
+  color: #333;
+  font-size: 0.9em;
+}
 
+header .buttons a {
+  padding: 8px 15px;
+  border: 1px solid #28a745;
+  border-radius: 5px;
+  text-decoration: none;
+  color: #28a745;
+}
 
+header .buttons a.add-job {
+  background-color: #28a745;
+  color: #fff;
+}
 
+header .buttons a:hover {
+  background-color: #28a745;
+  color: #fff;
+}
+
+/* Стилове за бутона за изход */
+.logout-btn {
+    background-color: #28a745; /* Запазете текущия цвят */
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.9em;
+    transition: background-color 0.3s ease;
+}
+
+.logout-btn:hover {
+    background-color: #218838; /* По-тъмен нюанс при задържане */
+}
 
 @media screen and (max-width: 990px) {
     .counter {
