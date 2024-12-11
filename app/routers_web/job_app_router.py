@@ -1,3 +1,4 @@
+from http.client import HTTPException
 from typing import List, Optional
 from uuid import UUID
 
@@ -13,7 +14,7 @@ from app.data.database import get_db
 from app.data.models import User, ProfessionalProfile, Location, Skills
 from app.data.schemas.skills import SkillResponse, SkillCreate
 from app.services.job_app_service import create_job_application, delete_job_application, edit_job_app, \
-    view_job_application, get_all_job_applications_service
+    view_job_application, get_all_job_applications_service, set_main_job_application_service
 from app.services.professional_service import get_own_job_applications, get_professional_by_user_id
 
 job_app_router_web = APIRouter(tags=["Job Applications"], prefix="/job_applications")
@@ -45,8 +46,8 @@ def search_job_applications(
     max_salary: int = 0,
     db: Session = Depends(get_db)
 ):
-    # Start with all applications
-    query = db.query(ProfessionalProfile)
+    # Start with only Active applications
+    query = db.query(ProfessionalProfile).filter(ProfessionalProfile.status == "Active")
 
     # Apply filters if provided
     if keyword:
@@ -65,8 +66,6 @@ def search_job_applications(
     elif max_salary > 0:
         query = query.filter(ProfessionalProfile.max_salary <= max_salary)
 
-
-
     # Pagination
     job_apps = query.offset((page - 1) * per_page).limit(per_page).all()
 
@@ -83,7 +82,6 @@ def search_job_applications(
         }
         for app in job_apps
     ]
-
 
     return templates.TemplateResponse(
         "listing_job_apps.html",
@@ -128,13 +126,12 @@ async def create_application(request: Request, db: Session = Depends(get_db), cu
             description=form_data.get("description"),
             min_salary=int(form_data.get("min_salary", 0)),
             max_salary=int(form_data.get("max_salary", 0)),
-            status=form_data.get("status"),
+            status="Hidden",  # Set status to "Hidden" by default
             city_name=form_data.get("city_name"),
             skills=skills
         )
         create_job_application(db, current_user.id, job_data)
         return RedirectResponse("/", status_code=303)
-
 
 @job_app_router_web.post("/job_applications/", response_class=HTMLResponse)
 def create_application(data: JobApplicationCreate, db: Session = Depends(get_db),
@@ -172,4 +169,76 @@ async def view_job_applications_page(
         {"request": request, "job_applications": job_applications},
     )
 
+@job_app_router_web.get("/details/{job_id}", response_class=HTMLResponse)
+def view_single_job_application(
+    job_id: UUID,
+    request: Request,
+    db: Session = Depends(get_db),
+):
+    """
+    View the details of a single job application.
+    """
+    # Fetch job application by ID
+    application = db.query(ProfessionalProfile).filter(ProfessionalProfile.id == job_id).first()
 
+    if not application:
+        return templates.TemplateResponse(
+            "error.html",
+            {"request": request, "message": "Job application not found."},
+        )
+
+    # Prepare data for rendering
+    application_data = {
+        "id": application.id,
+        "title": application.description or "Untitled",
+        "description": application.description,
+        "location": application.location.city_name if application.location else "Unknown",
+        "min_salary": application.min_salary,
+        "max_salary": application.max_salary,
+        "status": application.status,
+        "picture": application.professional.picture,
+        "professional_name": f"{application.professional.first_name} {application.professional.last_name}",
+        "email": application.professional.email,
+    }
+
+    return templates.TemplateResponse(
+        "job_app_single.html",
+        {"request": request, "application": application_data},
+    )
+
+@job_app_router_web.put("/archive/{application_id}")
+def archive_application(
+    application_id: UUID,
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user)
+):
+    """
+    Archive a job application by setting its status to "Hidden".
+    """
+    application = db.query(ProfessionalProfile).filter(ProfessionalProfile.id == application_id).first()
+
+    if not application:
+        raise HTTPException(status_code=404, detail="Job application not found.")
+
+    if application.user_id != current_user.id:
+        raise HTTPException(status_code=403, detail="You do not have permission to archive this application.")
+
+    # Update the status to "Hidden"
+    application.status = "Hidden"
+    db.commit()
+
+    return {"message": "Job application archived successfully."}
+
+
+@job_app_router_web.put("/set-main/{job_application_id}")
+def set_main_application(
+    job_application_id: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Set a specific job application as the main one by updating its status to "Active".
+    Other applications will be set to "Hidden".
+    """
+    response = set_main_job_application_service(db, job_application_id, current_user)
+    return response

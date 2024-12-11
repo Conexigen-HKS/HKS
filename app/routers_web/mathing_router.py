@@ -2,7 +2,7 @@ from fastapi import FastAPI, Request, Depends, HTTPException, APIRouter, Form
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse
 from sqlalchemy import func
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from pydantic import BaseModel
 import random
 
@@ -143,4 +143,140 @@ async def match_request(
 
     # Return confirmation response
     message = f"You have {'liked' if action == 'like' else 'disliked'} the job."
+    return templates.TemplateResponse("confirmation.html", {"request": request, "message": message})
+
+
+
+@match_web_router.get("/apps/", response_class=HTMLResponse)
+async def job_application_matching(
+    request: Request,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    # Check if the user is a company
+    if current_user.role != "company":
+        raise HTTPException(status_code=403, detail="Access forbidden for non-companies")
+
+    # Get the company profile
+    company_profile = db.query(Companies).filter_by(user_id=current_user.id).first()
+    if not company_profile:
+        raise HTTPException(status_code=404, detail="Company profile not found")
+
+    # Get professional profiles not yet matched or disliked
+    excluded_profiles = db.query(RequestsAndMatches.professional_profile_id).filter(
+        RequestsAndMatches.company_offers_id == None,
+        RequestsAndMatches.company_offers_id.in_(
+            db.query(CompanyOffers.id).filter(CompanyOffers.company_id == company_profile.id)
+        )
+    ).all()
+    excluded_profile_ids = [profile[0] for profile in excluded_profiles]
+
+    # Fetch a random professional profile
+    random_profile = (
+        db.query(ProfessionalProfile)
+        .options(joinedload(ProfessionalProfile.location), joinedload(ProfessionalProfile.skills))
+        .filter(~ProfessionalProfile.id.in_(excluded_profile_ids))
+        .order_by(func.random())
+        .first()
+    )
+
+    # Handle no available profiles
+    if not random_profile:
+        return templates.TemplateResponse(
+            "no_profiles.html",
+            {"request": request, "message": "No more job applications available!"},
+        )
+
+    return templates.TemplateResponse(
+        "matching_job_app.html",
+        {
+            "request": request,
+            "profile": {
+                "id": random_profile.id,
+                "first_name": random_profile.professional.first_name,
+                "last_name": random_profile.professional.last_name,
+                "description": random_profile.description,
+                "location": random_profile.location.city_name if random_profile.location else "N/A",
+                "min_salary": random_profile.min_salary,
+                "max_salary": random_profile.max_salary,
+                "skills": [skill.skill.name for skill in random_profile.skills],
+            },
+        },
+    )
+
+@match_web_router.post("/apps/match_request", response_class=HTMLResponse)
+async def match_request(
+    request: Request,
+    target_id: str = Form(...),
+    action: str = Form(...),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    if current_user.role != "company":
+        raise HTTPException(status_code=403, detail="Access forbidden for non-companies")
+
+    # Get the company profile
+    company_profile = db.query(Companies).filter_by(user_id=current_user.id).first()
+    if not company_profile:
+        raise HTTPException(status_code=404, detail="Company profile not found")
+
+    # Get professional profile
+    professional_profile = db.query(ProfessionalProfile).filter_by(id=target_id).first()
+    if not professional_profile:
+        raise HTTPException(status_code=404, detail="Professional profile not found")
+
+    # Get the company's active job offer (or replace logic if multiple offers are allowed)
+    company_offer = db.query(CompanyOffers).filter_by(company_id=company_profile.id).first()
+    if not company_offer:
+        raise HTTPException(status_code=404, detail="Company offer not found")
+
+    # Check if match/dislike entry already exists
+    existing_entry = db.query(RequestsAndMatches).filter_by(
+        professional_profile_id=professional_profile.id,
+        company_offers_id=company_offer.id,
+    ).first()
+
+    if not existing_entry:
+        # Create a new match/dislike request
+        new_request = RequestsAndMatches(
+            professional_profile_id=professional_profile.id,
+            company_offers_id=company_offer.id,
+            match=(action == "like"),
+        )
+        db.add(new_request)
+
+        # Send email to the professional on match
+        if action == "like":
+            professional = db.query(User).filter(User.id == professional_profile.user_id).first()
+            if professional and professional.email:
+                subject = "New match request"
+                text_content = f"Hello {professional.username},\n\nYou have a new match request from {company_profile.name}."
+                html_content = f"<p>Hello {professional.username},</p><p>You have a new match request from {company_profile.name}.</p>"
+                send_email(
+                    to_email=professional.email,
+                    to_name=f"{professional.first_name} {professional.last_name}",
+                    subject=subject,
+                    text_content=text_content,
+                    html_content=html_content,
+                )
+    elif action == "like":
+        existing_entry.match = True
+
+        # Notify the professional on match confirmation
+        professional = db.query(User).filter(User.id == professional_profile.user_id).first()
+        if professional and professional.email:
+            subject = "Match confirmed!"
+            text_content = f"Hello {professional.username},\n\nYou have a new confirmed match with {company_profile.name}."
+            html_content = f"<p>Hello {professional.username},</p><p>You have a new confirmed match with {company_profile.name}.</p>"
+            send_email(
+                to_email=professional.email,
+                to_name=f"{professional.first_name} {professional.last_name}",
+                subject=subject,
+                text_content=text_content,
+                html_content=html_content,
+            )
+
+    db.commit()
+
+    message = f"You have {'liked' if action == 'like' else 'disliked'} this job application."
     return templates.TemplateResponse("confirmation.html", {"request": request, "message": message})

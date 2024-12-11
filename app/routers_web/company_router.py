@@ -10,14 +10,14 @@ Methods:
 from typing import List, Optional
 
 from fastapi import APIRouter, HTTPException, Query, Depends, Request
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from starlette.responses import HTMLResponse
 from starlette.templating import Jinja2Templates
 
 from app.common import auth
 from app.common.auth import get_current_user
 from app.data.database import get_db
-from app.data.models import User
+from app.data.models import User, CompanyOffers
 from app.data.schemas.company import ShowCompanyModel, CompanyInfoRequestModel
 from app.data.schemas.job_application import JobApplicationResponse
 from app.services.offer_service import send_offer_request
@@ -94,3 +94,30 @@ def edit_company_description(
         )
 
 
+@company_router_web.get("/offers", response_class=HTMLResponse)
+async def view_company_job_offers(
+    request: Request,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    View all job offers for the company.
+    """
+    company_id = current_user.company.id if current_user.company else None
+
+    if not company_id:
+        return templates.TemplateResponse(
+            "error.html", {"request": request, "message": "Company not found."}
+        )
+
+    # Query job offers with company picture
+    job_offers = db.query(CompanyOffers).options(
+        joinedload(CompanyOffers.company)  # Fetch related company details
+    ).filter(
+        CompanyOffers.company_id == company_id
+    ).all()
+
+    return templates.TemplateResponse(
+        "job_ads_per_company.html",
+        {"request": request, "job_offers": job_offers},
+    )

@@ -6,6 +6,7 @@ In this file, we define the message service functions. We have four functions:
 - get_conversation: This function is used to get a conversation between two users.
 - update_message: This function is used to update a message.
 """
+from uuid import UUID
 
 from sqlalchemy import Boolean, and_, or_
 from sqlalchemy.orm import Session
@@ -31,18 +32,22 @@ def create_message(
 ) -> Message:
     """
     Create a new message in the database
-    Parameters:
-    message_text: str
-    sender_id: int
-    receiver_id: int
     """
+    if not message_text.strip():
+        raise HTTPException(status_code=400, detail="Message content cannot be empty.")
+    if sender_id == receiver_id:
+        raise HTTPException(status_code=400, detail="You cannot send a message to yourself.")
+
     message = Message(
-        content=message_text, author_id=sender_id, receiver_id=receiver_id
+        content=message_text,
+        author_id=sender_id,
+        receiver_id=receiver_id,
     )
     db.add(message)
     db.commit()
     db.refresh(message)
     return message
+
 
 
 def get_conversation(db: Session, sender_id: str, receiver_id: str, current_user: User):
@@ -159,3 +164,17 @@ def update_message(message_id: str, new_text: str, current_user: User, db: Sessi
         raise HTTPException(
             status_code=403, detail="You are not authorized to view this conversation."
         )
+
+
+def service_get_conversation_details(db: Session, conversation_id: UUID, current_user: User):
+    conversation = db.query(Message).filter(
+        Message.id == conversation_id
+    ).filter(
+        (Message.author_id == current_user.id) |
+        (Message.receiver_id == current_user.id)
+    ).first()
+
+    if not conversation:
+        raise HTTPException(status_code=404, detail="Conversation not found")
+
+    return conversation

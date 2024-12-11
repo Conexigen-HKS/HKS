@@ -200,21 +200,18 @@
             <h1>{{ company_name }}</h1>
             <p>{{ company_description }}</p>
         </div>
-        <div class="sidebar">
-            <h2>{{ company_name }}</h2>
-            <p>Developer<br>
-                Company Size: {{ company_size }}<br>
-                Founded: {{ founded }}</p>
-            <a href="{{ website }}">{{ website }}</a>
+<div class="sidebar">
+    <h2>{{ first_name }} {{ last_name }}</h2>
+    <p>Location: {{ location or 'Unknown Location' }}</p>
+    <a href="{{ website }}">{{ website or 'N/A' }}</a>
 
-            <div class="contact-info">
-                <div>Phone Number: {{ phone }}</div>
-                <div>Email: <a href="mailto:{{ email }}">{{ email }}</a></div>
-                <div>Location: {{ location }}</div>
-                <button>Contact Us</button>
-            </div>
-        </div>
+    <div class="contact-info">
+        <div>Phone Number: {{ phone or 'N/A' }}</div>
+        <div>Email: <a href="mailto:{{ email }}">{{ email or 'N/A' }}</a></div>
+        <div>Location: {{ location or 'Unknown Location' }}</div>
+        <button onclick="window.location.href='/companies/offers';">My Applications</button>
     </div>
+</div>
 
     <div class="upload-popup" id="upload-popup">
         <span class="close" id="close-popup">&times;</span>
