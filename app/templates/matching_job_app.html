@@ -3,41 +3,155 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Job Applications</title>
-  <link rel="stylesheet" href="/static/css/match_job_app.css">
-</head>
-<body>
-  <div class="container">
-    <h2>Job Application</h2>
-    <p><strong>Description:</strong> {{ application.description }}</p>
-    <p><strong>Location:</strong> {{ application.location }}</p>
-    <p><strong>Minimum Salary:</strong> {{ application.min_salary }}</p>
-    <p><strong>Maximum Salary:</strong> {{ application.max_salary }}</p>
-    <p><strong>Status:</strong> {{ application.status }}</p>
-    <div class="actions">
-      <form method="post" action="/matches/match_request">
-        <input type="hidden" name="target_id" value="{{ application.id }}">
-        <button type="submit" name="action" value="dislike" class="action-btn dislike">Dislike</button>
-        <button type="submit" name="action" value="like" class="action-btn like">Like</button>
-      </form>
-    </div>
-  </div>
+  <title>Job Application Matching</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(120deg, #b1f3ff, #b0ffff);
+      color: #333;
+    }
 
+    .container {
+      max-width: 600px;
+      margin: 40px auto;
+      padding: 30px;
+      background: #fff;
+      border-radius: 15px;
+      box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .job-card {
+      text-align: left;
+      margin-top: 30px;
+    }
+
+    .logo {
+      width: 120px;
+      height: auto;
+      margin-bottom: 15px;
+    }
+
+    h2 {
+      margin: 10px 0;
+      color: #222;
+      font-size: 1.8em;
+    }
+
+    .location {
+      color: #777;
+      font-size: 1.1em;
+      margin-bottom: 20px;
+    }
+
+    .meta {
+      margin: 15px 0;
+    }
+
+    .meta p {
+      margin: 8px 0;
+      font-size: 1.1em;
+    }
+
+    .meta span {
+      font-weight: bold;
+      color: #2d4ef5;
+    }
+
+    .skills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 15px;
+    }
+
+    .skill {
+      padding: 10px 20px;
+      background: #f0f8f7;
+      border-radius: 20px;
+      font-size: 0.95em;
+      color: #333;
+      border: 1px solid #cce7e4;
+    }
+
+    .actions {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 30px;
+    }
+
+    .action-btn {
+      width: 80px;
+      height: 80px;
+      border: none;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 28px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: #fff;
+    }
+
+    .dislike {
+      background: #f34242;
+      transition: transform 0.3s;
+    }
+
+    .dislike:hover {
+      transform: scale(1.1);
+    }
+
+    .like {
+      background: #2d4ef5;
+      transition: transform 0.3s;
+    }
+
+    .like:hover {
+      transform: scale(1.1);
+    }
+  </style>
   <script>
-    async function sendApplicationAction(appId, action) {
+    async function handleMatch(action, appId) {
       try {
-        const response = await fetch('/matches/match_request/app', {
+        const response = await fetch('/apps/match_request', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ target_id: appId, action: action }),
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ target_id: appId, action }),
         });
-        const result = await response.json();
-        alert(result.message);
-        location.reload(); // Reload to fetch the next application
+
+        const data = await response.json();
+        alert(data.message);
+        location.reload();
       } catch (error) {
-        console.error('Error:', error);
+        alert('An error occurred. Please try again.');
+        console.error(error);
       }
     }
   </script>
+</head>
+<body>
+  <div class="container">
+    <h1>Match Job Applications</h1>
+    <div class="job-card">
+      <h2>{{ profile.description }}</h2>
+      <p class="location">{{ profile.location }}</p>
+      <div class="meta">
+        <p><b>Salary:</b> ${{ profile.min_salary }} - ${{ profile.max_salary }}</p>
+        <div class="skills">
+          {% for skill in profile.skills %}
+          <span class="skill">{{ skill }}</span>
+          {% endfor %}
+        </div>
+      </div>
+      <div class="actions">
+        <button class="action-btn like" onclick="handleMatch('like', '{{ profile.id }}')">✔</button>
+        <button class="action-btn dislike" onclick="handleMatch('dislike', '{{ profile.id }}')">✖</button>
+      </div>
+    </div>
+  </div>
 </body>
 </html>

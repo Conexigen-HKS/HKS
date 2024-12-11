@@ -6,6 +6,7 @@ In this file, we define the message service functions. We have four functions:
 - get_conversation: This function is used to get a conversation between two users.
 - update_message: This function is used to update a message.
 """
+from uuid import UUID
 
 from uuid import UUID
 from sqlalchemy import Boolean, and_, or_
@@ -37,7 +38,15 @@ def create_message(
     if sender_id == receiver_id:
         raise HTTPException(status_code=400, detail="You cannot send a message to yourself.")
 
+    if not message_text.strip():
+        raise HTTPException(status_code=400, detail="Message content cannot be empty.")
+    if sender_id == receiver_id:
+        raise HTTPException(status_code=400, detail="You cannot send a message to yourself.")
+
     message = Message(
+        content=message_text,
+        author_id=sender_id,
+        receiver_id=receiver_id,
         content=message_text,
         author_id=sender_id,
         receiver_id=receiver_id,
@@ -46,6 +55,7 @@ def create_message(
     db.commit()
     db.refresh(message)
     return message
+
 
 
 

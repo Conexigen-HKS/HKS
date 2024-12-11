@@ -11,7 +11,7 @@ from uuid import UUID
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
 
-from app.data.models import Location
+from app.data.models import Location, Skills
 from app.data.schemas.locations import LocationCreate
 
 
@@ -55,3 +55,4 @@ def get_location_by_id(db: Session, location_id: UUID):
     if not location:
         raise HTTPException(status_code=404, detail="Location not found")
     return location
+

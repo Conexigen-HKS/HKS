@@ -10,6 +10,7 @@ We have the following endpoints:
 - get_all_companies: This endpoint is used to get a list of all companies.
 - get_all_matches: This endpoint is used to get all matches for a professional user.
 """
+from http.client import HTTPException
 from typing import List, Literal, Optional
 from uuid import UUID
 
@@ -64,9 +65,10 @@ def view_profile(
             "location": user_profile.location or "Unknown Location",
             "phone": user_profile.phone or "N/A",
             "website": user_profile.website or "N/A",
+            "first_name": user_profile.first_name,
+            "last_name": user_profile.last_name,
         },
     )
-
 
 
 @professional_router_web.patch("/profile", response_model=ProfessionalResponse)
@@ -114,13 +116,11 @@ def view_my_job_applications(
         {
             "id": app.id,
             "description": app.description,
-            "first_name": app.first_name,
-            "last_name": app.last_name,
             "location": app.location.city_name if app.location else "N/A",
             "min_salary": app.min_salary,
             "max_salary": app.max_salary,
             "status": app.status,
-            "picture": app.picture or "/static/default-profile.png",  # Fallback for missing images
+            "picture": app.professional.picture or "/static/default-profile.png",  # Corrected to access professional.picture
         }
         for app in job_apps
     ]

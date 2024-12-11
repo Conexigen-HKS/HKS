@@ -4,7 +4,10 @@ from sqlalchemy import func
 from sqlalchemy.orm import Session, joinedload
 from fastapi import HTTPException
 from app.data.schemas.company import CompanyAdModel, CompanyAdUpdateModel
-from app.data.models import Companies, Location, User, CompanyOffers
+from app.data.models import Companies, Location, User, CompanyOffers, CompaniesRequirements
+from app.services.location_service import get_location_by_id
+from app.services.skills_service import get_or_create_skill
+
 
 #TODO - Implement a way for companies to add requirements with levels to their job ads.
 #TODO - Add functionality to allow adding new skills/requirements and consider an approval workflow.
@@ -12,45 +15,47 @@ from app.data.models import Companies, Location, User, CompanyOffers
 # Active – visible
 # Archived – matched with professional and no longer active
 
-#WORKS
-def create_new_ad(
-    title: str,
-    min_salary: int,
-    max_salary: int,
-    job_description: str,
-    location: str,
-    status: str,
-    current_user: User,
-    db: Session
-) -> CompanyOffers:
+
+def create_new_ad(title, min_salary, max_salary, job_description, location, status, current_user, db, skills):
     try:
-        location_obj = db.query(Location).filter(Location.city_name.ilike(location)).first()
-        if not location_obj:
+        # Look up the location by city name
+        resolved_location = db.query(Location).filter(Location.city_name.ilike(location)).first()
+
+        if not resolved_location:
             raise HTTPException(status_code=404, detail=f"Location '{location}' not found.")
 
-        company = db.query(Companies).filter(Companies.user_id == current_user.id).first()
-        if not company:
-            raise HTTPException(status_code=404, detail="Company not found.")
-
-        new_ad = CompanyOffers(
+        # Step 1: Create the job offer
+        new_offer = CompanyOffers(
             title=title,
+            company_id=current_user.company.id,  # Access the `id` of the company
             min_salary=min_salary,
             max_salary=max_salary,
             description=job_description,
-            location_id=location_obj.id,
+            location_id=resolved_location.id,  # Use the resolved location ID
             status=status,
-            company_id=company.id
         )
-
-        db.add(new_ad)
+        db.add(new_offer)
         db.commit()
-        db.refresh(new_ad)
+        db.refresh(new_offer)
 
-        return new_ad
-    except HTTPException:
-        raise
+        # Step 2: Insert skills (requirements)
+        for skill in skills:
+            skill_entry = CompaniesRequirements(
+                title=skill.name,
+                requirements_id=get_or_create_skill(skill.name, db),  # Ensure skill ID resolver is functional
+                company_offers_id=new_offer.id,
+                level=skill.level,
+            )
+            db.add(skill_entry)
+
+        db.commit()
+        return new_offer
+
+    except HTTPException as e:
+        raise e
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="An error occurred while creating the job ad")
+
 
 #WORKS
 def get_company_ads(current_user: User, db: Session):
@@ -156,7 +161,8 @@ def get_recent_job_ads(db: Session, limit: int = 5):
         db.query(CompanyOffers)
         .options(
             joinedload(CompanyOffers.company),  # Load related company data
-            joinedload(CompanyOffers.location)  # Load location data
+            joinedload(CompanyOffers.location),  # Load location data
+            joinedload(CompanyOffers.requirements).joinedload(CompaniesRequirements.skill)  # Load requirements and skills
         )
         .filter(CompanyOffers.status == "Active")  # Filter only active ads
         .order_by(func.random())  # Sort by random ads
@@ -164,7 +170,6 @@ def get_recent_job_ads(db: Session, limit: int = 5):
         .all()
     )
 
-    # Format the job ads for readability
     return [
         {
             "id": ad.id,
@@ -174,18 +179,25 @@ def get_recent_job_ads(db: Session, limit: int = 5):
             "location_name": ad.location.city_name if ad.location else "N/A",
             "min_salary": ad.min_salary,
             "max_salary": ad.max_salary,
-            "status": ad.status
+            "status": ad.status,
+            "skills": [
+                {
+                    "name": requirement.skill.name,
+                    "level": requirement.level
+                }
+                for requirement in ad.requirements
+            ],  # Extract skill names and levels from requirements
         }
         for ad in job_ads
     ]
-
 
 def get_spotlight_job_ad(db: Session):
     ad = (
         db.query(CompanyOffers)
         .options(
             joinedload(CompanyOffers.company),  # Load related company data
-            joinedload(CompanyOffers.location)  # Load location data
+            joinedload(CompanyOffers.location),  # Load location data
+            joinedload(CompanyOffers.requirements).joinedload(CompaniesRequirements.skill)  # Load requirements and skills
         )
         .filter(CompanyOffers.status == "Active")  # Filter only active ads
         .order_by(func.random())  # Randomize the ad
@@ -203,6 +215,12 @@ def get_spotlight_job_ad(db: Session):
         "location_name": ad.location.city_name if ad.location else "N/A",
         "min_salary": ad.min_salary,
         "max_salary": ad.max_salary,
-        "status": ad.status
+        "status": ad.status,
+        "skills": [
+            {
+                "name": requirement.skill.name,
+                "level": requirement.level
+            }
+            for requirement in ad.requirements
+        ],  # Extract skill names and levels from requirements
     }
-    return {"detail": "Ad deleted successfully"}

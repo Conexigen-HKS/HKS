@@ -49,34 +49,9 @@ def create_new_ad_(
     }
 
 
-@company_ad_router_web.get('/info', response_model=List[CompanyAdModel])
-def get_company_own_ads(current_user: User = Depends(auth.get_current_user),
-                        db: Session = Depends(get_db)):
-    ads = get_company_ads(current_user=current_user, db=db)
-    return ads or []
 
 
-@company_ad_router_web.put('/{ad_id}', response_model=CompanyAdModel)
-def update_company_ad(
-        ad_id: str,
-        ad_info: CompanyAdUpdateModel,
-        current_user: User = Depends(auth.get_current_user),
-        db: Session = Depends(get_db)
-):
-    return edit_company_ad_by_id(
-        job_ad_id=ad_id,
-        ad_info=ad_info,
-        current_company=current_user,
-        db=db
-    )
 
-
-# @company_ad_router.get('/all_ads', response_model=List[Optional[CompanyAdModel]])
-# def get_all_company_ads():
-
-#     ads = get_company_all_ads_service()
-
-#     return ads or []
 
 # WORKS ? Check it again
 @company_ad_router_web.delete('/{id}')

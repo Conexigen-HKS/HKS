@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>My Job Applications</title>
+  <title>Company Job Offers</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -61,12 +61,6 @@
       padding: 20px;
       box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
       text-align: center;
-      transition: transform 0.2s;
-    }
-
-    .job-card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
     }
 
     .job-header {
@@ -106,33 +100,27 @@
       font-size: 0.9em;
       color: #777;
     }
-
-    .job-card a {
-      text-decoration: none;
-      color: inherit;
-    }
   </style>
 </head>
 <body>
   <div class="container">
     <div class="header">
-      <h1>My Job Applications</h1>
-      <button class="add-button" onclick="window.location.href='/job_applications/create';">+</button>
+      <h1>Company Job Offers</h1>
+      <button class="add-button" onclick="window.location.href='/ads/create';">+</button>
     </div>
 
     <div class="job-grid">
-      {% for job in job_apps %}
-      <a href="/job_applications/details/{{ job.id }}" class="job-link">
-        <div class="job-card">
-          <div class="job-header">
-            <img src="{{ job.picture }}" alt="Profile Picture">
-            <p>{{ job.status }}</p>
-          </div>
-          <h3>{{ job.description }}</h3>
-          <p class="job-price">${{ job.min_salary }} - ${{ job.max_salary }}</p>
-          <p class="job-location">{{ job.location }}</p>
+      {% for offer in job_offers %}
+      <div class="job-card">
+        <div class="job-header">
+          <img src="{{ offer.company_logo }}" alt="Company Logo">
+          <p>{{ offer.status }}</p>
         </div>
-      </a>
+        <h3>{{ offer.title }}</h3>
+        <p class="job-price">${{ offer.min_salary }} - ${{ offer.max_salary }}</p>
+        <p class="job-location">{{ offer.location }}</p>
+        <p>{{ offer.description }}</p>
+      </div>
       {% endfor %}
     </div>
   </div>

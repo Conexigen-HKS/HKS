@@ -2,7 +2,7 @@ from fastapi import FastAPI, Request, Depends, HTTPException, APIRouter, Form
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse
 from sqlalchemy import func
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from pydantic import BaseModel
 import random
 
@@ -14,9 +14,6 @@ from app.services.mailjet_service import send_email
 match_web_router = APIRouter(prefix="/matches", tags=["Matches"])
 templates = Jinja2Templates(directory="app/templates")
 
-class MatchRequest(BaseModel):
-    target_id: str
-    action: str  # "like" or "dislike"
 
 @match_web_router.get("/", response_class=HTMLResponse)
 async def job_matching(
@@ -77,16 +74,15 @@ async def match_request(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    """
-    Handle match requests (like/dislike) for a job offer.
-    """
     if current_user.role != "professional":
         raise HTTPException(status_code=403, detail="Access forbidden for non-professionals")
 
-    # Get professional profile
-    professional_profile = db.query(ProfessionalProfile).filter_by(user_id=current_user.id).first()
+    # Get the professional profile (active only)
+    professional_profile = db.query(ProfessionalProfile).filter_by(
+        user_id=current_user.id, status="Active"
+    ).first()
     if not professional_profile:
-        raise HTTPException(status_code=404, detail="Professional profile not found")
+        raise HTTPException(status_code=404, detail="Active professional profile not found")
 
     # Get company offer
     company_offer = db.query(CompanyOffers).filter_by(id=target_id).first()
@@ -100,11 +96,11 @@ async def match_request(
     ).first()
 
     if not existing_entry:
-        # Create a new match request
+        # Create a new match request with match=False
         new_request = RequestsAndMatches(
             professional_profile_id=professional_profile.id,
             company_offers_id=company_offer.id,
-            match=(action == "like"),
+            match=False,
         )
         db.add(new_request)
 
@@ -122,10 +118,11 @@ async def match_request(
                     text_content=text_content,
                     html_content=html_content
                 )
-    elif action == "like":
+    elif action == "like" and not existing_entry.match:
+        # Update the existing request to match=True
         existing_entry.match = True
 
-        # Notify the company via email on match confirmation
+        # Notify the company about the confirmed match
         company = db.query(Companies).filter(Companies.id == company_offer.company_id).first()
         if company and company.email:
             subject = "New confirmed match"
@@ -141,135 +138,7 @@ async def match_request(
 
     db.commit()
 
-    # Return confirmation response
     message = f"You have {'liked' if action == 'like' else 'disliked'} the job."
     return templates.TemplateResponse("confirmation.html", {"request": request, "message": message})
 
 
-
-@match_web_router.post("/match_request/app", response_class=HTMLResponse)
-async def application_match_request(
-    request: Request,
-    target_id: str = Form(...),
-    action: str = Form(...),
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
-):
-    """
-    Handle match requests (like/dislike) for job applications.
-    """
-    if current_user.role != "company":
-        raise HTTPException(status_code=403, detail="Access forbidden for non-companies")
-
-    # Get company profile
-    company_profile = db.query(Companies).filter_by(user_id=current_user.id).first()
-    if not company_profile:
-        raise HTTPException(status_code=404, detail="Company profile not found")
-
-    # Get professional profile
-    professional_profile = db.query(ProfessionalProfile).filter_by(id=target_id).first()
-    if not professional_profile:
-        raise HTTPException(status_code=404, detail="Professional profile not found")
-
-    # Check if there's already a match/dislike entry
-    existing_entry = db.query(RequestsAndMatches).filter_by(
-        professional_profile_id=professional_profile.id,
-        company_offers_id=company_profile.id
-    ).first()
-
-    if not existing_entry:
-        # Create a new match request
-        new_request = RequestsAndMatches(
-            professional_profile_id=professional_profile.id,
-            company_offers_id=company_profile.id,
-            match=(action == "like"),
-        )
-        db.add(new_request)
-
-        # Notify the professional via email on new match request
-        if action == "like":
-            professional = db.query(User).filter(User.id == professional_profile.user_id).first()
-            if professional and professional.email:
-                subject = "New match request"
-                text_content = f"Hello {professional.username},\n\nYou have a new match request from {current_user.username}."
-                html_content = f"<p>Hello {professional.username},</p><p>You have a new match request from {current_user.username}.</p>"
-                send_email(
-                    to_email=professional.email,
-                    to_name=professional.username,
-                    subject=subject,
-                    text_content=text_content,
-                    html_content=html_content
-                )
-    elif action == "like":
-        existing_entry.match = True
-
-        # Notify the professional via email on match confirmation
-        professional = db.query(User).filter(User.id == professional_profile.user_id).first()
-        if professional and professional.email:
-            subject = "New confirmed match"
-            text_content = f"Hello {professional.username},\n\nYou have a new confirmed match with {current_user.username}."
-            html_content = f"<p>Hello {professional.username},</p><p>You have a new confirmed match with {current_user.username}.</p>"
-            send_email(
-                to_email=professional.email,
-                to_name=professional.username,
-                subject=subject,
-                text_content=text_content,
-                html_content=html_content
-            )
-
-    db.commit()
-
-    # Return confirmation response
-    message = f"You have {'liked' if action == 'like' else 'disliked'} the application."
-    return templates.TemplateResponse("confirmation.html", {"request": request, "message": message})
-
-
-
-@match_web_router.get("/random_application", response_class=HTMLResponse)
-async def random_job_application(
-    request: Request, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)
-):
-    if current_user.role != "company":
-        raise HTTPException(status_code=403, detail="Access forbidden for non-companies")
-
-    # Get the company profile
-    company_profile = db.query(Companies).filter_by(user_id=current_user.id).first()
-    if not company_profile:
-        raise HTTPException(status_code=404, detail="Company profile not found")
-
-    # Fetch all professional profiles not yet matched/disliked by the company
-    excluded_profiles = db.query(RequestsAndMatches.professional_profile_id).filter_by(
-        company_offers_id=company_profile.id
-    ).all()
-    excluded_profile_ids = [profile[0] for profile in excluded_profiles]
-
-    # Get a random professional profile that hasn't been matched
-    random_application = (
-        db.query(ProfessionalProfile)
-        .filter(~ProfessionalProfile.id.in_(excluded_profile_ids))
-        .order_by(func.random())
-        .first()
-    )
-
-    # Handle case where no applications are available
-    if not random_application:
-        return templates.TemplateResponse(
-            "no_jobs.html",
-            {"request": request, "message": "No more job applications available!"},
-        )
-
-    # Return the application details to the template
-    return templates.TemplateResponse(
-        "matching_job_app.html",
-        {
-            "request": request,
-            "application": {
-                "id": random_application.id,
-                "description": random_application.description,
-                "location": random_application.location.city_name if random_application.location else "N/A",
-                "min_salary": random_application.min_salary,
-                "max_salary": random_application.max_salary,
-                "status": random_application.status,
-            },
-        },
-    )

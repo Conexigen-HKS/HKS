@@ -27,6 +27,7 @@ from app.routers_web.message_router_web import message_router_web
 
 import uvicorn
 
+from app.routers_web.company_router import company_router_web
 from app.routers_web.job_ad_router import job_ad_router
 from app.routers_web.job_app_router import job_app_router_web
 from app.routers_web.mathing_router import match_web_router
@@ -47,13 +48,14 @@ app.include_router(users_router)
 app.include_router(locations_router)
 app.include_router(skills_router)
 app.include_router(users_router_web)
-app.include_router(match_web_router)
+app.include_router(company_router_web)
 app.include_router(professional_router_web)
 app.include_router(job_app_router_web)
 app.include_router(job_search_router, prefix="/job_search")
 app.include_router(message_router_web)
 
 
+app.include_router(match_web_router)
 
 templates = Jinja2Templates(directory="app/templates")
 
@@ -69,7 +71,7 @@ def home(
     # Fetch recent job applications, spotlight application, recent job ads, and spotlight job ad
     recent_applications = get_recent_applications(db, limit=3)
     spotlight_application = get_spotlight_application(db)
-    recent_job_ads = get_recent_job_ads(db, limit=5)
+    recent_job_ads = get_recent_job_ads(db, limit=4)
     spotlight_job_ad = get_spotlight_job_ad(db)
 
     return templates.TemplateResponse(

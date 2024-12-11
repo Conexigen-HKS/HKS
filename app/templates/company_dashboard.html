@@ -175,115 +175,6 @@
             color: #333;
             cursor: pointer;
         }
-
-        footer {
-            background-color: #2b2b2b;
-            color: #ccc;
-            padding: 40px 20px;
-            font-size: 0.9rem;
-        }
-
-        footer .footer-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: space-between;
-            gap: 30px;
-        }
-
-        footer .logo-partners {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
-            justify-content: center;
-        }
-
-        footer .logo-partners img {
-            height: 40px;
-            filter: brightness(0) invert(1);
-        }
-
-        footer .footer-subscription {
-            text-align: center;
-            margin-top: 20px;
-        }
-
-        footer .footer-subscription h3 {
-            font-size: 1.2rem;
-            color: #fff;
-        }
-
-        footer .footer-subscription p {
-            margin: 10px 0;
-            font-size: 0.9rem;
-        }
-
-        footer .footer-subscription form {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-        }
-
-        footer .footer-subscription form input {
-            padding: 10px;
-            border: none;
-            border-radius: 5px;
-            width: 250px;
-        }
-
-        footer .footer-subscription form button {
-            padding: 10px 20px;
-            background-color: #007bff;
-            color: #fff;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-
-        footer .footer-subscription form button:hover {
-            background-color: #0056b3;
-        }
-
-        footer .footer-links {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 30px;
-            justify-content: center;
-            margin-top: 30px;
-        }
-
-        footer .footer-links h4 {
-            font-size: 1.1rem;
-            margin-bottom: 15px;
-            color: #fff;
-        }
-
-        footer .footer-links ul {
-            list-style: none;
-            padding: 0;
-        }
-
-        footer .footer-links ul li {
-            margin-bottom: 10px;
-        }
-
-        footer .footer-links ul li a {
-            text-decoration: none;
-            color: #ccc;
-            transition: color 0.3s;
-        }
-
-        footer .footer-links ul li a:hover {
-            color: #fff;
-        }
-
-        footer .footer-bottom {
-            text-align: center;
-            margin-top: 20px;
-            color: #ccc;
-        }
     </style>
 </head>
 <body>
@@ -309,19 +200,18 @@
             <h1>{{ company_name }}</h1>
             <p>{{ company_description }}</p>
         </div>
-        <div class="sidebar">
-            <h2>{{ first_name }} {{ last_name }}</h2>
-            <a href="{{ website }}">{{ website }}</a>
+<div class="sidebar">
+    <h2>{{ first_name }} {{ last_name }}</h2>
+    <p>Location: {{ location or 'Unknown Location' }}</p>
+    <a href="{{ website }}">{{ website or 'N/A' }}</a>
 
-            <div class="contact-info">
-                <div>Phone Number: {{ phone }}</div>
-                <div>Email: <a href="mailto:{{ email }}">{{ email }}</a></div>
-                <div>Location: {{ location }}</div>
-                <button onclick="window.location.href='/professionals/applications';">My Applications</button>
+    <div class="contact-info">
+        <div>Phone Number: {{ phone or 'N/A' }}</div>
+        <div>Email: <a href="mailto:{{ email }}">{{ email or 'N/A' }}</a></div>
+        <div>Location: {{ location or 'Unknown Location' }}</div>
+        <button onclick="window.location.href='/companies/offers';">My Applications</button>
     </div>
-            </div>
-        </div>
-    </div>
+</div>
 
     <div class="upload-popup" id="upload-popup">
         <span class="close" id="close-popup">&times;</span>
@@ -331,63 +221,6 @@
             <button type="submit">Upload</button>
         </form>
     </div>
-
-    <footer>
-        <div class="footer-container">
-            <div class="footer-content">
-                 <div class="logo-partners">
-        <img src="static/images/be553dc2-3da6-4672-98f1-50b661e052814-removebg-preview.png" alt="Telerik">
-        <img src="static/images/Apple-Logo.png" alt="Apple">
-        <img src="static/images/maxresdefault-removebg-preview.png" alt="Excalidraw">
-        <img src="static/images/8867.Microsoft_5F00_Logo_2D00_for_2D00_screen-removebg-preview.png" alt="Microsoft">
-      </div>
-                <div class="footer-subscription">
-                    <h3>Get New Jobs Notification!</h3>
-                    <p>Subscribe & get all related jobs notification.</p>
-                    <form>
-                        <input type="email" placeholder="Enter your email">
-                        <button type="submit">Subscribe</button>
-                    </form>
-                </div>
-            </div>
-
-            <div class="footer-links">
-                <div class="company">
-                    <h4>Company</h4>
-                    <ul>
-                        <li><a href="#">About Us</a></li>
-                        <li><a href="#">Contact Us</a></li>
-                        <li><a href="#">Services</a></li>
-                        <li><a href="#">Blog</a></li>
-                        <li><a href="#">Team</a></li>
-                        <li><a href="#">Pricing</a></li>
-                    </ul>
-                </div>
-                <div class="for-jobs">
-                    <h4>For Jobs</h4>
-                    <ul>
-                        <li><a href="#">Browser Categories</a></li>
-                        <li><a href="#">Browser Jobs</a></li>
-                        <li><a href="#">Job Details</a></li>
-                        <li><a href="#">Bookmark Jobs</a></li>
-                    </ul>
-                </div>
-                <div class="for-candidates">
-                    <h4>For Candidates</h4>
-                    <ul>
-                        <li><a href="#">Candidate List</a></li>
-                        <li><a href="#">Candidate Grid</a></li>
-                        <li><a href="#">Candidate Details</a></li>
-                    </ul>
-                </div>
-
-            </div>
-
-            <div class="footer-bottom">
-                <p>&copy; 2024 WorkScout. All rights reserved.</p>
-            </div>
-        </div>
-    </footer>
 
     <script>
         const cameraIcon = document.getElementById("camera-icon");

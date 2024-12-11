@@ -359,10 +359,10 @@ def delete_job_application(
 
     return {"detail": "Application deleted successfully"}
 
-
 def get_recent_applications(db: Session, limit: int = 3):
     applications = (
         db.query(ProfessionalProfile)
+        .filter(ProfessionalProfile.status == "Active")  # Filter for Active applications
         .options(
             joinedload(ProfessionalProfile.location),
             joinedload(ProfessionalProfile.skills).joinedload(ProfessionalProfileSkills.skill),
@@ -394,6 +394,7 @@ def get_recent_applications(db: Session, limit: int = 3):
 def get_spotlight_application(db: Session):
     application = (
         db.query(ProfessionalProfile)
+        .filter(ProfessionalProfile.status == "Active")  # Filter for Active applications
         .options(
             joinedload(ProfessionalProfile.professional),  # Load professional's details
             joinedload(ProfessionalProfile.skills).joinedload(ProfessionalProfileSkills.skill)  # Load skills
