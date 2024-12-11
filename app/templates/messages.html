@@ -101,25 +101,13 @@
 
   <main>
     <div class="container">
-      <div class="search-section">
-        <div class="compose-section" id="compose-section" style="display: none;">
-          <h2>Create Message / Start Conversation</h2>
-          <input type="text" id="recipient-username" placeholder="Send message to (Username)">
-          <textarea id="message-text" rows="4" placeholder="Type your message here..."></textarea>
-          <button onclick="sendMessage()">Send</button>
-        </div>
-        <div class="input-box">
-          <label for="username">Search By Username</label>
-          <input type="text" id="username" placeholder="Username">
-        </div>
-        <button class="search-btn" onclick="searchMessages()">Search</button>
-
+      <div class="menu-section">
         <div class="conversation-list">
           {% if conversations %}
-            {% for conversation in conversations %}
-              <div class="conversation-item" onclick="loadConversationDetails('{{ conversation.id }}')">
-                <h4>{{ conversation.author.username }} - {{ conversation.receiver.username }}</h4>
-                <p>Last message: {{ conversation.content }}</p>
+            {% for conv in conversations %}
+              <div class="conversation-item" onclick="loadConversation('{{ conv.user_id }}', '{{ conv.username }}')">
+                <h4>{{ conv.username }}</h4>
+                <p>{{ conv.content }}</p>
               </div>
             {% endfor %}
           {% else %}
@@ -129,14 +117,70 @@
       </div>
 
       <div class="message-section">
-        <div id="message-details" class="message-details">
-          <p>Select a conversation to view details.</p>
+        <div id="message-history" class="message-history">
+          <p>Select a conversation to view messages.</p>
+        </div>
+        <div class="message-input">
+          <textarea id="new-message-text" rows="3" placeholder="Type your message here..."></textarea>
+          <button onclick="sendMessage()">Send</button>
         </div>
       </div>
     </div>
   </main>
 
   <script>
+    let currentUserId = "{{ current_user_id }}";
+    let currentConversationUserId = null;
+
+    async function loadConversation(otherUserId, username) {
+      currentConversationUserId = otherUserId;
+      const response = await fetch(`/messages/conversation/${otherUserId}`);
+      if (response.ok) {
+        const messages = await response.json();
+        displayMessages(messages, username);
+      } else {
+        alert('Failed to load conversation.');
+      }
+    }
+
+    function displayMessages(messages, username) {
+      const messageHistory = document.getElementById('message-history');
+      messageHistory.innerHTML = `<h3>Conversation with ${username}</h3>`;
+      
+      messages.forEach(msg => {
+        const messageElement = document.createElement('div');
+        messageElement.classList.add('message');
+        messageElement.innerHTML = `
+          <p><strong>${msg.sender_id === currentUserId ? 'You' : username}:</strong> ${msg.content}</p>
+          <span class="message-time">${msg.created_at}</span>
+        `;
+        messageHistory.appendChild(messageElement);
+      });
+      messageHistory.scrollTop = messageHistory.scrollHeight;
+    }
+
+    async function sendMessage() {
+      const messageText = document.getElementById('new-message-text').value.trim();
+      if (!messageText || !currentConversationUserId) {
+        alert('Please enter a message and select a conversation.');
+        return;
+      }
+
+      const response = await fetch('/messages/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ recipient_id: currentConversationUserId, message_text: messageText })
+      });
+
+      if (response.ok) {
+        document.getElementById('new-message-text').value = '';
+        loadConversation(currentConversationUserId);
+      } else {
+        const error = await response.json();
+        alert(`Failed to send message: ${error.detail}`);
+      }
+    }
+
     function toggleCompose() {
       const composeSection = document.getElementById('compose-section');
       if (composeSection.style.display === 'none') {
@@ -148,7 +192,7 @@
 
     async function searchMessages() {
       const username = document.getElementById('username').value.trim();
-      const response = await fetch(`/messages/conversations?username=${encodeURIComponent(username)}`);
+      const response = await fetch(`/api/messages/conversations?username=${encodeURIComponent(username)}`);
       if (!response.ok) {
         alert('Failed to fetch conversations.');
         return;
@@ -182,7 +226,7 @@
       const messageDetails = document.getElementById('message-details');
       messageDetails.innerHTML = `<p>Loading...</p>`;
       try {
-        const response = await fetch(`/messages/conversation-details/${conversationId}`);
+        const response = await fetch(`/api/messages/conversation-details/${conversationId}`);
         if (!response.ok) {
           throw new Error('Failed to fetch conversation details');
         }
@@ -210,7 +254,7 @@
         return;
       }
 
-      const response = await fetch('/messages/send', {
+      const response = await fetch('/api/messages/send', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ recipient_username: username, message_text: messageText })  // Keys match the Pydantic model

@@ -19,5 +19,5 @@ class Message(BaseModel):
         )
 
 class SendMessageRequest(BaseModel):
-    recipient_username: str
+    recipient_username: UUID
     message_text: str
