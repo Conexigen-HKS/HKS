@@ -1,5 +1,5 @@
 import uuid
-from typing import List
+from typing import List, Optional
 from fastapi import APIRouter, Depends, Request
 from sqlalchemy.orm import Session
 from starlette.responses import HTMLResponse
@@ -10,6 +10,7 @@ from app.data.database import get_db
 from app.data.models import User, CompanyOffers, Location
 from app.data.schemas.company import CompanyAdModel, CompanyAdUpdateModel, CreateCompanyAdModel
 from app.services.company_ad_service import create_new_ad, delete_company_ad, get_company_ads, edit_company_ad_by_id
+from app.services.job_app_service import search_job_ads_service
 
 company_ad_router_web = APIRouter(prefix="/ads", tags=["Company Ads"])
 
@@ -90,62 +91,37 @@ def delete_company_ad_(
 @company_ad_router_web.get('/search', response_class=HTMLResponse)
 def search_ads(
         request: Request,
+        db: Session = Depends(get_db),
+        keyword: Optional[str] = "",
+        location: Optional[str] = "",
+        min_salary: Optional[int] = 0,
+        max_salary: Optional[int] = 0,
         page: int = 1,
-        per_page: int = 10,
-        keyword: str = "",
-        location: str = "",
-        category: str = "",
-        min_salary: int = 0,
-        max_salary: int = 0,
-        db: Session = Depends(get_db)
+        per_page: int = 10
 ):
-    query = db.query(CompanyOffers).join(Location).filter(CompanyOffers.status == "Active")
+    job_ads = search_job_ads_service(
+        db=db,
+        query=keyword,
+        location=location,
+        min_salary=min_salary,
+        max_salary=max_salary,
+        order_by="asc"
+    )
 
-    if keyword:
-        query = query.filter(CompanyOffers.title.ilike(f"%{keyword}%"))
-    if location:
-        query = query.filter(Location.city_name.ilike(f"%{location}%"))
-    if min_salary > 0 and max_salary > 0:
-        query = query.filter(
-            (CompanyOffers.min_salary <= max_salary) &
-            (CompanyOffers.max_salary >= min_salary)
-        )
-    elif min_salary > 0:
-        query = query.filter(CompanyOffers.max_salary >= min_salary)
-    elif max_salary > 0:
-        query = query.filter(CompanyOffers.min_salary <= max_salary)
-
-    total_count = query.count()
+    total_count = len(job_ads)
     total_pages = (total_count + per_page - 1) // per_page
-
-    ads = query.offset((page - 1) * per_page).limit(per_page).all()
-
-    ads_data = [
-        CompanyAdModel(
-            company_name=ad.company.name,
-            company_ad_id=ad.id,
-            title=ad.title,
-            min_salary=ad.min_salary,
-            max_salary=ad.max_salary,
-            description=ad.description,
-            location=ad.location.city_name if ad.location else "N/A",
-            status=ad.status,
-        )
-        for ad in ads
-    ]
+    job_ads_paginated = job_ads[(page - 1) * per_page: page * per_page]
 
     return templates.TemplateResponse(
         "job_listings.html",
         {
             "request": request,
-            "ads": ads_data,
+            "ads": job_ads_paginated,
             "current_page": page,
             "total_pages": total_pages,
             "keyword": keyword,
             "location": location,
-            "category": category,
             "min_salary": min_salary,
             "max_salary": max_salary,
         },
     )
-

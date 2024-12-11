@@ -17,3 +17,7 @@ class Message(BaseModel):
             receiver_username=receiver_username,
             content=content
         )
+
+class SendMessageRequest(BaseModel):
+    recipient_username: str
+    message_text: str

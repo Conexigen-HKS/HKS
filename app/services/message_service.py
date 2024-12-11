@@ -7,6 +7,7 @@ In this file, we define the message service functions. We have four functions:
 - update_message: This function is used to update a message.
 """
 
+from uuid import UUID
 from sqlalchemy import Boolean, and_, or_
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
@@ -157,5 +158,19 @@ def update_message(message_id: str, new_text: str, current_user: User, db: Sessi
         return message
     else:
         raise HTTPException(
-            status_code=403, detail="You are not authorized to view this conversation."
+            status_code=400, detail="Message content cannot be empty."
         )
+
+
+def service_get_conversation_details(db: Session, conversation_id: UUID, current_user: User):
+    conversation = db.query(Message).filter(
+        Message.id == conversation_id
+    ).filter(
+        (Message.author_id == current_user.id) |
+        (Message.receiver_id == current_user.id)
+    ).first()
+    
+    if not conversation:
+        raise HTTPException(status_code=404, detail="Conversation not found")
+    
+    return conversation

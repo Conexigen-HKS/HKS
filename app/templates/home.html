@@ -1,12 +1,12 @@
+<!-- app/templates/home.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>WorkScout - Find Your Dream Job</title>
-    <link href="/static/css/style_home.css" rel="stylesheet">
+  <link href="/static/css/style_home.css" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
-
 </head>
 <body>
 
@@ -47,10 +47,10 @@
 <div id="banner">
   <div class="search-container">
     <h2>Find Job</h2>
-    <form>
-      <input type="text" placeholder="Job title, keywords, or company name">
-      <input type="text" placeholder="City, province, or region">
-      <button><i class="fa fa-search"></i> Search</button>
+    <form action="/ads/search" method="get">
+      <input type="text" name="keyword" placeholder="Job title, keywords, or company name">
+      <input type="text" name="location" placeholder="City, province, or region">
+      <button type="submit"><i class="fa fa-search"></i> Search</button>
     </form>
     <div class="browse-jobs">
       Browse job offers by <a href="#">category</a> or <a href="#">location</a>.
@@ -111,220 +111,29 @@
       </a>
     </div>
   </div>
-
 </section>
 
-<!-- Job Ads Section -->
-<div class="section-container">
-  <!-- Recent Job Ads -->
-<div class="listings">
-  <h1 style="margin-bottom: 20px;">Recent Jobs</h1>
-  {% for ad in recent_job_ads %}
-  <div class="card" style="padding: 20px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 8px; background: #fff; box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);">
-    <div class="card-header" style="display: flex; align-items: flex-start; margin-bottom: 15px;">
-      <!-- Display the real image of the job application -->
-      <img src="{{ ad.image_url }}" alt="Company Logo" style="width: 60px; height: 60px; border-radius: 8px; margin-right: 20px;">
-      <div>
-        <h2 style="margin: 0; font-size: 1.2rem; font-weight: bold;">{{ ad.title }}</h2>
-        <p style="margin: 5px 0; font-size: 1rem; color: #555;">{{ ad.company_name }} | {{ ad.location_name }}</p>
-      </div>
-    </div>
-    <div class="card-details" style="font-size: 1rem; line-height: 1.5; color: #333;">
-      <p style="margin: 5px 0;"><strong>Description:</strong> {{ ad.description }}</p>
-      <p style="margin: 5px 0;"><strong>Salary Range:</strong> ${{ ad.min_salary }} - ${{ ad.max_salary }}</p>
-      <span class="job-status {{ ad.status | lower }}" style="padding: 5px 10px; background-color: #28a745; color: #fff; border-radius: 5px;">{{ ad.status }}</span>
-    </div>
-  </div>
-  {% endfor %}
-  <form action="/ads/search" method="get">
-  <button type="submit" class="show-more">Show More Ads</button>
-</form>
+<!-- Content -->
+<div class="content">
+  <!-- Your content here -->
 </div>
 
-
-<!-- Job Spotlight -->
-  <aside class="spotlight">
-    <h2>Job Spotlight</h2>
-    {% if spotlight_job_ad %}
-    <div class="spotlight-card" style="padding: 20px; border: 1px solid #ddd; border-radius: 8px; background: #fff; box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);">
-      <h3 style="font-size: 1.4rem; font-weight: bold; margin-bottom: 10px;">{{ spotlight_job_ad.title }}</h3>
-      <p style="margin: 5px 0;">{{ spotlight_job_ad.company_name }} | {{ spotlight_job_ad.location_name }}</p>
-      <p class="salary" style="margin: 5px 0; font-size: 1.1rem; font-weight: bold;">Salary: ${{ spotlight_job_ad.min_salary }} - ${{ spotlight_job_ad.max_salary }}</p>
-      <p style="margin: 10px 0; color: #555;">{{ spotlight_job_ad.description }}</p>
-      <button class="apply-btn" style="padding: 10px 20px; background-color: #007bff; color: #fff; border: none; border-radius: 5px;">Apply Now</button>
-    </div>
-    {% else %}
-    <p>No spotlight job available.</p>
-    {% endif %}
-  </aside>
-</div>
-
-<!-- Job Applications Section -->
-<div class="section-container">
-<div class="listings">
-  <h1 style="margin-bottom: 20px;">Recent Applications</h1>
-  {% for application in recent_applications %}
-  <div class="card" style="padding: 20px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 8px; background: #fff; box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);">
-    <div class="card-header" style="display: flex; align-items: flex-start; margin-bottom: 15px;">
-      <img src="{{ application.picture }}" alt="Applicant Image" style="width: 60px; height: 60px; border-radius: 50%; margin-right: 20px;">
-      <div style="margin-left: 10px;">
-        <h2 style="margin: 0; font-size: 1.2rem; font-weight: bold;">{{ application.first_name }} {{ application.last_name }}</h2>
-        <p style="margin: 5px 0; font-size: 1rem; color: #555;">{{ application.description }}</p>
-      </div>
-    </div>
-    <div class="card-details" style="font-size: 1rem; line-height: 1.5; color: #333;">
-      <p style="margin: 5px 0;"><strong>Location:</strong> {{ application.location_name }}</p>
-      <p style="margin: 5px 0;"><strong>Skills:</strong> {{ application.skills | join(", ") }}</p>
-      <p style="margin: 10px 0; font-size: 1.1rem; font-weight: bold;">Expected Salary: ${{ application.min_salary }} - ${{ application.max_salary }}</p>
-      <span class="application-status {{ application.status | lower }}" style="padding: 5px 10px; background-color: #007bff; color: #fff; border-radius: 5px;">{{ application.status }}</span>
-    </div>
-  </div>
-  {% endfor %}
-    <form action="/job_applications/search" method="get">
-  <button type="submit" class="show-more">Show More Apps</button>
-</form>
-</div>
-<aside class="spotlight">
-  <h2>Spotlight Application</h2>
-  {% if spotlight_application %}
-  <div class="spotlight-card" style="padding: 20px; border: 1px solid #ddd; border-radius: 8px; background: #fff; box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);">
-    <h3 style="font-size: 1.4rem; font-weight: bold; margin-bottom: 10px;">
-      {{ spotlight_application.first_name }} {{ spotlight_application.last_name }}
-    </h3>
-    <p style="margin: 5px 0; font-size: 1.1rem; color: #555;">{{ spotlight_application.job_title }}</p>
-    <p style="margin: 5px 0;"><strong>Skills:</strong> {{ spotlight_application.skills | join(", ") }}</p>
-    <p class="salary" style="margin: 5px 0; font-size: 1.1rem; font-weight: bold;">
-      Expected Salary: ${{ spotlight_application.min_salary }}/month
-    </p>
-  </div>
-  {% else %}
-  <p>No spotlight application available.</p>
-  {% endif %}
-</aside>
-
-
-
-</div>
-<div class="container">
-    <div class="row">
-        <!-- Counter 1 -->
-        <div class="col-md-3 col-sm-6">
-            <div class="counter">
-                <span class="counter-value">782</span>
-                <h3>Web Designing</h3>
-                <div class="counter-icon">
-                    <i class="fa fa-briefcase"></i>
-                </div>
-            </div>
-        </div>
-        <!-- Counter 2 -->
-        <div class="col-md-3 col-sm-6">
-            <div class="counter purple">
-                <span class="counter-value">738</span>
-                <h3>Web Development</h3>
-                <div class="counter-icon">
-                    <i class="fa fa-globe"></i>
-                </div>
-            </div>
-        </div>
-        <!-- Counter 3 -->
-        <div class="col-md-3 col-sm-6">
-            <div class="counter magenta">
-                <span class="counter-value">560</span>
-                <h3>Mobile Apps</h3>
-                <div class="counter-icon">
-                    <i class="fa fa-mobile-alt"></i>
-                </div>
-            </div>
-        </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-
-
-<!-- Footer Section -->
+<!-- Footer -->
 <footer>
   <div class="footer-container">
     <div class="footer-content">
       <div class="logo-partners">
-        <img src="C:\Users\kalin\Documents\GitHub\HKS\app\static\images\be553dc2-3da6-4672-98f1-50b661e052814-removebg-preview.png" alt="WooCommerce">
-        <img src="/images/Apple-Logo.png" alt="Envato">
-        <img src="C:\Users\kalin\Documents\GitHub\HKS\app\static\images\maxresdefault-removebg-preview.png" alt="WordPress">
-        <img src="C:\Users\kalin\Documents\GitHub\HKS\app\static\images\8867.Microsoft_5F00_Logo_2D00_for_2D00_screen-removebg-preview.png" alt="Microsoft">
+        <img src="/static/images/logo.png" alt="Work Scout">
+        <!-- Other logos -->
       </div>
-      <div class="footer-subscription">
-        <h3>Get New Jobs Notification!</h3>
-        <p>Subscribe & get all related jobs notification.</p>
-        <form>
-          <input type="email" placeholder="Enter your email">
-          <button type="submit">Subscribe</button>
-        </form>
-      </div>
-    </div>
-
-    <div class="footer-links">
-      <div class="company">
-        <h4>Company</h4>
-        <ul>
-          <li><a href="#">About Us</a></li>
-          <li><a href="#">Contact Us</a></li>
-          <li><a href="#">Services</a></li>
-          <li><a href="#">Blog</a></li>
-          <li><a href="#">Team</a></li>
-          <li><a href="#">Pricing</a></li>
-        </ul>
-      </div>
-      <div class="for-jobs">
-        <h4>For Jobs</h4>
-        <ul>
-          <li><a href="#">Browser Categories</a></li>
-          <li><a href="#">Browser Jobs</a></li>
-          <li><a href="#">Job Details</a></li>
-          <li><a href="#">Bookmark Jobs</a></li>
-        </ul>
-      </div>
-      <div class="for-candidates">
-        <h4>For Candidates</h4>
-        <ul>
-          <li><a href="#">Candidate List</a></li>
-          <li><a href="#">Candidate Grid</a></li>
-          <li><a href="#">Candidate Details</a></li>
-        </ul>
-      </div>
-      <div class="support">
-        <h4>Support</h4>
-        <ul>
-          <li><a href="#">Help Center</a></li>
-          <li><a href="#">FAQs</a></li>
-          <li><a href="#">Privacy Policy</a></li>
-        </ul>
-      </div>
-    </div>
-
-    <div class="footer-bottom">
-      <p>&copy; 2024 WorkScout. All rights reserved.</p>
+      <!-- Other footer content -->
     </div>
   </div>
 </footer>
+
 <script src="https://code.jquery.com/jquery-1.12.0.min.js"></script>
 <script>
-    $(document).ready(function () {
-        $('.counter-value').each(function () {
-            $(this).prop('Counter', 0).animate({
-                Counter: $(this).text()
-            }, {
-                duration: 3500,
-                easing: 'swing',
-                step: function (now) {
-                    $(this).text(Math.ceil(now));
-                }
-            });
-        });
-    });
+  // Your JavaScript here
 </script>
-
-
 </body>
 </html>

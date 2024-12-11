@@ -1,5 +1,5 @@
 from typing import Optional
-
+#uvicorn app.main:app --reload
 from fastapi import FastAPI, Request, Depends
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
@@ -22,6 +22,9 @@ from app.routers.admin_router import admin_router
 from app.routers.message_router import messages_router
 from app.routers.match_router import match_router
 from app.routers.skills_router import skills_router
+from app.routers_web.job_search_router import job_search_router
+from app.routers_web.message_router_web import message_router_web
+
 import uvicorn
 
 from app.routers_web.job_ad_router import job_ad_router
@@ -47,6 +50,10 @@ app.include_router(users_router_web)
 app.include_router(match_web_router)
 app.include_router(professional_router_web)
 app.include_router(job_app_router_web)
+app.include_router(job_search_router, prefix="/job_search")
+app.include_router(message_router_web)
+
+
 
 templates = Jinja2Templates(directory="app/templates")
 

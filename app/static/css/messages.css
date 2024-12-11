@@ -1,0 +1,172 @@
+/* General Styles */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f9f9f9;
+    color: #333;
+  }
+  
+  /* Header */
+  header {
+    background-color: #fff;
+    padding: 20px 40px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  header .logo {
+    font-size: 1.5em;
+    color: #28a745;
+    font-weight: bold;
+  }
+  
+  header nav a {
+    margin: 0 15px;
+    text-decoration: none;
+    color: #333;
+    font-size: 0.9em;
+  }
+  
+  header .buttons a {
+    padding: 8px 15px;
+    border: 1px solid #28a745;
+    border-radius: 5px;
+    text-decoration: none;
+    font-size: 0.9em;
+    color: #28a745;
+    margin-left: 10px;
+  }
+  
+  header .buttons a.compose-message {
+    background-color: #28a745;
+    color: #fff;
+  }
+  
+  /* Main Section */
+  main {
+    display: flex;
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  
+  /* Search Section */
+  .search-section {
+    width: 50%;
+    padding: 20px;
+  }
+  
+  .compose-section {
+    margin-bottom: 20px;
+    padding: 15px;
+    background-color: #f8f9fa;
+    border-radius: 5px;
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+  }
+  
+  .compose-section h2 {
+    margin-bottom: 10px;
+    font-size: 20px;
+    color: #28a745;
+  }
+  
+  .compose-section input[type="text"],
+  .compose-section textarea {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+  }
+  
+  .compose-section button {
+    padding: 10px 20px;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1em;
+  }
+  
+  .compose-section button:hover {
+    background-color: #218838;
+  }
+  
+  .input-box {
+    margin-bottom: 15px;
+  }
+  
+  input[type="text"] {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+  }
+  
+  button.search-btn {
+    padding: 10px 20px;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 1em;
+    cursor: pointer;
+  }
+  
+  /* Conversation List */
+  .conversation-list {
+    max-height: 400px;
+    overflow-y: auto;
+    margin-bottom: 20px;
+  }
+  
+  .conversation-item {
+    background-color: #f8f9fa;
+    margin: 10px 0;
+    padding: 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  
+  .conversation-item:hover {
+    background-color: #e9ecef;
+  }
+  
+  /* Message Section */
+  .message-section {
+    width: 50%;
+    padding: 20px;
+  }
+  
+  .message-details {
+    background-color: #f8f9fa;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+    margin-top: 20px;
+  }
+  
+  .message-details h3 {
+    margin-bottom: 10px;
+    font-size: 24px;
+  }
+  
+  .message-details p {
+    margin-bottom: 10px;
+  }
+  
+  .message-details button.apply-btn {
+    padding: 10px 15px;
+    background-color: #28a745;
+    border: none;
+    border-radius: 5px;
+    color: white;
+    font-size: 0.9em;
+    cursor: pointer;
+  }

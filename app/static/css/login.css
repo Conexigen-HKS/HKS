@@ -17,6 +17,24 @@ body {
     align-items: center;
 }
 
+/* Стилизация за бутона "Back" */
+.navbar .logo {
+    font-size: 1.em; /* Увеличаване на размера на шрифта */
+    font-weight: bold; /* Удебеляване на текста */
+    color: white; /* Бял цвят на текста */
+    text-decoration: none; /* Премахване на подчертаването */
+    padding: 10px 20px; /* Добавяне на вътрешни отстояния */
+    background-color: transparent; /* Прозрачен фон */
+    border: 2px solid white; /* Бяла рамка */
+    border-radius: 5px; /* Закръгляне на ъглите */
+    transition: background-color 0.3s, color 0.3s; /* Плавен преход при задържане */
+}
+
+.navbar .logo:hover {
+    background-color: white; /* Бял фон при задържане */
+    color: black; /* Черен текст при задържане */
+}
+
 .nav-links {
     list-style: none;
     display: flex;

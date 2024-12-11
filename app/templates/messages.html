@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Messages</title>
+  <link rel="stylesheet" href="/static/css/messages.css">
+  <style>
+    /* Existing styles */
+    .container {
+      display: flex;
+    }
+
+    .search-section, .message-section {
+      width: 50%;
+      padding: 20px;
+    }
+
+    .conversation-list {
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    .conversation-item {
+      cursor: pointer;
+      padding: 10px;
+      border-bottom: 1px solid #ccc;
+    }
+
+    .conversation-item:hover {
+      background-color: #f0f0f0;
+    }
+
+    .message-details {
+      margin-top: 20px;
+    }
+
+    .message-details h3 {
+      margin-bottom: 10px;
+      font-size: 24px;
+    }
+
+    .message-details p {
+      margin-bottom: 10px;
+    }
+
+    /* New Styles for Compose Message */
+    .compose-section {
+      margin-bottom: 20px;
+      padding: 15px;
+      background-color: #f8f9fa;
+      border-radius: 5px;
+      box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    .compose-section h2 {
+      margin-bottom: 10px;
+      font-size: 20px;
+      color: #28a745;
+    }
+
+    .compose-section input[type="text"],
+    .compose-section textarea {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+
+    .compose-section button {
+      padding: 10px 20px;
+      background-color: #28a745;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 1em;
+    }
+
+    .compose-section button:hover {
+      background-color: #218838;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">MessageApp</div>
+    <nav>
+      <a href="#">Home</a>
+      <a href="#">Messages</a>
+      <a href="#">Settings</a>
+      <a href="#">Contact</a>
+    </nav>
+    <div class="buttons">
+      <a href="#" class="sign-in">Sign In</a>
+      <a href="#" class="compose-message" onclick="toggleCompose()">Compose</a>
+    </div>
+  </header>
+
+  <main>
+    <div class="container">
+      <div class="search-section">
+        <div class="compose-section" id="compose-section" style="display: none;">
+          <h2>Create Message / Start Conversation</h2>
+          <input type="text" id="recipient-username" placeholder="Send message to (Username)">
+          <textarea id="message-text" rows="4" placeholder="Type your message here..."></textarea>
+          <button onclick="sendMessage()">Send</button>
+        </div>
+        <div class="input-box">
+          <label for="username">Search By Username</label>
+          <input type="text" id="username" placeholder="Username">
+        </div>
+        <button class="search-btn" onclick="searchMessages()">Search</button>
+
+        <div class="conversation-list">
+          {% if conversations %}
+            {% for conversation in conversations %}
+              <div class="conversation-item" onclick="loadConversationDetails('{{ conversation.id }}')">
+                <h4>{{ conversation.author.username }} - {{ conversation.receiver.username }}</h4>
+                <p>Last message: {{ conversation.content }}</p>
+              </div>
+            {% endfor %}
+          {% else %}
+            <p>No conversations found.</p>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="message-section">
+        <div id="message-details" class="message-details">
+          <p>Select a conversation to view details.</p>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    function toggleCompose() {
+      const composeSection = document.getElementById('compose-section');
+      if (composeSection.style.display === 'none') {
+        composeSection.style.display = 'block';
+      } else {
+        composeSection.style.display = 'none';
+      }
+    }
+
+    async function searchMessages() {
+      const username = document.getElementById('username').value.trim();
+      const response = await fetch(`/messages/conversations?username=${encodeURIComponent(username)}`);
+      if (!response.ok) {
+        alert('Failed to fetch conversations.');
+        return;
+      }
+      const data = await response.json();
+      displayConversations(data);
+    }
+
+    function displayConversations(conversations) {
+      const conversationList = document.querySelector('.conversation-list');
+      conversationList.innerHTML = ''; // Clear existing list
+
+      if (conversations.length === 0) {
+        conversationList.innerHTML = '<p>No conversations found.</p>';
+        return;
+      }
+
+      conversations.forEach(conversation => {
+        const conversationElement = document.createElement('div');
+        conversationElement.classList.add('conversation-item');
+        conversationElement.innerHTML = `
+          <h4>${conversation.author.username} - ${conversation.receiver.username}</h4>
+          <p>Last message: ${conversation.content}</p>
+        `;
+        conversationElement.onclick = () => loadConversationDetails(conversation.id);
+        conversationList.appendChild(conversationElement);
+      });
+    }
+
+    async function loadConversationDetails(conversationId) {
+      const messageDetails = document.getElementById('message-details');
+      messageDetails.innerHTML = `<p>Loading...</p>`;
+      try {
+        const response = await fetch(`/messages/conversation-details/${conversationId}`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch conversation details');
+        }
+        const conversation = await response.json();
+        messageDetails.innerHTML = `
+          <h3>${conversation.sender.username} - ${conversation.receiver.username}</h3>
+          <p><strong>Sender:</strong> ${conversation.sender.username}</p>
+          <p><strong>Receiver:</strong> ${conversation.receiver.username}</p>
+          <p><strong>Time:</strong> ${conversation.time}</p>
+          <p><strong>Message:</strong> ${conversation.content}</p>
+          <button class="apply-btn" onclick="replyMessage()">Reply</button>
+        `;
+      } catch (error) {
+        console.error(error);
+        messageDetails.innerHTML = `<p>An error occurred while fetching conversation details.</p>`;
+      }
+    }
+
+    async function sendMessage() {
+      const username = document.getElementById('recipient-username').value.trim();
+      const messageText = document.getElementById('message-text').value.trim();
+
+      if (!username || !messageText) {
+        alert('Please enter both username and message.');
+        return;
+      }
+
+      const response = await fetch('/messages/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ recipient_username: username, message_text: messageText })  // Keys match the Pydantic model
+      });
+
+      if (response.ok) {
+        alert('Message sent successfully.');
+        // Optionally, refresh the conversations list
+        searchMessages();
+        // Clear the form
+        document.getElementById('recipient-username').value = '';
+        document.getElementById('message-text').value = '';
+        toggleCompose();
+      } else {
+        const errorData = await response.json();
+        alert(`Failed to send message: ${errorData.detail}`);
+      }
+    }
+
+    function replyMessage() {
+      // Implement reply message functionality
+      alert('Reply functionality is not yet implemented.');
+    }
+  </script>
+</body>
+</html>

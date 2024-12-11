@@ -128,7 +128,6 @@ def get_all_job_applications_service(db: Session, professional_id: UUID) -> List
     ]
 
 
-#WORKS
 def search_job_ads_service(
         db: Session, query: Optional[str] = None,
         location: Optional[str] = None,
@@ -140,7 +139,7 @@ def search_job_ads_service(
     if min_salary and max_salary and min_salary > max_salary:
         raise ValueError("Minimum salary cannot be higher than maximum salary")
 
-    job_ads_query = db.query(CompanyOffers).filter(CompanyOffers.status == "active")
+    job_ads_query = db.query(CompanyOffers).filter(CompanyOffers.status == "Active")
 
     if query:
         job_ads_query = job_ads_query.filter(CompanyOffers.description.ilike(f"%{query}%"))
@@ -159,20 +158,19 @@ def search_job_ads_service(
     else:
         job_ads_query = job_ads_query.order_by(CompanyOffers.min_salary.asc())
 
-
     job_ads = job_ads_query.options(joinedload(CompanyOffers.location)).all()
 
     return [
-        JobApplicationResponse(
-            user_id=ad.company.user_id,
-            id=ad.id,
-            description=ad.description,
-            min_salary=ad.min_salary,
-            max_salary=ad.max_salary,
-            status=ad.status,
-            location_name=ad.location.city_name if ad.location else None,
-            skills=[]
-        )
+        {
+            "id": ad.id,
+            "title": ad.title,
+            "company_name": ad.company.name,
+            "description": ad.description,
+            "min_salary": ad.min_salary,
+            "max_salary": ad.max_salary,
+            "location_name": ad.location.city_name if ad.location else None,
+            "status": ad.status
+        }
         for ad in job_ads
     ]
 
