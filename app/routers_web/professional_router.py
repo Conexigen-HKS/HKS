@@ -10,11 +10,10 @@ We have the following endpoints:
 - get_all_companies: This endpoint is used to get a list of all companies.
 - get_all_matches: This endpoint is used to get all matches for a professional user.
 """
-from http.client import HTTPException
 from typing import List, Literal, Optional
 from uuid import UUID
 
-from fastapi import APIRouter, Query, Depends, Request
+from fastapi import APIRouter, Query, Depends, Request, HTTPException
 from sqlalchemy.orm import Session
 from starlette.responses import HTMLResponse
 from starlette.templating import Jinja2Templates

@@ -1,40 +1,31 @@
 from http.client import HTTPException
-from typing import List, Optional
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Request
 from sqlalchemy.orm import Session
-from starlette.responses import RedirectResponse, HTMLResponse
-from starlette.templating import Jinja2Templates
-
-from app.data.schemas.job_application import JobApplicationEdit, JobApplicationCreate
-from app.common.auth import get_current_user
-
-from app.data.database import get_db
-from app.data.models import User, ProfessionalProfile, Location, Skills
-from app.data.schemas.skills import SkillResponse, SkillCreate
-from app.services.job_app_service import create_job_application, delete_job_application, edit_job_app, \
-    view_job_application, get_all_job_applications_service, set_main_job_application_service
-from app.services.professional_service import get_own_job_applications, get_professional_by_user_id
-
-job_app_router_web = APIRouter(tags=["Job Applications"], prefix="/job_applications")
-
-# WORKS
-templates = Jinja2Templates(directory="app/templates")
-
-from fastapi import APIRouter, Depends, Request
-from sqlalchemy.orm import Session
-from starlette.responses import HTMLResponse
+from starlette.responses import HTMLResponse, RedirectResponse
 from starlette.templating import Jinja2Templates
 
 from app.common.auth import get_current_user
 from app.data.database import get_db
+from app.data.models import Location, ProfessionalProfile, Skills, User
+from app.data.schemas.job_application import JobApplicationCreate, JobApplicationEdit
+from app.data.schemas.skills import SkillCreate
+from app.services.job_app_service import (
+    create_job_application,
+    delete_job_application,
+    edit_job_app,
+    get_all_job_applications_service,
+    set_main_job_application_service,
+    view_job_application,
+)
+from app.services.professional_service import get_own_job_applications
 
 job_app_router_web = APIRouter(prefix="/job_applications", tags=["Job Applications"])
 templates = Jinja2Templates(directory="app/templates")
 
 
-@job_app_router_web.get("/search", response_class=HTMLResponse)
+@job_app_router_web.get('/search', response_class=HTMLResponse)
 def search_job_applications(
     request: Request,
     page: int = 1,
@@ -44,7 +35,7 @@ def search_job_applications(
     skill: str = "",
     min_salary: int = 0,
     max_salary: int = 0,
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_db)
 ):
     # Start with only Active applications
     query = db.query(ProfessionalProfile).filter(ProfessionalProfile.status == "Active")
@@ -55,15 +46,11 @@ def search_job_applications(
     if location:
         query = query.join(Location).filter(Location.city_name.ilike(f"%{location}%"))
     if skill:
-        query = (
-            query.join(ProfessionalProfile.skills)
-            .join(Skills)
-            .filter(Skills.name.ilike(f"%{skill}%"))
-        )
+        query = query.join(ProfessionalProfile.skills).join(Skills).filter(Skills.name.ilike(f"%{skill}%"))
     if min_salary > 0 and max_salary > 0:
         query = query.filter(
-            (ProfessionalProfile.min_salary >= min_salary)
-            | (ProfessionalProfile.max_salary <= max_salary)
+            (ProfessionalProfile.min_salary >= min_salary) |
+            (ProfessionalProfile.max_salary <= max_salary)
         )
     elif min_salary > 0:
         query = query.filter(ProfessionalProfile.min_salary >= min_salary)
@@ -103,30 +90,17 @@ def search_job_applications(
     )
 
 
+
 @job_app_router_web.get("/", response_class=HTMLResponse)
-def view_applications(
-    request: Request,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
-):
+def view_applications(request: Request, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     applications = get_all_job_applications_service(db, professional_id=current_user.id)
-    return templates.TemplateResponse(
-        "job_applications.html", {"request": request, "job_applications": applications}
-    )
+    return templates.TemplateResponse("job_applications.html", {"request": request, "job_applications": applications})
 
 
-@job_app_router_web.api_route(
-    "/create", methods=["GET", "POST"], response_class=HTMLResponse
-)
-async def create_application(
-    request: Request,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
-):
+@job_app_router_web.api_route("/create", methods=["GET", "POST"], response_class=HTMLResponse)
+async def create_application(request: Request, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     if request.method == "GET":
-        return templates.TemplateResponse(
-            "create_job_application.html", {"request": request}
-        )
+        return templates.TemplateResponse("create_job_application.html", {"request": request})
 
     if request.method == "POST":
         form_data = await request.form()
@@ -145,35 +119,20 @@ async def create_application(
             max_salary=int(form_data.get("max_salary", 0)),
             status="Hidden",  # Set status to "Hidden" by default
             city_name=form_data.get("city_name"),
-            skills=skills,
+            skills=skills
         )
         create_job_application(db, current_user.id, job_data)
         return RedirectResponse("/", status_code=303)
 
-@job_app_router_web.post("/job_applications/", response_class=HTMLResponse)
-def create_application(
-    data: JobApplicationCreate,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
-):
-    create_job_application(db, current_user.id, data)
-    return RedirectResponse("/", status_code=303)
-
 
 @job_app_router_web.get("/edit/{job_id}", response_class=HTMLResponse)
-def edit_application_page(
-    job_id: UUID, request: Request, db: Session = Depends(get_db)
-):
+def edit_application_page(job_id: UUID, request: Request, db: Session = Depends(get_db)):
     job = view_job_application(db, job_id)
-    return templates.TemplateResponse(
-        "edit_job_application.html", {"request": request, "job": job}
-    )
+    return templates.TemplateResponse("edit_job_application.html", {"request": request, "job": job})
 
 
 @job_app_router_web.post("/job_applications/{job_id}")
-def update_application(
-    job_id: UUID, data: JobApplicationEdit, db: Session = Depends(get_db)
-):
+def update_application(job_id: UUID, data: JobApplicationEdit, db: Session = Depends(get_db)):
     edit_job_app(job_id, data, db)
     return RedirectResponse("/", status_code=303)
 
@@ -182,7 +141,6 @@ def update_application(
 def delete_application(job_id: UUID, db: Session = Depends(get_db)):
     delete_job_application(job_id, db)
     return RedirectResponse("/", status_code=303)
-
 
 @job_app_router_web.get("/view-applications", response_class=HTMLResponse)
 async def view_job_applications_page(

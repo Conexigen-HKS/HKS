@@ -41,11 +41,10 @@ header .container {
     padding: 20px 40px;
 }
 
-/* Стилизация за навигационните бутони */
+/* Navigation */
 #navigation {
     display: flex;
     justify-content: space-between;
-    align-items: center;
     width: 100%;
 }
 
@@ -61,51 +60,56 @@ header .container {
 /* Style for the left-side navigation (responsive) */
 #navigation ul#responsive {
     display: flex;
-    gap: 0px; /* Reduced gap between nav items */
+    gap: 5px; /* Reduced gap between nav items */
 }
 
 /* Style for the right-side navigation (float-right) */
 #navigation ul.float-right {
     display: flex;
-    gap: 0px; /* Reduced gap between nav items */
+    gap: 5px; /* Reduced gap between nav items */
     margin-left: auto; /* Pushes float-right to the far end */
 }
 
 /* Style for each navigation item */
 #navigation ul#responsive li,
 #navigation ul.float-right li {
-    margin: 0;
+    margin: 0; /* Removed excessive margin */
 }
 
-/* Style for navigation links */
+/* Consolidated styles for navigation links and buttons */
 #navigation ul#responsive li a,
 #navigation ul.float-right li a,
-#navigation ul.float-right li button {
+#navigation ul.float-right li button,
+#navigation ul li a, 
+#navigation ul li form button {
     text-decoration: none;
-    color: #333;
+    color: white; /* Set text color to white */
     font-size: 0.9em; /* Slightly smaller font */
     padding: 6px 8px; /* Reduced padding */
     display: flex;
     align-items: center;
-    gap: 0px; /* Space between icon and text */
-    background: none;
+    gap: 5px; /* Space between icon and text */
+    background-color: rgba(128, 128, 128, 0.2); /* Light grey with transparency */
     border: none;
+    border-radius: 5px;
     cursor: pointer;
     transition: color 0.3s, background-color 0.3s;
 }
 
 /* Specific style for logout button */
 #navigation ul.float-right li button.logout-btn {
-    background-color: transparent; /* Remove default button styling */
-    color: #333;
+    background-color: rgba(128, 128, 128, 0.2); /* Match other buttons */
+    color: white;
 }
 
 /* Hover effects for navigation links and buttons */
 #navigation ul#responsive li a:hover,
 #navigation ul.float-right li a:hover,
-#navigation ul.float-right li button:hover {
+#navigation ul.float-right li button:hover,
+#navigation ul li a:hover,
+#navigation ul li form button:hover {
     color: #28a745; /* Change text color on hover */
-    background-color: rgba(40, 167, 69, 0.1); /* Light green background on hover */
+    background-color: rgba(128, 128, 128, 0.4); /* Slightly darker grey on hover */
     border-radius: 5px; /* Rounded corners on hover */
 }
 
@@ -114,41 +118,10 @@ header .container {
     height: 50px; /* Adjust logo size as needed */
 }
 
-#navigation ul li {
-    margin: 0 5px;
-    display: flex;
-    align-items: center;
-}
-
-#navigation ul li a, #navigation ul li form button {
-    text-decoration: none;
-    color: white;
-    font-size: 0.9em;
-    background-color: rgba(255, 255, 255, 0.1);
-    padding: 8px 15px;
-    border-radius: 5px;
-    transition: background 0.3s;
-    border: none;
-    cursor: pointer;
-}
-
-#navigation ul li a:hover, #navigation ul li form button:hover {
-    background-color: rgba(255, 255, 255, 0.2);
-}
-
-#navigation .float-right {
-    margin-left: auto;
-}
-
-header #navigation ul.float-right li a {
-    background-color: rgba(255, 255, 255, 0.1);
-    padding: 8px 15px;
-    border-radius: 5px;
-    transition: background 0.3s;
-}
-
-header #navigation ul.float-right li a:hover {
-    background-color: rgba(255, 255, 255, 0.2);
+/* Ensure no additional conflicting styles */
+#navigation ul li a, 
+#navigation ul li form button {
+    background-color: rgba(40, 167, 69, 0.8); /* Consistent background */
 }
 
 /* Hero Section */

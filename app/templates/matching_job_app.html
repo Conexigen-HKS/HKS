@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Job Application Matching</title>
+  <title>Professional Offer Matching</title>
   <style>
     body {
       font-family: 'Arial', sans-serif;
       margin: 0;
       padding: 0;
-      background: linear-gradient(120deg, #b1f3ff, #b0ffff);
+      background: linear-gradient(120deg, #f3e9ff, #abe9ff);
       color: #333;
     }
 
@@ -22,7 +22,7 @@
       box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
     }
 
-    .job-card {
+    .offer-card {
       text-align: left;
       margin-top: 30px;
     }
@@ -59,14 +59,14 @@
       color: #2d4ef5;
     }
 
-    .skills {
+    .requirements {
       display: flex;
       flex-wrap: wrap;
       gap: 12px;
       margin-top: 15px;
     }
 
-    .skill {
+    .requirement {
       padding: 10px 20px;
       background: #f0f8f7;
       border-radius: 20px;
@@ -113,15 +113,19 @@
     }
   </style>
   <script>
-    async function handleMatch(action, appId) {
+    async function handleMatch(action, offerId) {
       try {
-        const response = await fetch('/apps/match_request', {
+        const response = await fetch('/matches/apps/match_application', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ target_id: appId, action }),
+          body: JSON.stringify({ target_id: offerId, action }),
         });
+
+        if (!response.ok) {
+          throw new Error('Failed to process the request.');
+        }
 
         const data = await response.json();
         alert(data.message);
@@ -135,21 +139,26 @@
 </head>
 <body>
   <div class="container">
-    <h1>Match Job Applications</h1>
-    <div class="job-card">
-      <h2>{{ profile.description }}</h2>
-      <p class="location">{{ profile.location }}</p>
+    <h1>Match Professional Offers</h1>
+    <div class="offer-card">
+      <img class="logo" src="{{ application.picture }}" alt="Professional Picture">
+      <h2>{{ application.title }}</h2>
+      <p class="location">{{ application.location }}</p>
       <div class="meta">
-        <p><b>Salary:</b> ${{ profile.min_salary }} - ${{ profile.max_salary }}</p>
-        <div class="skills">
-          {% for skill in profile.skills %}
-          <span class="skill">{{ skill }}</span>
+        <p><b>Professional:</b> {{ application.professional_name }}</p>
+        <p><b>Email:</b> {{ application.email }}</p>
+        <p><b>Description:</b> {{ application.description }}</p>
+        <p><b>Salary Expectation:</b> ${{ application.min_salary }} - ${{ application.max_salary }}</p>
+        <p><b>Status:</b> {{ application.status }}</p>
+        <div class="requirements">
+          {% for skill in application.skills %}
+          <span class="requirement">{{ skill }}</span>
           {% endfor %}
         </div>
       </div>
       <div class="actions">
-        <button class="action-btn like" onclick="handleMatch('like', '{{ profile.id }}')">✔</button>
-        <button class="action-btn dislike" onclick="handleMatch('dislike', '{{ profile.id }}')">✖</button>
+        <button class="action-btn like" onclick="handleMatch('like', '{{ application.id }}')">✔</button>
+        <button class="action-btn dislike" onclick="handleMatch('dislike', '{{ application.id }}')">✖</button>
       </div>
     </div>
   </div>

@@ -25,24 +25,25 @@
         <li><a href="#">Pages</a></li>
         <li><a href="/job_applications/search">Browse job applications</a></li>
         <li><a href="/ads/search">Browse Job ads</a></li>
-            {% if user %}
-        {% if user.role == "professional" %}
-            <li><a href="/professionals/profile">Dashboard</a></li>
-        {% elif user.role == "company" %}
-            <li><a href="/companies/dashboard">Dashboard</a></li>
+        
         {% if user %}
+          {% if user.role == "professional" %}
+            <li><a href="/professionals/profile">Dashboard</a></li>
+          {% elif user.role == "company" %}
+            <li><a href="/companies/dashboard">Dashboard</a></li>
+          {% endif %}
+          
           <li><a href="/messages"><i class="fa fa-envelope"></i> Messages</a></li>
         {% endif %}
-        {% endif %}
-    {% endif %}
       </ul>
+      
       <ul class="float-right">
         {% if user %}
-        <li>
-          <form action="/users/logout" method="post" style="display: inline;">
-            <button type="submit" class="logout-btn"><i class="fa fa-lock"></i> Log Out</button>
-          </form>
-        </li>
+          <li>
+            <form action="/users/logout" method="post" style="display: inline;">
+              <button type="submit" class="logout-btn"><i class="fa fa-lock"></i> Log Out</button>
+            </form>
+          </li>
         {% else %}
           <li><a href="/users/login"><i class="fa fa-user"></i> Log In</a></li>
           <li><a href="/users/register"><i class="fa fa-user-plus"></i> Sign Up</a></li>
@@ -221,8 +222,6 @@
   {% endif %}
 </aside>
 
-
-
 </div>
 <div class="container">
     <div class="row">
@@ -264,23 +263,162 @@
 
 
 <!-- Footer Section -->
+
 <footer>
+
   <div class="footer-container">
+
     <div class="footer-content">
+
       <div class="logo-partners">
+
         <img src="static/images/be553dc2-3da6-4672-98f1-50b661e052814-removebg-preview.png" alt="Telerik">
+
         <img src="static/images/Apple-Logo.png" alt="Apple">
+
         <img src="static/images/maxresdefault-removebg-preview.png" alt="Excalidraw">
+
         <img src="static/images/8867.Microsoft_5F00_Logo_2D00_for_2D00_screen-removebg-preview.png" alt="Microsoft">
+
       </div>
-      <!-- Other footer content -->
+
+      <div class="footer-subscription">
+
+        <h3>Get New Jobs Notification!</h3>
+
+        <p>Subscribe & get all related jobs notification.</p>
+
+        <form>
+
+          <input type="email" placeholder="Enter your email">
+
+          <button type="submit">Subscribe</button>
+
+        </form>
+
+      </div>
+
     </div>
+
+
+
+    <div class="footer-links">
+
+      <div class="company">
+
+        <h4>Company</h4>
+
+        <ul>
+
+          <li><a href="#">About Us</a></li>
+
+          <li><a href="#">Contact Us</a></li>
+
+          <li><a href="#">Services</a></li>
+
+          <li><a href="#">Blog</a></li>
+
+          <li><a href="#">Team</a></li>
+
+          <li><a href="#">Pricing</a></li>
+
+        </ul>
+
+      </div>
+
+      <div class="for-jobs">
+
+        <h4>For Jobs</h4>
+
+        <ul>
+
+          <li><a href="#">Browser Categories</a></li>
+
+          <li><a href="#">Browser Jobs</a></li>
+
+          <li><a href="#">Job Details</a></li>
+
+          <li><a href="#">Bookmark Jobs</a></li>
+
+        </ul>
+
+      </div>
+
+      <div class="for-candidates">
+
+        <h4>For Candidates</h4>
+
+        <ul>
+
+          <li><a href="#">Candidate List</a></li>
+
+          <li><a href="#">Candidate Grid</a></li>
+
+          <li><a href="#">Candidate Details</a></li>
+
+        </ul>
+
+      </div>
+
+      <div class="support">
+
+        <h4>Support</h4>
+
+        <ul>
+
+          <li><a href="#">Help Center</a></li>
+
+          <li><a href="#">FAQs</a></li>
+
+          <li><a href="#">Privacy Policy</a></li>
+
+        </ul>
+
+      </div>
+
+    </div>
+
+
+
+    <div class="footer-bottom">
+
+      <p>&copy; 2024 WorkScout. All rights reserved.</p>
+
+    </div>
+
   </div>
+
 </footer>
 
 <script src="https://code.jquery.com/jquery-1.12.0.min.js"></script>
+
 <script>
-  // Your JavaScript here
+
+    $(document).ready(function () {
+
+        $('.counter-value').each(function () {
+
+            $(this).prop('Counter', 0).animate({
+
+                Counter: $(this).text()
+
+            }, {
+
+                duration: 3500,
+
+                easing: 'swing',
+
+                step: function (now) {
+
+                    $(this).text(Math.ceil(now));
+
+                }
+
+            });
+
+        });
+
+    });
 </script>
 </body>
 </html>

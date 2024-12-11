@@ -20,7 +20,6 @@ from app.data.models import User, CompanyOffers
 from app.data.schemas.company import (
     CompanyAdModel,
     CompanyAdUpdateModel,
-    CreateCompanyAdModel,
 )
 from app.data.schemas.skills import SkillCreate
 from app.services.company_ad_service import (

@@ -295,3 +295,29 @@ def view_matches(db: Session, current_user: User):
 
     except SQLAlchemyError as e:
         raise HTTPException(status_code=500, detail=f"Database error: {str(e)}") from e
+
+
+def remove_job_offer(db: Session, target_id: str, current_user: User):
+    if current_user.role != "professional":
+        raise HTTPException(status_code=403, detail="Access forbidden for non-professionals")
+    
+    professional_profile = db.query(ProfessionalProfile).filter_by(user_id=current_user.id, status="active").first()
+    if not professional_profile:
+        raise HTTPException(status_code=404, detail="Active professional profile not found")
+    
+    company_offer = db.query(CompanyOffers).filter_by(id=target_id).first()
+    if not company_offer:
+        raise HTTPException(status_code=404, detail="Company offer not found")
+    
+    existing_entry = db.query(RequestsAndMatches).filter_by(
+        professional_profile_id=professional_profile.id,
+        company_offers_id=company_offer.id
+    ).first()
+    
+    if existing_entry:
+        db.delete(existing_entry)
+        db.commit()
+        return {"message": "Job ad dismissed successfully"}
+    else:
+        # Ако няма съществуваща запис, просто премахнете обявата от показването
+        return {"message": "Job ad dismissed successfully"}

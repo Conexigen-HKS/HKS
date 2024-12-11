@@ -4,128 +4,50 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Job Application Matching</title>
-  <style>
-    body {
-      font-family: 'Arial', sans-serif;
-      margin: 0;
-      padding: 0;
-      background: linear-gradient(120deg, #b1f3ff, #b0ffff);
-      color: #333;
-    }
-
-    .container {
-      max-width: 600px;
-      margin: 40px auto;
-      padding: 30px;
-      background: #fff;
-      border-radius: 15px;
-      box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
-    }
-
-    .job-card {
-      text-align: left;
-      margin-top: 30px;
-    }
-
-    .logo {
-      width: 120px;
-      height: auto;
-      margin-bottom: 15px;
-    }
-
-    h2 {
-      margin: 10px 0;
-      color: #222;
-      font-size: 1.8em;
-    }
-
-    .location {
-      color: #777;
-      font-size: 1.1em;
-      margin-bottom: 20px;
-    }
-
-    .meta {
-      margin: 15px 0;
-    }
-
-    .meta p {
-      margin: 8px 0;
-      font-size: 1.1em;
-    }
-
-    .meta span {
-      font-weight: bold;
-      color: #2d4ef5;
-    }
-
-    .skills {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      margin-top: 15px;
-    }
-
-    .skill {
-      padding: 10px 20px;
-      background: #f0f8f7;
-      border-radius: 20px;
-      font-size: 0.95em;
-      color: #333;
-      border: 1px solid #cce7e4;
-    }
-
-    .actions {
-      display: flex;
-      justify-content: space-between;
-      margin-top: 30px;
-    }
-
-    .action-btn {
-      width: 80px;
-      height: 80px;
-      border: none;
-      border-radius: 50%;
-      cursor: pointer;
-      font-size: 28px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      color: #fff;
-    }
-
-    .dislike {
-      background: #f34242;
-      transition: transform 0.3s;
-    }
-
-    .dislike:hover {
-      transform: scale(1.1);
-    }
-
-    .like {
-      background: #2d4ef5;
-      transition: transform 0.3s;
-    }
-
-    .like:hover {
-      transform: scale(1.1);
-    }
-  </style>
+  <link rel="stylesheet" href="/static/matching_job_ads.css">
   <script>
-    async function handleMatch(action, appId) {
+    async function handleMatch(action, offerId) {
+      const applicationSelect = document.getElementById('applicationSelect');
+      const selectedAppId = applicationSelect.value;
+
+      if (!selectedAppId) {
+        alert('Please select an active application.');
+        return;
+      }
+
       try {
-        const response = await fetch('/apps/match_request', {
+        const response = await fetch('/matches/match_request', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ target_id: appId, action }),
+          body: JSON.stringify({ target_id: offerId, action: action, profile_or_offer_id: selectedAppId }),
         });
 
         const data = await response.json();
         alert(data.message);
-        location.reload();
+        // Remove the job card from the list
+        document.getElementById(`job-${offerId}`).remove();
+      } catch (error) {
+        alert('An error occurred. Please try again.');
+        console.error(error);
+      }
+    }
+
+    async function handleDislike(offerId) {
+      try {
+        const response = await fetch('/matches/match_request', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ target_id: offerId, action: 'dislike' }),
+        });
+
+        const data = await response.json();
+        alert(data.message);
+        // Remove the job card from the list
+        document.getElementById(`job-${offerId}`).remove();
       } catch (error) {
         alert('An error occurred. Please try again.');
         console.error(error);
@@ -136,22 +58,33 @@
 <body>
   <div class="container">
     <h1>Match Job Applications</h1>
-    <div class="job-card">
-      <h2>{{ profile.description }}</h2>
-      <p class="location">{{ profile.location }}</p>
+    
+    <label for="applicationSelect">Select an active application:</label>
+    <select id="applicationSelect">
+      <option value="">--Select Application--</option>
+      {% for app in active_applications %}
+      <option value="{{ app.id }}">{{ app.title }}</option>
+      {% endfor %}
+    </select>
+
+    {% for job in jobs %}
+    <div class="job-card" id="job-{{ job.id }}">
+      <h2>{{ job.description }}</h2>
+      <p class="location">{{ job.location }}</p>
       <div class="meta">
-        <p><b>Salary:</b> ${{ profile.min_salary }} - ${{ profile.max_salary }}</p>
+        <p><b>Salary:</b> ${{ job.min_salary }} - ${{ job.max_salary }}</p>
         <div class="skills">
-          {% for skill in profile.skills %}
+          {% for skill in job.skills %}
           <span class="skill">{{ skill }}</span>
           {% endfor %}
         </div>
       </div>
       <div class="actions">
-        <button class="action-btn like" onclick="handleMatch('like', '{{ profile.id }}')">✔</button>
-        <button class="action-btn dislike" onclick="handleMatch('dislike', '{{ profile.id }}')">✖</button>
+        <button class="action-btn like" onclick="handleMatch('like', '{{ job.id }}')">✔</button>
+        <button class="action-btn dislike" onclick="handleDislike('{{ job.id }}')">✖</button>
       </div>
     </div>
+    {% endfor %}
   </div>
 </body>
 </html>
