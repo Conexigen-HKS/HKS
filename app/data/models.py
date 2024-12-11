@@ -262,7 +262,7 @@ class CompaniesRequirements(Base):
     company_offers_id = Column(
         UUID(as_uuid=True), ForeignKey("company_offers.id"), primary_key=True
     )
-    level = Column(Integer, nullable=True)
+    level = Column(String, nullable=True)
 
     company_offer = relationship("CompanyOffers", back_populates="requirements")
     skill = relationship("Skills")

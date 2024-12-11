@@ -76,6 +76,19 @@ def create_skill_service(db: Session, skill_data: SkillCreate):
     return create_skill(db, skill_data.name)
 
 
+def get_or_create_skill(name: str, db: Session):
+    # Check if skill already exists
+    existing_skill = db.query(Skills).filter(Skills.name.ilike(name)).first()
+    if existing_skill:
+        return existing_skill.id
+
+    # Create the skill if it does not exist
+    new_skill = Skills(name=name)
+    db.add(new_skill)
+    db.commit()
+    db.refresh(new_skill)
+    return new_skill.id
+
 def get_profile_skills_service(db: Session, profile_id: UUID):
     """
     Get profile skills

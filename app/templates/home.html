@@ -25,7 +25,13 @@
         <li><a href="#">Pages</a></li>
         <li><a href="/job_applications/search">Browse job applications</a></li>
         <li><a href="/ads/search">Browse Job ads</a></li>
-        <li><a href="#">Dashboard</a></li>
+            {% if user %}
+        {% if user.role == "professional" %}
+            <li><a href="/professionals/profile">Dashboard</a></li>
+        {% elif user.role == "company" %}
+            <li><a href="/companies/dashboard">Dashboard</a></li>
+        {% endif %}
+    {% endif %}
       </ul>
       <ul class="float-right">
         {% if user %}
@@ -132,7 +138,13 @@
     <div class="card-details" style="font-size: 1rem; line-height: 1.5; color: #333;">
       <p style="margin: 5px 0;"><strong>Description:</strong> {{ ad.description }}</p>
       <p style="margin: 5px 0;"><strong>Salary Range:</strong> ${{ ad.min_salary }} - ${{ ad.max_salary }}</p>
+        <p style="margin: 5px 0;"><strong>Skills:</strong>
+                {% for skill in ad.skills %}
+                <span style="display: inline-block; margin-right: 8px; background: #f1f1f1; padding: 5px 10px; border-radius: 5px;">{{ skill.name }}{% if skill.level %} ({{ skill.level }}){% endif %}</span>
+                {% endfor %}
+            </p>
       <span class="job-status {{ ad.status | lower }}" style="padding: 5px 10px; background-color: #28a745; color: #fff; border-radius: 5px;">{{ ad.status }}</span>
+
     </div>
   </div>
   {% endfor %}
@@ -151,6 +163,11 @@
       <p style="margin: 5px 0;">{{ spotlight_job_ad.company_name }} | {{ spotlight_job_ad.location_name }}</p>
       <p class="salary" style="margin: 5px 0; font-size: 1.1rem; font-weight: bold;">Salary: ${{ spotlight_job_ad.min_salary }} - ${{ spotlight_job_ad.max_salary }}</p>
       <p style="margin: 10px 0; color: #555;">{{ spotlight_job_ad.description }}</p>
+      <p style="margin: 5px 0;"><strong>Skills:</strong>
+        {% for skill in spotlight_job_ad.skills %}
+            <span style="display: inline-block; margin-right: 8px; background: #f1f1f1; padding: 5px 10px; border-radius: 5px;">{{ skill.name }}{% if skill.level %} ({{ skill.level }}){% endif %}</span>
+            {% endfor %}
+      </p>
       <button class="apply-btn" style="padding: 10px 20px; background-color: #007bff; color: #fff; border: none; border-radius: 5px;">Apply Now</button>
     </div>
     {% else %}

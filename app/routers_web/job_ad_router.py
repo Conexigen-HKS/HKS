@@ -101,34 +101,29 @@ async def create_company_ad(request: Request, db: Session = Depends(get_db),
         location = form_data.get("location")
         status = form_data.get("status", "Active")
 
+        # Extract skills
         skills_input = form_data.getlist("skills[]")
         levels_input = form_data.getlist("levels[]")
         skills = [
             SkillCreate(name=skill, level=level)
             for skill, level in zip(skills_input, levels_input)
         ]
-        company_ad_data = CreateCompanyAdModel(
+
+        # Pass the skills parameter to create_new_ad
+        create_new_ad(
             title=title,
             min_salary=min_salary,
             max_salary=max_salary,
-            description=description,
+            job_description=description,
             location=location,
             status=status,
-            skills=skills
-        )
-
-        create_new_ad(
-            title=company_ad_data.title,
-            min_salary=company_ad_data.min_salary,
-            max_salary=company_ad_data.max_salary,
-            job_description=company_ad_data.description,
-            location=company_ad_data.location,
-            status=company_ad_data.status,
             current_user=current_user,
-            db=db
+            db=db,
+            skills=skills  # Fix: Include the skills parameter
         )
 
         return RedirectResponse("/", status_code=303)
+
 
 
 @job_ad_router.get("/info", response_model=List[CompanyAdModel])
