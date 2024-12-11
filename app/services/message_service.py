@@ -26,24 +26,27 @@ def exists(db: Session, message_id: int) -> Boolean:
     message = db.query(Message).filter(Message.id == message_id).first()
     return True if message else False
 
-
 def create_message(
     db: Session, message_text: str, sender_id: str, receiver_id: str
 ) -> Message:
     """
     Create a new message in the database
-    Parameters:
-    message_text: str
-    sender_id: int
-    receiver_id: int
     """
+    if not message_text.strip():
+        raise HTTPException(status_code=400, detail="Message content cannot be empty.")
+    if sender_id == receiver_id:
+        raise HTTPException(status_code=400, detail="You cannot send a message to yourself.")
+
     message = Message(
-        content=message_text, author_id=sender_id, receiver_id=receiver_id
+        content=message_text,
+        author_id=sender_id,
+        receiver_id=receiver_id,
     )
     db.add(message)
     db.commit()
     db.refresh(message)
     return message
+
 
 
 def get_conversation(db: Session, sender_id: str, receiver_id: str, current_user: User):

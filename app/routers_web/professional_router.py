@@ -126,7 +126,7 @@ def view_my_job_applications(
     ]
 
     return templates.TemplateResponse(
-        "my_job_applications.html",
+        "job_aps_per_profile.html",
         {"request": request, "job_apps": job_apps_data},
     )
 
