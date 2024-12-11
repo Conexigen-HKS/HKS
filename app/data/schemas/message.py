@@ -1,6 +1,6 @@
 from uuid import UUID
-
-from pydantic import BaseModel
+from typing import Optional
+from pydantic import BaseModel, model_validator
 
 
 class Message(BaseModel):
@@ -19,5 +19,12 @@ class Message(BaseModel):
         )
 
 class SendMessageRequest(BaseModel):
-    recipient_username: UUID
+    recipient_username: Optional[str] = None
+    recipient_id: Optional[UUID] = None
     message_text: str
+
+    @model_validator(mode="before")
+    def validate_recipient(cls, values):
+        if not values.get('recipient_username') and not values.get('recipient_id'):
+            raise ValueError('Either recipient_username or recipient_id must be provided')
+        return values

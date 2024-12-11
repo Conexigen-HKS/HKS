@@ -26,16 +26,10 @@
 </head>
 <body>
   <header>
-    <div class="logo">MessageApp</div>
-    <nav>
-      <a href="#">Home</a>
-      <a href="#">Messages</a>
-      <a href="#">Settings</a>
-      <a href="#">Contact</a>
-    </nav>
+    <div class="logo">Messages</div>
     <div class="buttons">
-      <a href="#" class="sign-in">Sign In</a>
-      <a href="#" class="compose-message" onclick="toggleCompose()">Compose</a>
+      <a href="/" class="sign-in compose-message">Home</a>      
+      <a href="#" class="compose-message" onclick="toggleCompose()">New Message</a>
     </div>
   </header>
 
@@ -63,10 +57,16 @@
           <p>Select a conversation to view details.</p>
         </div>
         <div class="message-input">
-          <textarea id="new-message-text" rows="3" placeholder="Type your message here..."></textarea>
+          <textarea id="message-text" rows="3" placeholder="Type your message here..."></textarea>
           <button onclick="sendMessage()">Send</button>
         </div>
       </div>
+    </div>
+    <div class="compose-section" id="compose-section" style="display: none;">
+      <h2>Create Message</h2>
+      <input type="text" id="recipient-username" placeholder="Recipient Username">
+      <textarea id="compose-message-text" rows="4" placeholder="Type your message here..."></textarea>
+      <button onclick="sendMessage()">Send</button>
     </div>
   </main>
 
@@ -106,44 +106,131 @@ function displayMessages(messages) {
 }
 
 
-  async function sendMessage() {
-  const recipientUsername = document.getElementById('recipient-username').value.trim();
-  const messageText = document.getElementById('message-text').value.trim();
+    async function sendMessage() {
+      const recipientUsernameInput = document.getElementById('recipient-username');
+      const recipientUsername = recipientUsernameInput ? recipientUsernameInput.value.trim() : null;
+      let messageText;
 
-  if (!recipientUsername || !messageText) {
-    alert('Please enter both recipient username and message.');
-    return;
-  }
+      if (recipientUsername) {
+        // Composing a new message
+        messageText = document.getElementById('compose-message-text').value.trim();
+      } else if (currentConversationUserId) {
+        // Replying in an existing conversation
+        messageText = document.getElementById('message-text').value.trim();
+      } else {
+        alert('Please select a conversation or enter a recipient username.');
+        return;
+      }
 
-  try {
-    const response = await fetch('/messages/send', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ recipient_username: recipientUsername, message_text: messageText })
-    });
+      if (!messageText) {
+        alert('Please enter a message.');
+        return;
+      }
 
-    if (response.ok) {
-      alert('Message sent successfully.');
-      // Optionally clear the input fields
-      document.getElementById('recipient-username').value = '';
-      document.getElementById('message-text').value = '';
-    } else {
-      const error = await response.json();
-      alert(`Failed to send message: ${error.detail}`);
+      let payload = { message_text: messageText };
+
+      if (recipientUsername) {
+        payload.recipient_username = recipientUsername;
+      } else {
+        payload.recipient_id = currentConversationUserId;
+      }
+
+      try {
+        const response = await fetch('/messages/send', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        if (response.ok) {
+          if (recipientUsername) {
+            // After sending a new message, close compose section and clear inputs
+            toggleCompose();
+            document.getElementById('recipient-username').value = '';
+            document.getElementById('compose-message-text').value = '';
+            // Optionally refresh the conversation list
+          } else {
+            // Reload the current conversation
+            loadConversation(currentConversationUserId);
+            document.getElementById('message-text').value = '';
+          }
+        } else {
+          const error = await response.json();
+          alert(`Failed to send message: ${error.detail}`);
+        }
+      } catch (error) {
+        console.error('Error sending message:', error);
+        alert('An error occurred while sending the message.');
+      }
     }
-  } catch (error) {
-    console.error('Error:', error);
-    alert('An unexpected error occurred.');
-  }
-}
 
     function toggleCompose() {
       const composeSection = document.getElementById('compose-section');
-      if (composeSection.style.display === 'none') {
+      if (composeSection.style.display === 'none' || composeSection.style.display === '') {
         composeSection.style.display = 'block';
       } else {
         composeSection.style.display = 'none';
       }
+    }
+
+    async function searchMessages() {
+      const username = document.getElementById('username').value.trim();
+      const response = await fetch(`/api/messages/conversations?username=${encodeURIComponent(username)}`);
+      if (!response.ok) {
+        alert('Failed to fetch conversations.');
+        return;
+      }
+      const data = await response.json();
+      displayConversations(data);
+    }
+
+    function displayConversations(conversations) {
+      const conversationList = document.querySelector('.conversation-list');
+      conversationList.innerHTML = ''; // Clear existing list
+
+      if (conversations.length === 0) {
+        conversationList.innerHTML = '<p>No conversations found.</p>';
+        return;
+      }
+
+      conversations.forEach(conversation => {
+        const conversationElement = document.createElement('div');
+        conversationElement.classList.add('conversation-item');
+        conversationElement.innerHTML = `
+          <h4>${conversation.author.username} - ${conversation.receiver.username}</h4>
+          <p>Last message: ${conversation.content}</p>
+        `;
+        conversationElement.onclick = () => loadConversationDetails(conversation.id);
+        conversationList.appendChild(conversationElement);
+      });
+    }
+
+    async function loadConversationDetails(conversationId) {
+      const messageDetails = document.getElementById('message-details');
+      messageDetails.innerHTML = `<p>Loading...</p>`;
+      try {
+        const response = await fetch(`/api/messages/conversation-details/${conversationId}`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch conversation details');
+        }
+        const conversation = await response.json();
+        messageDetails.innerHTML = `
+          <h3>${conversation.sender.username} - ${conversation.receiver.username}</h3>
+          <p><strong>Sender:</strong> ${conversation.sender.username}</p>
+          <p><strong>Receiver:</strong> ${conversation.receiver.username}</p>
+          <p><strong>Time:</strong> ${conversation.time}</p>
+          <p><strong>Message:</strong> ${conversation.content}</p>
+          <button class="apply-btn" onclick="replyMessage()">Reply</button>
+        `;
+      } catch (error) {
+        console.error(error);
+        messageDetails.innerHTML = `<p>An error occurred while fetching conversation details.</p>`;
+      }
+    }
+
+    function replyMessage() {
+      // Implement reply message functionality
+      alert('Reply functionality is not yet implemented.');
     }
   </script>
 </body>

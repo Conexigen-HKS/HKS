@@ -1,5 +1,6 @@
 from uuid import UUID
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, Request, Body
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 from starlette.templating import Jinja2Templates
 
@@ -88,25 +89,38 @@ async def get_conversation_with_user(
     return conversation
 
 
-@message_router_web.get("/messages/conversation/{sender_id}/{receiver_id}")
-def get_conversation_between_users(
-    sender_id: str,
-    receiver_id: str,
+# Create a new message
+@message_router_web.post("/messages/send")
+def send_new_message(
+    payload: dict = Body(...),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    messages = db.query(Message).filter(
-        ((Message.author_id == sender_id) & (Message.receiver_id == receiver_id)) |
-        ((Message.author_id == receiver_id) & (Message.receiver_id == sender_id))
-    ).order_by(Message.created_at).all()
+    recipient = None
 
-    return {
-        "messages": [
-            {"sender": m.author.username, "content": m.content, "time": m.created_at.strftime("%Y-%m-%d %H:%M:%S")}
-            for m in messages
-        ]
-    }
+    recipient_username = payload.get('recipient_username')
+    recipient_id = payload.get('recipient_id')
+    message_text = payload.get('message_text')
 
+    if not message_text:
+        raise HTTPException(status_code=400, detail="Message text cannot be empty")
+
+    if recipient_username:
+        recipient = db.query(User).filter(User.username == recipient_username).first()
+        if not recipient:
+            raise HTTPException(status_code=404, detail="Recipient user not found")
+    elif recipient_id:
+        recipient = db.query(User).filter(User.id == recipient_id).first()
+        if not recipient:
+            raise HTTPException(status_code=404, detail="Recipient user not found")
+    else:
+        raise HTTPException(status_code=400, detail="Recipient information is missing")
+
+    if recipient.id == current_user.id:
+        raise HTTPException(status_code=400, detail="Cannot send message to yourself")
+
+    message = create_message(db, message_text, current_user.id, recipient.id)
+    return {"detail": "Message sent successfully", "message_id": str(message.id)}
 
 @message_router_web.get("/messages/conversation/{conversation_id}")
 async def get_all_messages_in_conversation(
