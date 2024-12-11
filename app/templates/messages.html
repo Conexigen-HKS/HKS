@@ -6,6 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Messages</title>
   <link rel="stylesheet" href="/static/css/messages.css">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
   <style>
     /* Existing styles */
     .container {
@@ -88,52 +89,62 @@
   <header>
     <div class="logo">Messages</div>
     <div class="buttons">
-      <a href="/" class="sign-in compose-message">Home</a>      
-      <a href="#" class="compose-message" onclick="toggleCompose()">New Message</a>
+      <a href="/" class="sign-in"><i class="fa fa-home"></i> Home</a>      
+      <a href="#" class="compose-message" onclick="toggleCompose()"><i class="fa fa-plus"></i> New Message</a>
     </div>
   </header>
 
   <main>
     <div class="container">
-      <div class="menu-section">
-        <div class="conversation-list">
-          {% if conversations %}
-            {% for conv in conversations %}
-              <div class="conversation-item" onclick="loadConversation('{{ conv.user_id }}', '{{ conv.username }}')">
-                <h4>{{ conv.username }}</h4>
-                <p>{{ conv.content }}</p>
-              </div>
-            {% endfor %}
-          {% else %}
-            <p>No conversations found.</p>
-          {% endif %}
-        </div>
+      <div class="chat-list">
+        {% if conversations %}
+          {% for conv in conversations %}
+            <div class="chat-item {% if conv.user_id == active_user_id %}active{% endif %}" onclick="loadConversation('{{ conv.user_id }}', '{{ conv.username }}')">
+              <h4>{{ conv.username }}</h4>
+              <p>{{ conv.content }}</p>
+            </div>
+          {% endfor %}
+        {% else %}
+          <p>No conversations found.</p>
+        {% endif %}
       </div>
 
-      <div class="message-section">
+      <div class="chat-section">
         <div id="message-history" class="message-history">
           <p>Select a conversation to view messages.</p>
         </div>
         <div class="message-input">
           <textarea id="message-text" rows="3" placeholder="Type your message here..."></textarea>
-          <button onclick="sendMessage()">Send</button>
+          <button onclick="sendMessage()"><i class="fa fa-paper-plane"></i> Send</button>
         </div>
       </div>
     </div>
+
     <div class="compose-section" id="compose-section" style="display: none;">
       <h2>Create Message</h2>
       <input type="text" id="recipient-username" placeholder="Recipient Username">
       <textarea id="compose-message-text" rows="4" placeholder="Type your message here..."></textarea>
-      <button onclick="sendMessage()">Send</button>
+      <button onclick="sendMessage()"><i class="fa fa-paper-plane"></i> Send</button>
     </div>
   </main>
 
+  <footer>
+    <!-- Footer content -->
+  </footer>
+
+  <script src="https://code.jquery.com/jquery-1.12.0.min.js"></script>
   <script>
     let currentUserId = "{{ current_user_id }}";
-    let currentConversationUserId = null;
+    let currentConversationUserId = "{{ active_user_id }}";
 
     async function loadConversation(otherUserId, username) {
       currentConversationUserId = otherUserId;
+      document.querySelectorAll('.chat-item').forEach(item => {
+        item.classList.remove('active');
+        if (item.onclick.toString().includes(otherUserId)) {
+          item.classList.add('active');
+        }
+      });
       const response = await fetch(`/messages/conversation/${otherUserId}`);
       if (response.ok) {
         const messages = await response.json();
@@ -150,6 +161,7 @@
       messages.forEach(msg => {
         const messageElement = document.createElement('div');
         messageElement.classList.add('message');
+        messageElement.classList.add(msg.sender_id === currentUserId ? 'outgoing' : 'incoming');
         messageElement.innerHTML = `
           <p><strong>${msg.sender_id === currentUserId ? 'You' : username}:</strong> ${msg.content}</p>
           <span class="message-time">${msg.created_at}</span>
@@ -165,10 +177,8 @@
       let messageText;
 
       if (recipientUsername) {
-        // Composing a new message
         messageText = document.getElementById('compose-message-text').value.trim();
       } else if (currentConversationUserId) {
-        // Replying in an existing conversation
         messageText = document.getElementById('message-text').value.trim();
       } else {
         alert('Please select a conversation or enter a recipient username.');
@@ -197,13 +207,10 @@
 
         if (response.ok) {
           if (recipientUsername) {
-            // After sending a new message, close compose section and clear inputs
             toggleCompose();
             document.getElementById('recipient-username').value = '';
             document.getElementById('compose-message-text').value = '';
-            // Optionally refresh the conversation list
           } else {
-            // Reload the current conversation
             loadConversation(currentConversationUserId);
             document.getElementById('message-text').value = '';
           }
@@ -219,71 +226,7 @@
 
     function toggleCompose() {
       const composeSection = document.getElementById('compose-section');
-      if (composeSection.style.display === 'none' || composeSection.style.display === '') {
-        composeSection.style.display = 'block';
-      } else {
-        composeSection.style.display = 'none';
-      }
-    }
-
-    async function searchMessages() {
-      const username = document.getElementById('username').value.trim();
-      const response = await fetch(`/api/messages/conversations?username=${encodeURIComponent(username)}`);
-      if (!response.ok) {
-        alert('Failed to fetch conversations.');
-        return;
-      }
-      const data = await response.json();
-      displayConversations(data);
-    }
-
-    function displayConversations(conversations) {
-      const conversationList = document.querySelector('.conversation-list');
-      conversationList.innerHTML = ''; // Clear existing list
-
-      if (conversations.length === 0) {
-        conversationList.innerHTML = '<p>No conversations found.</p>';
-        return;
-      }
-
-      conversations.forEach(conversation => {
-        const conversationElement = document.createElement('div');
-        conversationElement.classList.add('conversation-item');
-        conversationElement.innerHTML = `
-          <h4>${conversation.author.username} - ${conversation.receiver.username}</h4>
-          <p>Last message: ${conversation.content}</p>
-        `;
-        conversationElement.onclick = () => loadConversationDetails(conversation.id);
-        conversationList.appendChild(conversationElement);
-      });
-    }
-
-    async function loadConversationDetails(conversationId) {
-      const messageDetails = document.getElementById('message-details');
-      messageDetails.innerHTML = `<p>Loading...</p>`;
-      try {
-        const response = await fetch(`/api/messages/conversation-details/${conversationId}`);
-        if (!response.ok) {
-          throw new Error('Failed to fetch conversation details');
-        }
-        const conversation = await response.json();
-        messageDetails.innerHTML = `
-          <h3>${conversation.sender.username} - ${conversation.receiver.username}</h3>
-          <p><strong>Sender:</strong> ${conversation.sender.username}</p>
-          <p><strong>Receiver:</strong> ${conversation.receiver.username}</p>
-          <p><strong>Time:</strong> ${conversation.time}</p>
-          <p><strong>Message:</strong> ${conversation.content}</p>
-          <button class="apply-btn" onclick="replyMessage()">Reply</button>
-        `;
-      } catch (error) {
-        console.error(error);
-        messageDetails.innerHTML = `<p>An error occurred while fetching conversation details.</p>`;
-      }
-    }
-
-    function replyMessage() {
-      // Implement reply message functionality
-      alert('Reply functionality is not yet implemented.');
+      composeSection.style.display = composeSection.style.display === 'none' || composeSection.style.display === '' ? 'block' : 'none';
     }
   </script>
 </body>

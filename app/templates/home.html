@@ -26,6 +26,9 @@
         <li><a href="/job_applications/search">Browse job applications</a></li>
         <li><a href="/ads/search">Browse Job ads</a></li>
         <li><a href="#">Dashboard</a></li>
+        {% if user %}
+          <li><a href="/messages"><i class="fa fa-envelope"></i> Messages</a></li>
+        {% endif %}
       </ul>
       <ul class="float-right">
         {% if user %}
