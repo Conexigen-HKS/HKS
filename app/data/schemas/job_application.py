@@ -6,7 +6,12 @@ from typing import List, Optional
 from pydantic import UUID4, BaseModel, ConfigDict, Field, model_validator
 
 # TODO да направя един валидатор за статусите на апликациите, active/hidden/private и тн.
-from app.data.schemas.skills import SkillCreate, SkillResponse
+from app.data.schemas.skills import SkillResponse
+
+
+class SkillCreate(BaseModel):
+    name: str
+    level: int
 
 
 class JobApplicationCreate(BaseModel):
