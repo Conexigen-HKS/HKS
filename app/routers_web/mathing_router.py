@@ -51,7 +51,7 @@ async def job_matching(
         "location": random_job.location.city_name if random_job.location else "N/A",
         "min_salary": random_job.min_salary,
         "max_salary": random_job.max_salary,
-        "skills": [skill.name for skill in random_job.skills],
+        "skills": [requirement.skill.name for requirement in random_job.requirements],
     }]
     
     return templates.TemplateResponse(
