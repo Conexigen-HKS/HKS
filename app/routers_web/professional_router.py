@@ -14,7 +14,7 @@ from http.client import HTTPException
 from typing import List, Literal, Optional
 from uuid import UUID
 
-from fastapi import APIRouter, Query, Depends, Request
+from fastapi import APIRouter, Query, Depends, Request, Form
 from sqlalchemy.orm import Session
 from starlette.responses import HTMLResponse
 from starlette.templating import Jinja2Templates
@@ -203,3 +203,42 @@ def decline_offer_by_id(
     current_user: User = Depends(get_current_user)
 ):
     return decline_offer(offer_id=offer_id,db=db,current_user=current_user)
+
+
+@professional_router_web.get("/edit", response_class=HTMLResponse)
+def edit_profile_page(
+        request: Request,
+        current_user: User = Depends(get_current_user),
+        db: Session = Depends(get_db),
+):
+    """
+    Display the professional's profile edit page
+    Accepts a current user object and a database session.
+    Returns a form with the user's current data pre-filled.
+    """
+    user_profile = view_own_profile(db, current_user.id)
+    profile_picture = user_profile.picture or "/static/images/default-profile.png"
+
+    return templates.TemplateResponse(
+        "professional_edit_profile.html",
+        {
+            "request": request,
+            "email": user_profile.email,
+            "profile_picture": profile_picture,
+            "location": user_profile.location or "Unknown Location",
+            "phone": user_profile.phone or "N/A",
+            "website": user_profile.website or "N/A",
+            "first_name": user_profile.first_name,
+            "last_name": user_profile.last_name,
+        },
+    )
+
+@professional_router_web.post("/edit-profile", response_model=ProfessionalResponse)
+async def save_edited_profile(
+    request: Request,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    raw_body = await request.body()
+    print(f"Raw Request Body: {raw_body}")
+    return {"message": "Debugging"}

@@ -25,6 +25,24 @@ from app.data.schemas.professional import ProfessionalOut, ReturnProfessional
 # Location (must)
  
 # WORKS
+def edit_company_description_service(company_info: CompanyInfoRequestModel, company_username: str, db: Session):
+    company = db.query(Companies).filter(Companies.username == company_username).first()
+    if not company:
+        return None
+
+    company.company_name = company_info.company_name
+    company.company_description = company_info.company_description
+    company.company_location = company_info.company_location
+    company.company_phone = company_info.company_phone
+    company.company_email = company_info.company_email
+    company.company_website = company_info.company_website
+
+    if company_info.company_logo:
+        company.company_logo = company_info.company_logo
+
+    db.commit()
+    return company
+
 def show_company_description_service(user: User, db: Session):  # DA MAHNEM OBQVITE ZA RABOTA OT DESCRIPTION
     company = db.query(Companies).filter(Companies.user_id == user.id).first()
  

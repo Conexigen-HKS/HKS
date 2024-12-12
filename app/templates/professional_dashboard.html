@@ -298,27 +298,29 @@
         </div>
     </div>
 
-<div class="container" style="margin-bottom: 190px;">
-    <div class="content">
-        <div class="profile-container">
-            <img src="{{ profile_picture }}" alt="Picture">
-            <i class="fa fa-camera camera-icon" id="camera-icon"></i>
+    <div class="container" style="margin-bottom: 190px;">
+        <div class="content">
+            <div class="profile-container">
+                <img src="{{ profile_picture }}" alt="Picture">
+                <i class="fa fa-camera camera-icon" id="camera-icon"></i>
+            </div>
+            <h1>{{ company_name }}</h1>
+            <p>{{ company_description }}</p>
+            <!-- Edit Button -->
+            <button onclick="window.location.href='/professionals/edit';" style="padding: 10px 20px; background-color: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer;">Edit</button>
         </div>
-        <h1>{{ company_name }}</h1>
-        <p>{{ company_description }}</p>
-    </div>
-    <div class="sidebar">
-        <h2>{{ first_name }} {{ last_name }}</h2>
-        <a href="{{ website }}">{{ website }}</a>
+        <div class="sidebar">
+            <h2>{{ first_name }} {{ last_name }}</h2>
+            <a href="{{ website }}">{{ website }}</a>
 
-        <div class="contact-info">
-            <div>Phone Number: {{ phone }}</div>
-            <div>Email: <a href="mailto:{{ email }}">{{ email }}</a></div>
-            <div>Location: {{ location }}</div>
-            <button onclick="window.location.href='/professionals/applications';">My Applications</button>
+            <div class="contact-info">
+                <div>Phone Number: {{ phone }}</div>
+                <div>Email: <a href="mailto:{{ email }}">{{ email }}</a></div>
+                <div>Location: {{ location }}</div>
+                <button onclick="window.location.href='/professionals/applications';">My Applications</button>
+            </div>
         </div>
     </div>
-</div>
 
 
     <div class="upload-popup" id="upload-popup">

@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Professional Profile</title>
+    <style>
+        /* General Styles */
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+            color: #333;
+        }
+
+        /* Header Section */
+        header {
+            background-color: #0b5345;
+            color: white;
+            padding: 20px 0;
+            position: relative;
+        }
+
+        header .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        header .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: white;
+        }
+
+        header .menu {
+            display: flex;
+            gap: 20px;
+        }
+
+        header .menu a {
+            color: white;
+            text-decoration: none;
+            font-size: 16px;
+        }
+
+        header .menu a:hover {
+            text-decoration: underline;
+        }
+
+        header .search-bar {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        header .search-bar input {
+            border: none;
+            outline: none;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+        }
+
+        header .search-bar img {
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+        }
+
+        /* Page Title Section */
+        .page-title {
+            background-color: #0b5345;
+            text-align: center;
+            padding: 40px 20px;
+            color: white;
+        }
+
+        .page-title h1 {
+            font-size: 28px;
+            margin: 0;
+        }
+
+        .breadcrumb {
+            margin-top: 10px;
+            font-size: 14px;
+            color: #ddd;
+        }
+
+        .breadcrumb a {
+            color: #ddd;
+            text-decoration: none;
+        }
+
+        .breadcrumb a:hover {
+            text-decoration: underline;
+        }
+
+        /* Form Container */
+        .form-container {
+            max-width: 600px;
+            margin: 40px auto;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-container h2 {
+            font-size: 24px;
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        /* Form Styles */
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            margin: 10px 0 5px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        input, select, textarea, button {
+            padding: 10px;
+            font-size: 16px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        input::placeholder,
+        textarea::placeholder {
+            color: #aaa;
+        }
+
+        textarea {
+            resize: vertical;
+        }
+
+        button {
+            background-color: #28a745;
+            color: white;
+            cursor: pointer;
+            border: none;
+            font-size: 16px;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #218838;
+        }
+
+        /* Footer */
+        footer {
+            background-color: #0b5345;
+            color: white;
+            padding: 20px 0;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        footer a {
+            color: white;
+            text-decoration: none;
+            margin: 0 10px;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+
+        footer p {
+            margin: 0;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="container">
+            <div class="logo">Jobstack</div>
+            <div class="menu">
+                <a href="/">Home</a>
+                <a href="/jobs">Jobs</a>
+                <a href="/pages">Pages</a>
+                <a href="/contact">Contact</a>
+            </div>
+            <div class="search-bar">
+                <input type="text" placeholder="Search...">
+                <img src="{{ profile_picture }}" alt="User">
+            </div>
+        </div>
+    </header>
+
+    <!-- Page Title Section -->
+    <div class="page-title">
+        <h1>Edit Profile</h1>
+        <div class="breadcrumb">
+            <a href="/">Jobstack</a> > <span>Edit Professional Profile</span>
+        </div>
+    </div>
+
+    <!-- Form Section -->
+    <div class="form-container">
+    <form id="edit-profile-form">
+        <label for="first_name">First Name</label>
+        <input type="text" id="first_name" name="first_name" value="{{ first_name }}" required>
+
+        <label for="last_name">Last Name</label>
+        <input type="text" id="last_name" name="last_name" value="{{ last_name }}" required>
+
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email" value="{{ email }}" required>
+
+        <label for="phone">Phone</label>
+        <input type="text" id="phone" name="phone" value="{{ phone }}">
+
+        <label for="location">Location</label>
+        <input type="text" id="location" name="location" value="{{ location }}">
+
+        <label for="website">Website</label>
+        <input type="url" id="website" name="website" value="{{ website }}">
+
+        <label for="profile_picture">Profile Picture (Optional)</label>
+        <input type="file" id="profile_picture" name="profile_picture">
+
+        <button type="button" onclick="submitForm()">Save Changes</button>
+    </form>
+</div>
+
+<script>
+    function submitForm() {
+        const form = document.getElementById('edit-profile-form');
+        const formData = new FormData(form);
+
+        const data = Object.fromEntries(formData.entries());
+        fetch('/professionals/edit-profile', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data),
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Success:', data);
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    }
+</script>
