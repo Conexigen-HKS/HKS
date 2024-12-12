@@ -35,7 +35,8 @@ def search_job_applications(
     skill: str = "",
     min_salary: int = 0,
     max_salary: int = 0,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
     # Start with only Active applications
     query = db.query(ProfessionalProfile).filter(ProfessionalProfile.status == "Active")
@@ -159,6 +160,7 @@ def view_single_job_application(
     job_id: UUID,
     request: Request,
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
     """
     View the details of a single job application.
@@ -171,6 +173,7 @@ def view_single_job_application(
             "error.html",
             {"request": request, "message": "Job application not found."},
         )
+    is_owner = application.user_id == current_user.id
 
     # Prepare data for rendering
     application_data = {
@@ -188,7 +191,7 @@ def view_single_job_application(
 
     return templates.TemplateResponse(
         "job_app_single.html",
-        {"request": request, "application": application_data},
+        {"request": request, "application": application_data, "is_owner": is_owner},
     )
 
 @job_app_router_web.put("/archive/{application_id}")

@@ -61,6 +61,12 @@
       padding: 20px;
       box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
       text-align: center;
+      transition: transform 0.2s;
+    }
+
+    .job-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
     }
 
     .job-header {
@@ -90,6 +96,17 @@
       font-size: 1.2em;
     }
 
+    /* Remove underline from clickable job title */
+    .job-title a {
+      text-decoration: none;
+      color: inherit; /* Keep the default color of the text */
+      font-weight: bold;
+    }
+
+    .job-title a:hover {
+      color: #007bff; /* Change color on hover */
+    }
+
     .job-price {
       color: #007bff;
       font-weight: bold;
@@ -116,7 +133,9 @@
           <img src="{{ offer.company_logo }}" alt="Company Logo">
           <p>{{ offer.status }}</p>
         </div>
-        <h3>{{ offer.title }}</h3>
+        <div class="job-title">
+          <a href="/ads/{{ offer.id }}">{{ offer.title }}</a>
+        </div>
         <p class="job-price">${{ offer.min_salary }} - ${{ offer.max_salary }}</p>
         <p class="job-location">{{ offer.location }}</p>
         <p>{{ offer.description }}</p>

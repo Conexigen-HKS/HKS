@@ -152,8 +152,13 @@
                 <img src="{{ application.picture or '/static/images/default-profile.png' }}" alt="Applicant Picture">
                 <div><b>{{ application.professional_name }}</b></div>
                 <div>{{ application.email }}</div>
-                <button onclick="archiveApplication('{{ application.id }}')">Archive</button>
-                <button onclick="setMainApplication('{{ application.id }}')">Set Main</button>
+
+                <!-- Show buttons only if the user is the owner -->
+            {% if is_owner %}
+    <button onclick="archiveApplication('{{ application.id }}')">Archive</button>
+    <button onclick="setMainApplication('{{ application.id }}')">Set Main</button>
+{% endif %}
+
             </div>
         </div>
     </div>

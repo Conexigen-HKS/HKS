@@ -9,22 +9,81 @@
       font-family: Arial, sans-serif;
       background-color: #f8fcf9;
       color: #333;
-      padding: 20px;
+      padding: 0; /* Adjusted to ensure no extra padding */
+      margin: 0;
+    }
+
+    /* Header Section */
+    header {
+      background-color: #0b5345;
+      color: white;
+      padding: 20px 0;
+      position: relative;
+    }
+
+    header .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    header .logo {
+      font-size: 24px;
+      font-weight: bold;
+      color: white;
+    }
+
+    header .menu {
+      display: flex;
+      gap: 20px;
+    }
+
+    header .menu a {
+      color: white;
+      text-decoration: none;
+      font-size: 16px;
+    }
+
+    header .menu a:hover {
+      text-decoration: underline;
+    }
+
+    header .search-bar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    header .search-bar input {
+      border: none;
+      outline: none;
+      padding: 8px 15px;
+      border-radius: 20px;
+      font-size: 14px;
+    }
+
+    header .search-bar img {
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
     }
 
     .container {
       max-width: 1200px;
       margin: auto;
+      padding: 20px;
     }
 
-    .header {
+    .header-section {
       display: flex;
       justify-content: space-between;
       align-items: center;
       margin-bottom: 20px;
     }
 
-    .header h1 {
+    .header-section h1 {
       margin: 0;
       font-size: 2em;
     }
@@ -114,8 +173,21 @@
   </style>
 </head>
 <body>
+  <!-- Navigation Bar -->
+  <header>
+    <div class="container">
+      <div class="logo">Jobstack</div>
+      <div class="menu">
+        <a href="/">Home</a>
+         <a href="/ads/search">Browse Jobs</a>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- Main Content -->
   <div class="container">
-    <div class="header">
+    <div class="header-section">
       <h1>My Job Applications</h1>
       <button class="add-button" onclick="window.location.href='/job_applications/create';">+</button>
     </div>

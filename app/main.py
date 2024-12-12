@@ -27,6 +27,7 @@ from app.routers_web.message_router_web import message_router_web
 
 import uvicorn
 
+from app.routers_web.company_ad_router import company_ad_router_web
 from app.routers_web.company_router import company_router_web
 from app.routers_web.job_ad_router import job_ad_router
 from app.routers_web.job_app_router import job_app_router_web
@@ -47,6 +48,7 @@ app.include_router(company_ad_router)
 app.include_router(users_router)
 app.include_router(locations_router)
 app.include_router(skills_router)
+app.include_router(company_ad_router_web)
 app.include_router(users_router_web)
 app.include_router(company_router_web)
 app.include_router(professional_router_web)

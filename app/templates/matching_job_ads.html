@@ -3,57 +3,49 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Job Application Matching</title>
-  <link rel="stylesheet" href="/static/css/matching_job_ads.css">
-  <script>
-    async function handleMatch(action, offerId) {
-      const applicationSelect = document.getElementById('applicationSelect');
-      const selectedAppId = applicationSelect.value;
-
-      if (!selectedAppId) {
-        alert('Please select an active application.');
-        return;
-      }
-
-      try {
-        const response = await fetch('/matches/match_request', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ target_id: offerId, action: action, profile_or_offer_id: selectedAppId }),
-        });
-
-        const data = await response.json();
-        alert(data.message);
-        // Remove the job card from the list
-        document.getElementById(`job-${offerId}`).remove();
-      } catch (error) {
-        alert('An error occurred. Please try again.');
-        console.error(error);
-      }
+  <title>Job Matching</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.2.0/axios.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f5f5f5;
+      color: #333;
+      margin: 0;
+      padding: 0;
     }
-
-    async function handleDislike(offerId) {
-      try {
-        const response = await fetch('/matches/match_request', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ target_id: offerId, action: 'dislike' }),
-        });
-
-        const data = await response.json();
-        alert(data.message);
-        // Remove the job card from the list
-        document.getElementById(`job-${offerId}`).remove();
-      } catch (error) {
-        alert('An error occurred. Please try again.');
-        console.error(error);
-      }
+    .container {
+      max-width: 600px;
+      margin: 20px auto;
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      padding: 20px;
     }
-  </script>
+    h2 {
+      margin-top: 0;
+    }
+    .location, .meta, .requirements {
+      margin-bottom: 10px;
+    }
+    .actions {
+      display: flex;
+      justify-content: space-between;
+    }
+    .action-btn {
+      padding: 10px 20px;
+      font-size: 16px;
+      border: none;
+      border-radius: 5px;
+      color: #fff;
+      cursor: pointer;
+    }
+    .like {
+      background-color: #28a745;
+    }
+    .dislike {
+      background-color: #dc3545;
+    }
+  </style>
 </head>
 <body>
   <div class="container">
@@ -86,5 +78,23 @@
     </div>
     {% endfor %}
   </div>
+
+  <script>
+    async function sendAction(action) {
+      try {
+        const response = await axios.post('/matches/match_request', {
+          target_id: "{{ job.id }}",
+          action: action
+        });
+        alert(response.data.message);
+        window.location.reload();  // Reload the page to show a new random job
+      } catch (error) {
+        console.error('Error sending action:', error);
+      }
+    }
+
+    // Load the first job on page load
+    window.onload = fetchRandomJob;
+  </script>
 </body>
 </html>
