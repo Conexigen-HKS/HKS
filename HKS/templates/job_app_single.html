@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Job Application Detail</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 0;
+        }
+
+        .header {
+            background-color: #274428;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .overview {
+            margin-bottom: 20px;
+        }
+
+        .overview h2 {
+            font-size: 1.5em;
+            margin-bottom: 10px;
+        }
+
+        .overview p {
+            font-size: 1em;
+            line-height: 1.6;
+            color: #555;
+        }
+
+        .job-detail {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #eefae5;
+            border-radius: 8px;
+            padding: 20px;
+        }
+
+        .job-detail img {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .job-info {
+            margin-left: 20px;
+            font-size: 1.2em;
+        }
+
+        .contact-info {
+            text-align: right;
+        }
+
+        .contact-info div {
+            margin-bottom: 10px;
+        }
+
+        .contact-info button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-bottom: 10px;
+        }
+
+        .contact-info button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+    <script>
+        async function archiveApplication(applicationId) {
+            try {
+                const response = await fetch(`/job_applications/archive/${applicationId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    alert('The application has been archived.');
+                    location.reload(); // Reload the page to reflect changes
+                } else {
+                    const errorData = await response.json();
+                    alert(`Error: ${errorData.detail}`);
+                }
+            } catch (error) {
+                console.error('Error archiving the application:', error);
+                alert('An error occurred while archiving the application.');
+            }
+        }
+
+        async function setMainApplication(applicationId) {
+            try {
+                const response = await fetch(`/job_applications/set-main/${applicationId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                });
+
+                if (response.ok) {
+                    alert('Application set as main successfully.');
+                    location.reload(); // Reload the page to reflect changes
+                } else {
+                    const errorData = await response.json();
+                    alert(`Error: ${errorData.detail}`);
+                }
+            } catch (error) {
+                console.error('Error setting application as main:', error);
+                alert('An error occurred while setting the application as main.');
+            }
+        }
+    </script>
+</head>
+<body>
+    <div class="header">
+        <h1>Job Application Detail</h1>
+    </div>
+    <div class="container">
+        <div class="overview">
+            <h2>Overview</h2>
+            <p>{{ application.description }}</p>
+        </div>
+        <div class="job-detail">
+            <div class="job-info">
+                <h3>{{ application.title }}</h3>
+                <p>Location: {{ application.location }}</p>
+                <p>Salary Range: ${{ application.min_salary }} - ${{ application.max_salary }}</p>
+                <p>Status: {{ application.status }}</p>
+            </div>
+            <div class="contact-info">
+                <img src="{{ application.picture or '/static/images/default-profile.png' }}" alt="Applicant Picture">
+                <div><b>{{ application.professional_name }}</b></div>
+                <div>{{ application.email }}</div>
+
+                <!-- Show buttons only if the user is the owner -->
+            {% if is_owner %}
+    <button onclick="archiveApplication('{{ application.id }}')">Archive</button>
+    <button onclick="setMainApplication('{{ application.id }}')">Set Main</button>
+{% endif %}
+
+            </div>
+        </div>
+    </div>
+</body>
+</html>

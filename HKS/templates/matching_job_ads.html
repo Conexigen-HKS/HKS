@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Job Matching</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.2.0/axios.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f5f5f5;
+      color: #333;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      max-width: 600px;
+      margin: 20px auto;
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      padding: 20px;
+    }
+    .home-button {
+      display: inline-block;
+      margin-bottom: 20px;
+      padding: 10px 20px;
+      background-color: #007bff;
+      color: #fff;
+      text-decoration: none;
+      border-radius: 5px;
+    }
+    h2 {
+      margin-top: 0;
+    }
+    .location, .meta, .requirements {
+      margin-bottom: 10px;
+    }
+    .actions {
+      display: flex;
+      justify-content: space-between;
+    }
+    .action-btn {
+      padding: 10px 20px;
+      font-size: 16px;
+      border: none;
+      border-radius: 5px;
+      color: #fff;
+      cursor: pointer;
+    }
+    .like {
+      background-color: #28a745;
+    }
+    .dislike {
+      background-color: #dc3545;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <a href="/" class="home-button">Home</a>
+    <h1>Match Job Applications</h1>
+    
+    <label for="applicationSelect">Select an active application:</label>
+    <select id="applicationSelect">
+      <option value="">--Select Application--</option>
+      {% for app in active_applications %}
+      <option value="{{ app.id }}">{{ app.title }}</option>
+      {% endfor %}
+    </select>
+
+    {% for job in jobs %}
+    <div class="job-card" id="job-{{ job.id }}">
+      <h2>{{ job.description }}</h2>
+      <p class="location">{{ job.location }}</p>
+      <div class="meta">
+        <p><b>Salary:</b> ${{ job.min_salary }} - ${{ job.max_salary }}</p>
+        <div class="skills">
+          {% for skill in job.skills %}
+          <span class="skill">{{ skill }}</span>
+          {% endfor %}
+        </div>
+      </div>
+      <div class="actions">
+        <button class="action-btn like" onclick="handleMatch('like', '{{ job.id }}')">✔</button>
+        <button class="action-btn dislike" onclick="handleDislike('{{ job.id }}')">✖</button>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <script>
+    async function handleMatch(action, jobId) {
+      const applicationSelect = document.getElementById('applicationSelect');
+      const selectedAppId = applicationSelect.value;
+
+      if (!selectedAppId) {
+        alert('Please select an active application.');
+        return;
+      }
+
+      try {
+        const response = await axios.post('/matches/match_request', {
+          target_id: selectedAppId,
+          action: action,
+          profile_or_offer_id: jobId
+        });
+        alert(response.data.message);
+        window.location.reload();  // Reload the page to show a new random job
+      } catch (error) {
+        console.error('Error sending action:', error);
+      }
+    }
+  </script>
+</body>
+</html>

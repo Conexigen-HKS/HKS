@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Job Applications</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f8fcf9;
+      color: #333;
+      padding: 0; /* Adjusted to ensure no extra padding */
+      margin: 0;
+    }
+
+    /* Header Section */
+    header {
+      background-color: #0b5345;
+      color: white;
+      padding: 20px 0;
+      position: relative;
+    }
+
+    header .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    header .logo {
+      font-size: 24px;
+      font-weight: bold;
+      color: white;
+    }
+
+    header .menu {
+      display: flex;
+      gap: 20px;
+    }
+
+    header .menu a {
+      color: white;
+      text-decoration: none;
+      font-size: 16px;
+    }
+
+    header .menu a:hover {
+      text-decoration: underline;
+    }
+
+    header .search-bar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    header .search-bar input {
+      border: none;
+      outline: none;
+      padding: 8px 15px;
+      border-radius: 20px;
+      font-size: 14px;
+    }
+
+    header .search-bar img {
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: auto;
+      padding: 20px;
+    }
+
+    .header-section {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .header-section h1 {
+      margin: 0;
+      font-size: 2em;
+    }
+
+    .add-button {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      font-size: 1.5em;
+      cursor: pointer;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .add-button:hover {
+      background-color: #0056b3;
+    }
+
+    .job-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 20px;
+    }
+
+    .job-card {
+      background-color: #fff;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      text-align: center;
+      transition: transform 0.2s;
+    }
+
+    .job-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    .job-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+
+    .job-header img {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    .job-header p {
+      padding: 5px 10px;
+      border-radius: 12px;
+      font-size: 0.8em;
+      background-color: #e0f7e9;
+      color: #1e9e49;
+    }
+
+    .job-card h3 {
+      margin: 10px 0;
+      font-size: 1.2em;
+    }
+
+    .job-price {
+      color: #007bff;
+      font-weight: bold;
+      margin: 10px 0;
+    }
+
+    .job-location {
+      font-size: 0.9em;
+      color: #777;
+    }
+
+    .job-card a {
+      text-decoration: none;
+      color: inherit;
+    }
+  </style>
+</head>
+<body>
+  <!-- Navigation Bar -->
+  <header>
+    <div class="container">
+      <div class="logo">Jobstack</div>
+      <div class="menu">
+        <a href="/">Home</a>
+         <a href="/ads/search">Browse Jobs</a>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <div class="container">
+    <div class="header-section">
+      <h1>My Job Applications</h1>
+      <button class="add-button" onclick="window.location.href='/job_applications/create';">+</button>
+    </div>
+
+    <div class="job-grid">
+      {% for job in job_apps %}
+      <a href="/job_applications/details/{{ job.id }}" class="job-link">
+        <div class="job-card">
+          <div class="job-header">
+            <img src="{{ job.picture }}" alt="Profile Picture">
+            <p>{{ job.status }}</p>
+          </div>
+          <h3>{{ job.description }}</h3>
+          <p class="job-price">${{ job.min_salary }} - ${{ job.max_salary }}</p>
+          <p class="job-location">{{ job.location }}</p>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+</body>
+</html>

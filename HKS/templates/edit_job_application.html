@@ -1,0 +1,41 @@
+{% extends "base_job_app.html" %}
+
+
+{% block title %}Edit Job Application{% endblock %}
+
+{% block content %}
+<div class="header">
+    <h1>Edit Job Application</h1>
+</div>
+<form method="post" action="/job_applications/{{ job.id }}">
+    <div>
+        <label for="description">Job Description:</label><br>
+        <textarea id="description" name="description" rows="5" cols="50">{{ job.description }}</textarea>
+    </div>
+    <div>
+        <label for="min_salary">Minimum Salary:</label>
+        <input type="number" id="min_salary" name="min_salary" value="{{ job.min_salary }}">
+    </div>
+    <div>
+        <label for="max_salary">Maximum Salary:</label>
+        <input type="number" id="max_salary" name="max_salary" value="{{ job.max_salary }}">
+    </div>
+    <div>
+        <label for="city_name">City:</label>
+        <input type="text" id="city_name" name="city_name" value="{{ job.location_name }}">
+    </div>
+    <div>
+        <label for="status">Status:</label>
+        <select id="status" name="status">
+            <option value="Active" {% if job.status == 'Active' %}selected{% endif %}>Active</option>
+            <option value="Hidden" {% if job.status == 'Hidden' %}selected{% endif %}>Hidden</option>
+            <option value="Private" {% if job.status == 'Private' %}selected{% endif %}>Private</option>
+        </select>
+    </div>
+    <div>
+        <label for="skills">Skills (comma-separated):</label>
+        <input type="text" id="skills" name="skills" value="{{ ", ".join(skill.name for skill in job.skills) }}">
+    </div>
+    <button type="submit">Update</button>
+</form>
+{% endblock %}

@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Professional Offer Matching</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(120deg, #f3e9ff, #abe9ff);
+      color: #333;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 40px auto;
+      padding: 30px;
+      background: #fff;
+      border-radius: 15px;
+      box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .offer-card {
+      text-align: left;
+      margin-top: 30px;
+    }
+
+    .logo {
+      width: 120px;
+      height: auto;
+      margin-bottom: 15px;
+    }
+
+    h2 {
+      margin: 10px 0;
+      color: #222;
+      font-size: 1.8em;
+    }
+
+    .location {
+      color: #777;
+      font-size: 1.1em;
+      margin-bottom: 20px;
+    }
+
+    .meta {
+      margin: 15px 0;
+    }
+
+    .meta p {
+      margin: 8px 0;
+      font-size: 1.1em;
+    }
+
+    .meta span {
+      font-weight: bold;
+      color: #2d4ef5;
+    }
+
+    .requirements {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 15px;
+    }
+
+    .home-button {
+      display: inline-block;
+      margin-bottom: 20px;
+      padding: 10px 20px;
+      background-color: #007bff;
+      color: #fff;
+      text-decoration: none;
+      border-radius: 5px;
+    }
+
+    .requirement {
+      padding: 10px 20px;
+      background: #f0f8f7;
+      border-radius: 20px;
+      font-size: 0.95em;
+      color: #333;
+      border: 1px solid #cce7e4;
+    }
+
+    .actions {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 30px;
+    }
+
+    .action-btn {
+      width: 80px;
+      height: 80px;
+      border: none;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 28px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: #fff;
+    }
+
+    .dislike {
+      background: #f34242;
+      transition: transform 0.3s;
+    }
+
+    .dislike:hover {
+      transform: scale(1.1);
+    }
+
+    .like {
+      background: #2d4ef5;
+      transition: transform 0.3s;
+    }
+
+    .like:hover {
+      transform: scale(1.1);
+    }
+  </style>
+  <script>
+    async function handleMatch(action, offerId) {
+      try {
+        const response = await fetch('/matches/apps/match_application', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ target_id: offerId, action }),
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to process the request.');
+        }
+
+        const data = await response.json();
+        alert(data.message);
+        location.reload();
+      } catch (error) {
+        alert('An error occurred. Please try again.');
+        console.error(error);
+      }
+    }
+  </script>
+</head>
+<body>
+  <div class="container">
+    <a href="/" class="home-button">Home</a> 
+    <h1>Match Professional Offers</h1>
+    <div class="offer-card">
+      <img class="logo" src="{{ application.picture }}" alt="Professional Picture">
+      <h2>{{ application.title }}</h2>
+      <p class="location">{{ application.location }}</p>
+      <div class="meta">
+        <p><b>Professional:</b> {{ application.professional_name }}</p>
+        <p><b>Email:</b> {{ application.email }}</p>
+        <p><b>Description:</b> {{ application.description }}</p>
+        <p><b>Salary Expectation:</b> ${{ application.min_salary }} - ${{ application.max_salary }}</p>
+        <p><b>Status:</b> {{ application.status }}</p>
+        <div class="requirements">
+          {% for skill in application.skills %}
+          <span class="requirement">{{ skill }}</span>
+          {% endfor %}
+        </div>
+      </div>
+      <div class="actions">
+        <button class="action-btn like" onclick="handleMatch('like', '{{ application.id }}')">✔</button>
+        <button class="action-btn dislike" onclick="handleMatch('dislike', '{{ application.id }}')">✖</button>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Job Ad</title>
+    <link rel="stylesheet" href="/static/css/jobs_listing.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 0;
+        }
+
+        .header {
+            background-color: #274428;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        input, textarea, select {
+            margin-bottom: 15px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 1em;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #218838;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Edit Job Ad</h1>
+    </div>
+    <div class="container">
+        <form method="post" action="/ads/{{ job_ad.id }}/edit">
+            <label for="title">Title</label>
+            <input type="text" id="title" name="title" value="{{ job_ad.title }}" required>
+
+            <label for="description">Description</label>
+            <textarea id="description" name="description" rows="5" required>{{ job_ad.description }}</textarea>
+
+            <label for="location">Location</label>
+            <input type="text" id="location" name="location" value="{{ job_ad.location.city_name }}" required>
+
+            <label for="min_salary">Min Salary</label>
+            <input type="number" id="min_salary" name="min_salary" value="{{ job_ad.min_salary }}" required>
+
+            <label for="max_salary">Max Salary</label>
+            <input type="number" id="max_salary" name="max_salary" value="{{ job_ad.max_salary }}" required>
+
+            <label for="status">Status</label>
+            <select id="status" name="status" required>
+                <option value="Active" {% if job_ad.status == 'Active' %}selected{% endif %}>Active</option>
+                <option value="Archived" {% if job_ad.status == 'Archived' %}selected{% endif %}>Archived</option>
+            </select>
+
+            <h1>Skills</h1>
+            <div class="skills-container" id="skills-container">
+                </div>
+            <button type="button" onclick="addSkill()">Add Another Skill</button>
+
+            <button type="submit">Update Job Ad</button>
+        </form>
+    </div>
+
+    <script>
+        function addSkill() {
+            const container = document.getElementById('skills-container');
+            const skillDiv = document.createElement('div');
+            skillDiv.innerHTML = `
+                <input type="text" name="skills[]" placeholder="Skill (e.g., Python)" />
+                <input type="text" name="levels[]" placeholder="Level (e.g., Beginner)" />
+            `;
+            container.appendChild(skillDiv);
+        }
+    </script>
+</body>
+</html>

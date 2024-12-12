@@ -1,0 +1,30 @@
+{% extends "base_job_app.html" %}
+
+
+{% block title %}Job Applications{% endblock %}
+
+{% block content %}
+<div class="header">
+    <h1>Your Job Applications</h1>
+</div>
+<div>
+    <a href="/create">Create New Application</a>
+</div>
+<div>
+    {% for job in job_applications %}
+    <div class="card">
+        <div class="left-panel">
+            <h2>{{ job.description }}</h2>
+            <p><strong>Location:</strong> {{ job.location_name }}</p>
+            <p><strong>Salary:</strong> ${{ job.min_salary }} - ${{ job.max_salary }}</p>
+        </div>
+        <div class="right-panel">
+            <p><strong>Status:</strong> {{ job.status }}</p>
+            <p><strong>Skills:</strong> {{ ", ".join(skill.name for skill in job.skills) }}</p>
+            <a href="/edit/{{ job.id }}">Edit</a>
+            <a href="/delete/{{ job.id }}" onclick="return confirm('Are you sure?')">Delete</a>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

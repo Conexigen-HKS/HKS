@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 from typing import Annotated, Optional
-from fastapi import Depends, HTTPException
+from fastapi import Depends, HTTPException, Request
 from jose import JWTError, jwt
 from jose.exceptions import ExpiredSignatureError
 from passlib.context import CryptContext
@@ -14,9 +14,8 @@ from app.data.database import get_db
 from app.services.user_services import get_user
 from app.common.utils import get_password_hash, verify_password, verify_token
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl='/api/users/login', auto_error=False)
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl='/users/login', auto_error=False)
 token_blacklist = set()
-
 
 # def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
 #     to_encode = data.copy()
@@ -25,7 +24,6 @@ token_blacklist = set()
 #     to_encode['role'] = data.get('role')
 #     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 from datetime import datetime as dt, timezone, timedelta
-
 
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
@@ -42,15 +40,13 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
 def decode_access_token(token: str):
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        payload["exp"] = dt.fromtimestamp(payload["exp"], timezone.utc)
-        if payload["exp"] < dt.now(timezone.utc):
+        if payload.get("exp") < dt.now(timezone.utc).timestamp():
             raise HTTPException(status_code=401, detail="Token has expired")
-
         return payload
-
-    except jwt.ExpiredSignatureError:
+    except ExpiredSignatureError:
         raise HTTPException(status_code=401, detail="Token has expired")
-
+    except JWTError as e:
+        raise HTTPException(status_code=401, detail=f"Invalid token: {str(e)}")
 
 
 def authenticate_user(db: Session, username: str, password: str) -> Optional[UserResponse]:
@@ -58,25 +54,30 @@ def authenticate_user(db: Session, username: str, password: str) -> Optional[Use
 
     if not user or not verify_password(password, user.hashed_password):
         return None
-    
+
     return UserResponse.model_validate(user)
 
 
-def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)) -> User:
+def get_current_user(request: Request, db: Session = Depends(get_db)) -> Optional[User]:
+    token = request.cookies.get("access_token")
     if not token:
-        raise HTTPException(status_code=401, detail="Not authenticated")
-    
-    payload = verify_token(token)
-    if not payload:
-        raise HTTPException(status_code=401, detail="Invalid token")
-    
-    username = payload.get('sub')
-    user = db.query(User).filter(User.username == username).first()
-    
-    if not user:
-        raise HTTPException(status_code=401, detail="User not found")
-    
-    return user
+        return None  # Allow unauthenticated access
+
+    # Remove "Bearer " prefix if present
+    if token.startswith("Bearer "):
+        token = token[7:]
+
+    try:
+        payload = decode_access_token(token)
+        username = payload.get("sub")
+
+        user = db.query(User).filter(User.username == username).first()
+        if not user:
+            return None  # Return None if user not found
+        return user
+    except HTTPException:
+        return None  # Return None if token is invalid or expired
+
 
 def get_current_admin_user(current_user: User = Depends(get_current_user)) -> User:
     if not current_user.is_admin:
@@ -84,19 +85,21 @@ def get_current_admin_user(current_user: User = Depends(get_current_user)) -> Us
     return current_user
 
 
-UserAuthDep =  Annotated[User, Depends(get_current_user)]
+UserAuthDep = Annotated[User, Depends(get_current_user)]
+
 
 def check_permissions(user: User, required_role: str):
     if user.role != required_role:
         raise Forbidden(f"Only {required_role}s can access this resource")
 
+
 def hash_existing_user_passwords(db: Session):
     users = db.query(User).all()
-    
+
     for user in users:
         if len(user.hashed_password) != 60:
             user.hashed_password = get_password_hash(user.hashed_password)
             db.add(user)
-    
+
     db.commit()
     print("All user passwords have been hashed successfully.")

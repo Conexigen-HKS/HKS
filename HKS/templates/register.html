@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register</title>
+    <link href="/static/css/register.css" rel="stylesheet">
+</head>
+<body>
+<section class="register-container">
+    <div class="register-form">
+        <h1>Register Now</h1>
+        {% if message %}
+            <p class="message">{{ message }}</p>
+        {% endif %}
+
+        <!-- Tabbed navigation for switching between forms -->
+        <div class="tab-container">
+            <button
+                id="professional-tab"
+                class="tab {% if form_type == 'professional' %}active{% endif %}"
+                onclick="switchForm('professional')">Professional</button>
+            <button
+                id="company-tab"
+                class="tab {% if form_type == 'company' %}active{% endif %}"
+                onclick="switchForm('company')">Company</button>
+        </div>
+
+        <!-- Professional Registration Form -->
+        <form id="professional-form" action="/users/register/professional" method="post" {% if form_type == 'company' %}style="display: none;"{% endif %}>
+            <input type="text" name="username" placeholder="Username" required>
+            <input type="password" name="password" placeholder="Password" required>
+            <input type="password" name="confirm_password" placeholder="Confirm Password" required>
+            <input type="text" name="first_name" placeholder="First Name" required>
+            <input type="text" name="last_name" placeholder="Last Name" required>
+            <input type="text" name="location" placeholder="Location" required>
+            <input type="text" name="phone" placeholder="Phone">
+            <input type="email" name="email" placeholder="Email">
+            <input type="url" name="website" placeholder="Website">
+            <textarea name="summary" placeholder="Summary" required></textarea>
+            <div class="terms">
+                <input type="checkbox" required>
+                <label>Accept our <a href="/privacy-policy" target="_blank">terms and conditions</a> and <a href="/privacy-policy" target="_blank">privacy policy</a>.</label>
+            </div>
+            <button type="submit" class="register-btn">Register as Professional</button>
+        </form>
+
+        <!-- Company Registration Form -->
+        <form id="company-form" action="/users/register/company" method="post" {% if form_type == 'professional' %}style="display: none;"{% endif %}>
+            <input type="text" name="username" placeholder="Username" required>
+            <input type="password" name="password" placeholder="Password" required>
+            <input type="password" name="confirm_password" placeholder="Confirm Password" required>
+            <input type="text" name="company_name" placeholder="Company Name" required>
+            <textarea name="description" placeholder="Description" required></textarea>
+            <input type="text" name="location" placeholder="Location" required>
+            <input type="text" name="phone" placeholder="Phone">
+            <input type="email" name="email" placeholder="Email">
+            <input type="url" name="website" placeholder="Website">
+            <div class="terms">
+                <input type="checkbox" required>
+                <label>Accept our <a href="/privacy-policy" target="_blank">terms and conditions</a> and <a href="/privacy-policy" target="_blank">privacy policy</a>.</label>
+            </div>
+            <button type="submit" class="register-btn">Register as Company</button>
+        </form>
+
+        <p>Already have an account? <a href="/login">Login</a></p>
+    </div>
+</section>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const formType = "{{ form_type }}";
+        switchForm(formType);
+
+        // Terms checkbox validation
+        const submitButtons = document.querySelectorAll('.register-btn');
+        const termsCheckboxes = document.querySelectorAll('input[type="checkbox"]');
+        termsCheckboxes.forEach((checkbox, index) => {
+            checkbox.addEventListener('change', (event) => {
+                submitButtons[index].disabled = !event.target.checked;
+            });
+            submitButtons[index].disabled = !checkbox.checked;
+        });
+    });
+
+    function switchForm(type) {
+        const professionalForm = document.getElementById('professional-form');
+        const companyForm = document.getElementById('company-form');
+        const professionalTab = document.getElementById('professional-tab');
+        const companyTab = document.getElementById('company-tab');
+
+        if (type === 'professional') {
+            professionalForm.style.display = 'block';
+            companyForm.style.display = 'none';
+            professionalTab.classList.add('active');
+            companyTab.classList.remove('active');
+        } else {
+            professionalForm.style.display = 'none';
+            companyForm.style.display = 'block';
+            professionalTab.classList.remove('active');
+            companyTab.classList.add('active');
+        }
+    }
+</script>
+
+</body>
+</html>

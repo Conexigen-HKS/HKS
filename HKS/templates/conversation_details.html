@@ -1,0 +1,40 @@
+<!-- templates/conversation_details.html -->
+{% extends "base.html" %}
+
+{% block content %}
+<div class="conversation-details">
+    <div class="message-header">
+        <span class="sender">От: {{ conversation.sender }}</span>
+        <span class="receiver">До: {{ conversation.receiver }}</span>
+        <span class="time">{{ conversation.time }}</span>
+    </div>
+    <div class="message-content">
+        {{ conversation.content }}
+    </div>
+</div>
+{% endblock %}
+
+<!-- Add some basic CSS for styling -->
+{% block head %}
+<style>
+    .conversation-details {
+        max-width: 800px;
+        margin: 20px auto;
+        padding: 20px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+    }
+    
+    .message-header {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #eee;
+    }
+    
+    .message-content {
+        line-height: 1.6;
+        white-space: pre-wrap;
+    }
+</style>

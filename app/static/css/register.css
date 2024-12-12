@@ -1,0 +1,354 @@
+/* General Reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+
+body {
+    line-height: 1.6;
+    color: #333;
+    background-color: #f9f9f9;
+}
+
+/* Navbar */
+header.transparent {
+    position: absolute;
+    top: 0;
+    width: 100%;
+    z-index: 999;
+    background: transparent;
+    box-shadow: inset 0px -1px 0px 0px rgba(255, 255, 255, 0.2);
+}
+
+header.transparent #logo h1 {
+    margin: 0;
+}
+
+header.transparent #logo img {
+    width: 100px;
+    height: auto;
+    margin-top: 0;
+}
+
+header .container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 40px;
+}
+
+#navigation {
+    display: flex;
+    list-style: none;
+}
+
+#navigation ul {
+    display: flex;
+    padding: 0;
+    margin: 0;
+}
+
+#navigation ul li {
+    margin: 0 15px;
+}
+
+#navigation ul li a {
+    text-decoration: none;
+    color: white;
+    font-size: 0.9em;
+}
+
+#navigation .float-right {
+    margin-left: auto;
+}
+
+header #navigation ul.float-right li a {
+    background-color: rgba(255, 255, 255, 0.1);
+    padding: 8px 15px;
+    border-radius: 5px;
+    transition: background 0.3s;
+}
+
+header #navigation ul.float-right li a:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+
+
+/* Styling for input placeholders */
+input::placeholder, textarea::placeholder {
+    color: #b5b5b5;
+    font-size: 14px;
+    font-weight: 500;
+    font-family: 'Arial', sans-serif;
+}
+
+/* Styling for input fields */
+input, textarea {
+    width: 100%;
+    padding: 10px 15px;
+    margin-bottom: 15px;
+    border: 1px solid #e0e0e0;
+    border-radius: 5px;
+    font-size: 16px;
+    box-sizing: border-box;
+}
+
+input:focus, textarea:focus {
+    border-color: #4caf50; /* Green highlight on focus */
+    outline: none;
+    box-shadow: 0 0 5px rgba(76, 175, 80, 0.4);
+}
+
+/* Adjust the registration button */
+button.register-btn {
+    background-color: #4caf50;
+    color: #fff;
+    border: none;
+    padding: 10px 15px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+}
+
+button.register-btn:hover {
+    background-color: #45a049;
+}
+
+/* Styling for the terms checkbox */
+.terms label {
+    font-size: 14px;
+    color: #6f6f6f;
+    font-weight: 500;
+}
+
+/* Styling for tabs */
+.tab-container {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.tab {
+    padding: 10px 20px;
+    margin: 0 10px;
+    font-size: 16px;
+    cursor: pointer;
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    transition: all 0.3s ease;
+}
+
+.tab.active {
+    background-color: #4caf50;
+    color: #fff;
+    border: none;
+}
+
+
+/* Registration Form Section */
+.register-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 80vh;
+    background-color: #fff;
+    padding: 20px;
+}
+
+.register-form {
+    width: 400px;
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+.register-form h1 {
+    margin-bottom: 20px;
+}
+
+.tab-container {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.tab {
+    background-color: #f5f5f5;
+    border: none;
+    padding: 10px 20px;
+    margin: 0 5px;
+    cursor: pointer;
+    border-radius: 4px;
+    font-weight: bold;
+}
+
+.tab.active {
+    background-color: #28a745;
+    color: white;
+}
+
+form input[type="email"],
+form input[type="password"] {
+    width: calc(100% - 20px);
+    margin: 10px 0;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+form .terms {
+    display: flex;
+    align-items: center;
+    justify-content: start;
+    margin: 10px 0;
+}
+
+form .terms input {
+    margin-right: 10px;
+}
+
+.register-btn {
+    background-color: #28a745;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    width: 100%;
+}
+
+.register-btn:hover {
+    background-color: #218838;
+}
+
+.register-form p {
+    margin-top: 15px;
+    font-size: 0.9em;
+}
+
+.register-form p a {
+    color: #007bff;
+    text-decoration: none;
+}
+
+.register-form p a:hover {
+    text-decoration: underline;
+}
+
+/* Footer */
+footer {
+    background-color: #2b2b2b;
+    color: #ccc;
+    padding: 40px 20px;
+    font-size: 0.9rem;
+}
+
+footer .footer-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 30px;
+}
+
+footer .logo-partners {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    justify-content: center;
+}
+
+footer .logo-partners img {
+    height: 40px;
+    filter: brightness(0) invert(1);
+}
+
+footer .footer-subscription {
+    text-align: center;
+    margin-top: 20px;
+}
+
+footer .footer-subscription h3 {
+    font-size: 1.2rem;
+    color: #fff;
+}
+
+footer .footer-subscription p {
+    margin: 10px 0;
+    font-size: 0.9rem;
+}
+
+footer .footer-subscription form {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+}
+
+footer .footer-subscription form input {
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    width: 250px;
+}
+
+footer .footer-subscription form button {
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+footer .footer-subscription form button:hover {
+    background-color: #0056b3;
+}
+
+footer .footer-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 30px;
+    justify-content: center;
+    margin-top: 30px;
+}
+
+footer .footer-links h4 {
+    font-size: 1.1rem;
+    margin-bottom: 15px;
+    color: #fff;
+}
+
+footer .footer-links ul {
+    list-style: none;
+    padding: 0;
+}
+
+footer .footer-links ul li {
+    margin-bottom: 10px;
+}
+
+footer .footer-links ul li a {
+    text-decoration: none;
+    color: #ccc;
+    transition: color 0.3s;
+}
+
+footer .footer-links ul li a:hover {
+    color: #fff;
+}
+
+footer .footer-bottom {
+    text-align: center;
+    margin-top: 20px;
+    color: #ccc;
+}

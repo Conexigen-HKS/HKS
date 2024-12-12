@@ -133,3 +133,4 @@ class JobOffer(Base):
     company_offer_id = Column(UUID(as_uuid=True),
                               ForeignKey('company_offers.company_offers_id'))  # Reference the primary key
     company_offer = relationship("CompanyOffersBase")
+

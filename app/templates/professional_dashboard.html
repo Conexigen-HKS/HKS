@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Company Info</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+        }
+
+        .header {
+            background-color: #274428;
+            color: white;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header a {
+            color: white;
+            text-decoration: none;
+            margin: 0 10px;
+        }
+
+        .header a:hover {
+            text-decoration: underline;
+        }
+
+        .header .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 20px;
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+    margin-bottom: 50px; /* Add a larger bottom margin */
+}
+
+
+        .content, .sidebar {
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            background-color: white;
+            padding: 20px;
+            width: 100%;
+            max-width: 500px;
+        }
+
+        .content h1 {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .content p {
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+
+        .profile-container {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .profile-container img {
+            border-radius: 50%;
+            width: 150px;
+            height: 150px;
+            object-fit: cover;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .profile-container .camera-icon {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            font-size: 24px;
+            background-color: white;
+            border-radius: 50%;
+            padding: 5px;
+            border: 2px solid #ccc;
+            cursor: pointer;
+        }
+
+        .sidebar {
+            background-color: #eefae5;
+        }
+
+        .sidebar h2 {
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+        }
+
+        .sidebar a {
+            color: #274428;
+            text-decoration: none;
+        }
+
+        .contact-info {
+            margin-top: 20px;
+        }
+
+        .contact-info div {
+            margin: 10px 0;
+        }
+
+        .contact-info a {
+            color: #274428;
+            text-decoration: none;
+        }
+
+        .contact-info button {
+            padding: 10px 20px;
+            background-color: #a4d18e;
+            color: #274428;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .contact-info button:hover {
+            background-color: #91c47a;
+        }
+
+        .upload-popup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #fff;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.25);
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            z-index: 1000;
+        }
+
+        .upload-popup p {
+            font-size: 14px;
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .upload-popup button {
+            padding: 10px 20px;
+            background: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .upload-popup button:hover {
+            background: #0056b3;
+        }
+
+        .upload-popup .close {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 20px;
+            color: #333;
+            cursor: pointer;
+        }
+
+        footer {
+            background-color: #2b2b2b;
+            color: #ccc;
+            padding: 40px 20px;
+            font-size: 0.9rem;
+        }
+
+        footer .footer-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            gap: 30px;
+        }
+
+        footer .logo-partners {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        footer .logo-partners img {
+            height: 40px;
+            filter: brightness(0) invert(1);
+        }
+
+        footer .footer-subscription {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        footer .footer-subscription h3 {
+            font-size: 1.2rem;
+            color: #fff;
+        }
+
+        footer .footer-subscription p {
+            margin: 10px 0;
+            font-size: 0.9rem;
+        }
+
+        footer .footer-subscription form {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        footer .footer-subscription form input {
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            width: 250px;
+        }
+
+        footer .footer-subscription form button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        footer .footer-subscription form button:hover {
+            background-color: #0056b3;
+        }
+
+        footer .footer-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+            justify-content: center;
+            margin-top: 30px;
+        }
+
+        footer .footer-links h4 {
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+            color: #fff;
+        }
+
+        footer .footer-links ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        footer .footer-links ul li {
+            margin-bottom: 10px;
+        }
+
+        footer .footer-links ul li a {
+            text-decoration: none;
+            color: #ccc;
+            transition: color 0.3s;
+        }
+
+        footer .footer-links ul li a:hover {
+            color: #fff;
+        }
+
+        footer .footer-bottom {
+            text-align: center;
+            margin-top: 20px;
+            color: #ccc;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+          <img src="static/images/logo.png" alt="Logo">
+        <div>
+            <a href="/">Home</a>
+            <a href="/ads/search">Browse Jobs</a>
+
+        </div>
+    </div>
+
+<div class="container" style="margin-bottom: 190px;">
+    <div class="content">
+        <div class="profile-container">
+            <img src="{{ profile_picture }}" alt="Picture">
+            <i class="fa fa-camera camera-icon" id="camera-icon"></i>
+        </div>
+        <h1>{{ company_name }}</h1>
+        <p>{{ company_description }}</p>
+    </div>
+    <div class="sidebar">
+        <h2>{{ first_name }} {{ last_name }}</h2>
+        <a href="{{ website }}">{{ website }}</a>
+
+        <div class="contact-info">
+            <div>Phone Number: {{ phone }}</div>
+            <div>Email: <a href="mailto:{{ email }}">{{ email }}</a></div>
+            <div>Location: {{ location }}</div>
+            <button onclick="window.location.href='/professionals/applications';">My Applications</button>
+        </div>
+    </div>
+</div>
+
+
+    <div class="upload-popup" id="upload-popup">
+        <span class="close" id="close-popup">&times;</span>
+        <p>Upload your company logo</p>
+        <form id="upload-form" method="post" enctype="multipart/form-data" action="/users/picture">
+            <input type="file" name="file" accept="image/*" required>
+            <button type="submit">Upload</button>
+        </form>
+    </div>
+
+    <footer>
+        <div class="footer-container">
+            <div class="footer-content">
+                 <div class="logo-partners">
+        <img src="static/images/be553dc2-3da6-4672-98f1-50b661e052814-removebg-preview.png" alt="Telerik">
+        <img src="static/images/Apple-Logo.png" alt="Apple">
+        <img src="static/images/maxresdefault-removebg-preview.png" alt="Excalidraw">
+        <img src="static/images/8867.Microsoft_5F00_Logo_2D00_for_2D00_screen-removebg-preview.png" alt="Microsoft">
+      </div>
+                <div class="footer-subscription">
+                    <h3>Get New Jobs Notification!</h3>
+                    <p>Subscribe & get all related jobs notification.</p>
+                    <form>
+                        <input type="email" placeholder="Enter your email">
+                        <button type="submit">Subscribe</button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="footer-links">
+                <div class="company">
+                    <h4>Company</h4>
+                    <ul>
+                        <li><a href="#">About Us</a></li>
+                        <li><a href="#">Contact Us</a></li>
+                        <li><a href="#">Services</a></li>
+                        <li><a href="#">Blog</a></li>
+                        <li><a href="#">Team</a></li>
+                        <li><a href="#">Pricing</a></li>
+                    </ul>
+                </div>
+                <div class="for-jobs">
+                    <h4>For Jobs</h4>
+                    <ul>
+                        <li><a href="#">Browser Categories</a></li>
+                        <li><a href="#">Browser Jobs</a></li>
+                        <li><a href="#">Job Details</a></li>
+                        <li><a href="#">Bookmark Jobs</a></li>
+                    </ul>
+                </div>
+                <div class="for-candidates">
+                    <h4>For Candidates</h4>
+                    <ul>
+                        <li><a href="#">Candidate List</a></li>
+                        <li><a href="#">Candidate Grid</a></li>
+                        <li><a href="#">Candidate Details</a></li>
+                    </ul>
+                </div>
+
+            </div>
+
+            <div class="footer-bottom">
+                <p>&copy; 2024 WorkScout. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        const cameraIcon = document.getElementById("camera-icon");
+        const uploadPopup = document.getElementById("upload-popup");
+        const closePopup = document.getElementById("close-popup");
+
+        cameraIcon.addEventListener("click", () => {
+            uploadPopup.style.display = "block";
+        });
+
+        closePopup.addEventListener("click", () => {
+            uploadPopup.style.display = "none";
+        });
+    </script>
+</body>
+</html>

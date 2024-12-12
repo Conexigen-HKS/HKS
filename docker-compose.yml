@@ -1,0 +1,38 @@
+version: '3.8'
+
+networks:
+  appnetwork:
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - DB_USER=postgres
+      - DB_PASSWORD=Kristi2005
+      - DB_ADDRESS=db
+      - DB_PORT=5432
+      - DB_NAME=postgres
+      - DATABASE_URL=postgresql+psycopg2://postgres:Kristi2005@db:5432/postgres
+    ports:
+      - "8000:8000"
+    networks:
+      - appnetwork
+    depends_on:
+      - db
+
+  db:
+    image: postgres:13
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: Kristi2005
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - appnetwork
+
+volumes:
+  postgres_data:
+
