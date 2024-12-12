@@ -21,6 +21,15 @@
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
       padding: 20px;
     }
+    .home-button {
+      display: inline-block;
+      margin-bottom: 20px;
+      padding: 10px 20px;
+      background-color: #007bff;
+      color: #fff;
+      text-decoration: none;
+      border-radius: 5px;
+    }
     h2 {
       margin-top: 0;
     }
@@ -49,6 +58,7 @@
 </head>
 <body>
   <div class="container">
+    <a href="/" class="home-button">Home</a>
     <h1>Match Job Applications</h1>
     
     <label for="applicationSelect">Select an active application:</label>
@@ -80,11 +90,20 @@
   </div>
 
   <script>
-    async function sendAction(action) {
+    async function handleMatch(action, jobId) {
+      const applicationSelect = document.getElementById('applicationSelect');
+      const selectedAppId = applicationSelect.value;
+
+      if (!selectedAppId) {
+        alert('Please select an active application.');
+        return;
+      }
+
       try {
         const response = await axios.post('/matches/match_request', {
-          target_id: "{{ job.id }}",
-          action: action
+          target_id: selectedAppId,
+          action: action,
+          profile_or_offer_id: jobId
         });
         alert(response.data.message);
         window.location.reload();  // Reload the page to show a new random job
@@ -92,9 +111,6 @@
         console.error('Error sending action:', error);
       }
     }
-
-    // Load the first job on page load
-    window.onload = fetchRandomJob;
   </script>
 </body>
 </html>

@@ -198,11 +198,12 @@ async def upload_picture(
     if current_user.role == 'admin':
         raise HTTPException(status_code=400, detail="Admins cannot have a profile picture")
 
-    try:
-        result = change_picture(current_user, db, file)
-        return result
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    result = change_picture(current_user, db, file)
+    if "error" in result:
+        return {"error": result["error"]}
+
+    dashboard_url = "/companies/dashboard" if current_user.role == "company" else "/professionals/dashboard"
+    return RedirectResponse(url=dashboard_url, status_code=303)
 
 
 @users_router_web.delete("/picture")
@@ -226,7 +227,12 @@ async def change_user_picture(
         return {"error": "Invalid file format. Allowed formats: jpg, jpeg, png."}
 
     result = change_picture(current_user, db, file)
-    return result
+    if "error" in result:
+        return {"error": result["error"]}
+    
+    # Redirect to the dashboard after successful upload
+    dashboard_url = "/companies/dashboard" if current_user.role == "company" else "/professionals/dashboard"
+    return RedirectResponse(url=dashboard_url, status_code=303)
 
 
 @users_router_web.post("/process-register")

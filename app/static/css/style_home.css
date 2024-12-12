@@ -41,6 +41,57 @@ header .container {
     padding: 20px 40px;
 }
 
+header #navigation {
+    display: flex;
+    align-items: center;
+}
+
+header #navigation ul {
+    list-style: none;
+    display: flex;
+    margin: 0;
+    padding: 0;
+}
+
+header #navigation ul li {
+    margin-left: 20px;
+}
+
+header #navigation ul li a {
+    text-decoration: none;
+    color: #fff;
+    font-size: 16px;
+    transition: color 0.3s;
+}
+
+header #navigation ul li a:hover,
+header #navigation ul li a#current {
+    color: #28a745;
+}
+
+header .buttons {
+    display: flex;
+    align-items: center;
+}
+
+header .buttons a {
+    padding: 8px 15px;
+    border: 1px solid #28a745;
+    border-radius: 5px;
+    text-decoration: none;
+    color: #28a745;
+}
+
+header .buttons a.add-job {
+    background-color: #28a745;
+    color: #fff;
+}
+
+header .buttons a:hover {
+    background-color: #28a745;
+    color: #fff;
+}
+
 /* Navigation */
 #navigation {
     display: flex;
@@ -569,12 +620,30 @@ header .buttons a:hover {
     background-color: #218838; /* По-тъмен нюанс при задържане */
 }
 
+.feeling-lucky-container {
+  text-align: center;
+  margin-top: 20px;
+}
+
+.feeling-lucky-button {
+  display: inline-block;
+  padding: 10px 20px;
+  background-color: #28a745;
+  color: #fff;
+  text-decoration: none;
+  border-radius: 5px;
+  font-size: 16px;
+}
+
+.feeling-lucky-button:hover {
+  background-color: #218838;
+}
+
 @media screen and (max-width: 990px) {
     .counter {
         margin-bottom: 45px;
     }
 }
-
 
 footer {
     background-color: #2b2b2b;

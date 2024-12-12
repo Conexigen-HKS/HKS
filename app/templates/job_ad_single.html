@@ -4,19 +4,51 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Company Offer Detail</title>
+    <link rel="stylesheet" href="/static/css/jobs_listing.css">
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #f8f9fa;
+            background-color: #f9f9f9;
             margin: 0;
             padding: 0;
+            color: #333;
         }
 
         .header {
-            background-color: #274428;
-            color: white;
-            padding: 20px;
-            text-align: center;
+            background-color: #fff;
+            padding: 20px 40px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header .logo {
+            font-size: 1.5em;
+            color: #28a745;
+            font-weight: bold;
+        }
+
+        .header a {
+            color: #333;
+            text-decoration: none;
+            margin: 0 15px;
+            font-size: 0.9em;
+        }
+
+        .header .buttons a {
+            padding: 8px 15px;
+            border: 1px solid #28a745;
+            border-radius: 5px;
+            text-decoration: none;
+            font-size: 0.9em;
+            color: #28a745;
+            margin-left: 10px;
+        }
+
+        .header .buttons a.add-job {
+            background-color: #28a745;
+            color: #fff;
         }
 
         .container {
@@ -59,22 +91,65 @@
 
         .actions {
             text-align: right;
+            margin-top: 20px;
         }
 
         .actions button {
-            background-color: #007bff;
+            padding: 10px 20px;
+            background-color: #28a745;
             color: white;
             border: none;
-            padding: 10px 20px;
             border-radius: 5px;
             cursor: pointer;
-            margin-bottom: 10px;
+            margin-right: 10px;
         }
 
         .actions button:hover {
-            background-color: #0056b3;
+            background-color: #218838;
+        }
+
+        .actions .delete-btn {
+            background-color: #dc3545;
+        }
+
+        .actions .delete-btn:hover {
+            background-color: #c82333;
         }
     </style>
+</head>
+<body>
+    <header class="header">
+        <div class="logo">Jobs</div>
+        <div class="buttons">
+            <a href="/" class="sign-in">Home</a>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="overview">
+            <h2>Overview</h2>
+            <p>{{ offer.description }}</p>
+        </div>
+        <div class="offer-detail">
+            <div class="offer-info">
+                <img src="{{ offer.company_logo or '/static/images/default-logo.png' }}" alt="Company Logo" style="width: 100px; height: 100px; border-radius: 50%;">
+                <h3>{{ offer.title }}</h3>
+                <p>Company: {{ offer.company_name }}</p>
+                <p>Location: {{ offer.location }}</p>
+                <p>Salary: ${{ offer.min_salary }} - ${{ offer.max_salary }}</p>
+                <p>Status: {{ offer.status }}</p>
+                <p><strong>Skills Required:</strong> {{ offer.skills | join(', ') }}</p>
+            </div>
+        </div>
+        <div class="actions">
+            {% if is_owner %}
+                <button onclick="archiveOffer('{{ offer.id }}')">Archive</button>
+            {% endif %}
+            <button onclick="editJob()">Edit</button>
+            <button class="delete-btn" onclick="deleteJob()">Delete</button>
+        </div>
+    </div>
+
     <script>
         async function archiveOffer(offerId) {
             try {
@@ -97,35 +172,14 @@
                 alert('An error occurred while archiving the offer.');
             }
         }
+
+        function editJob() {
+            alert('Edit functionality is not implemented yet.');
+        }
+
+        function deleteJob() {
+            alert('Delete functionality is not implemented yet.');
+        }
     </script>
-</head>
-<body>
-    <div class="header">
-        <h1>Company Offer Detail</h1>
-    </div>
-    <div class="container">
-        <div class="overview">
-            <h2>Overview</h2>
-            <p>{{ offer.description }}</p>
-        </div>
-        <div class="offer-detail">
-            <div class="offer-info">
-              <img src="{{ offer.company_logo or '/static/images/default-logo.png' }}" alt="Company Logo" style="width: 100px; height: 100px; border-radius: 50%;">
-
-        <h3>{{ offer.title }}</h3>
-                <p>Company: {{ offer.company_name }}</p>
-                <p>Location: {{ offer.location }}</p>
-
-                <p>Salary Range: ${{ offer.min_salary }} - ${{ offer.max_salary }}</p>
-                <p>Status: {{ offer.status }}</p>
-                <p><strong>Skills Required:</strong> {{ offer.skills | join(', ') }}</p>
-            </div>
-            <div class="actions">
-                {% if is_owner %}
-                    <button onclick="archiveOffer('{{ offer.id }}')">Archive</button>
-                {% endif %}
-            </div>
-        </div>
-    </div>
 </body>
 </html>

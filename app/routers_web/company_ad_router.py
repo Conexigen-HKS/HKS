@@ -1,6 +1,6 @@
 import uuid
 from http.client import HTTPException
-from typing import List
+from typing import Optional
 from fastapi import APIRouter, Depends, Request
 from sqlalchemy.orm import Session
 from starlette.responses import HTMLResponse
@@ -10,8 +10,8 @@ from app.common import auth
 from app.common.auth import get_current_user
 from app.data.database import get_db
 from app.data.models import User, CompanyOffers, Location, Companies
-from app.data.schemas.company import CompanyAdModel, CompanyAdUpdateModel, CreateCompanyAdModel
-from app.services.company_ad_service import create_new_ad, delete_company_ad, get_company_ads, edit_company_ad_by_id
+from app.data.schemas.company import CompanyAdModel, CreateCompanyAdModel
+from app.services.company_ad_service import create_new_ad
 from app.services.job_app_service import search_job_ads_service
 
 company_ad_router_web = APIRouter(prefix="/ads", tags=["Company Ads"])
@@ -34,7 +34,8 @@ def create_new_ad_(
         location=company_ad.location,
         status=company_ad.status,
         current_user=current_user,
-        db=db
+        db=db,
+        skills=company_ad.skills
     )
     return {
         "message": "Ad added successfully",

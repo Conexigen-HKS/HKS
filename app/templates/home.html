@@ -22,16 +22,15 @@
     <nav id="navigation">
       <ul id="responsive">
         <li><a id="current" href="/">Home</a></li>
-        <li><a href="/job_applications/search">Browse job applications</a></li>
-        <li><a href="/ads/search">Browse Job ads</a></li>
-        
+        <li><a href="/job_applications/search">Professional Applications Search</a></li>
+        <li><a href="/ads/search">Job Search</a></li>        
         {% if user %}
           {% if user.role == "professional" %}
             <li><a href="/professionals/profile">Dashboard</a></li>
           {% elif user.role == "company" %}
             <li><a href="/companies/dashboard">Dashboard</a></li>
           {% endif %}
-          
+          <li><a href="/matches">Feeling Lucky</a></li>
           <li><a href="/messages"><i class="fa fa-envelope"></i> Messages</a></li>
         {% endif %}
       </ul>

@@ -29,22 +29,28 @@
       font-size: 2em;
     }
 
-    .add-button {
+    .header .buttons {
+      display: flex;
+      gap: 10px;
+    }
+
+    .header .buttons a,
+    .header .buttons button {
       display: flex;
       align-items: center;
       justify-content: center;
       background-color: #007bff;
       color: white;
       border: none;
-      border-radius: 50%;
-      width: 40px;
-      height: 40px;
-      font-size: 1.5em;
+      border-radius: 5px;
+      padding: 10px 20px;
+      font-size: 1em;
       cursor: pointer;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      text-decoration: none;
     }
 
-    .add-button:hover {
+    .header .buttons a:hover,
+    .header .buttons button:hover {
       background-color: #0056b3;
     }
 
@@ -91,20 +97,14 @@
       color: #1e9e49;
     }
 
-    .job-card h3 {
-      margin: 10px 0;
-      font-size: 1.2em;
-    }
-
-    /* Remove underline from clickable job title */
     .job-title a {
       text-decoration: none;
-      color: inherit; /* Keep the default color of the text */
+      color: inherit;
       font-weight: bold;
     }
 
     .job-title a:hover {
-      color: #007bff; /* Change color on hover */
+      color: #007bff;
     }
 
     .job-price {
@@ -122,8 +122,11 @@
 <body>
   <div class="container">
     <div class="header">
+      <a href="javascript:history.back()" class="back-button">Back</a>
       <h1>Company Job Offers</h1>
-      <button class="add-button" onclick="window.location.href='/ads/create';">+</button>
+      <div class="buttons">
+        <button class="add-button" onclick="window.location.href='/ads/create';">+</button>
+      </div>
     </div>
 
     <div class="job-grid">
