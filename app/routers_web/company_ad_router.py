@@ -1,4 +1,5 @@
 import uuid
+from http.client import HTTPException
 from typing import List
 from fastapi import APIRouter, Depends, Request
 from sqlalchemy.orm import Session
@@ -6,8 +7,9 @@ from starlette.responses import HTMLResponse
 from starlette.templating import Jinja2Templates
 
 from app.common import auth
+from app.common.auth import get_current_user
 from app.data.database import get_db
-from app.data.models import User, CompanyOffers, Location
+from app.data.models import User, CompanyOffers, Location, Companies
 from app.data.schemas.company import CompanyAdModel, CompanyAdUpdateModel, CreateCompanyAdModel
 from app.services.company_ad_service import create_new_ad, delete_company_ad, get_company_ads, edit_company_ad_by_id
 
@@ -48,18 +50,6 @@ def create_new_ad_(
     }
 
 
-
-
-
-
-# WORKS ? Check it again
-@company_ad_router_web.delete('/{id}')
-def delete_company_ad_(
-        ad_id: str,
-        db: Session = Depends(get_db),
-        current_user: User = Depends(auth.get_current_user)
-):
-    return delete_company_ad(ad_id=ad_id, db=db, current_user=current_user)
 
 
 @company_ad_router_web.get('/search', response_class=HTMLResponse)
@@ -124,3 +114,77 @@ def search_ads(
         },
     )
 
+
+
+@company_ad_router_web.get("/{offer_id}", response_class=HTMLResponse)
+def view_company_offer_details(
+    offer_id: uuid.UUID,
+    request: Request,
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user),
+):
+    """
+    View the details of a single company offer.
+    """
+    offer = (
+        db.query(CompanyOffers)
+        .join(Companies, Companies.id == CompanyOffers.company_id)
+        .join(Location, Location.id == CompanyOffers.location_id, isouter=True)
+        .filter(CompanyOffers.id == offer_id)
+        .first()
+    )
+
+    if not offer:
+        raise HTTPException(status_code=404, detail="Company offer not found.")
+
+    # Check ownership
+    is_owner = offer.company.user_id == current_user.id
+
+    # Fetch related skills
+    skills = [
+        f"{req.skill.name} ({req.level})"
+        for req in offer.requirements
+    ]
+
+    offer_data = {
+        "id": offer.id,
+        "title": offer.title,
+        "description": offer.description,
+        "company_name": offer.company.name,
+        "company_logo": offer.company.picture,
+        "location": offer.location.city_name if offer.location else "Unknown",  # Get city name
+        "min_salary": offer.min_salary,
+        "max_salary": offer.max_salary,
+        "status": offer.status,
+        "skills": skills,
+    }
+
+    return templates.TemplateResponse(
+        "job_ad_single.html",
+        {"request": request, "offer": offer_data, "is_owner": is_owner},
+    )
+
+
+@company_ad_router_web.put("/archive/{offer_id}")
+def archive_company_offer(
+    offer_id: uuid.UUID,
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user),
+):
+    """
+    Archive a company offer by setting its status to "Archived".
+    """
+    offer = db.query(CompanyOffers).filter(CompanyOffers.id == offer_id).first()
+
+    if not offer:
+        raise HTTPException(status_code=404, detail="Company offer not found.")
+
+    if offer.company.user_id != current_user.id:
+        raise HTTPException(
+            status_code=403, detail="You do not have permission to archive this offer."
+        )
+
+    offer.status = "Archived"
+    db.commit()
+
+    return {"message": "Company offer archived successfully."}

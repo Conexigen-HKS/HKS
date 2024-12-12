@@ -44,7 +44,8 @@ def search_job_applications(
     skill: str = "",
     min_salary: int = 0,
     max_salary: int = 0,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
     # Start with only Active applications
     query = db.query(ProfessionalProfile).filter(ProfessionalProfile.status == "Active")
@@ -133,47 +134,14 @@ async def create_application(request: Request, db: Session = Depends(get_db), cu
         create_job_application(db, current_user.id, job_data)
         return RedirectResponse("/", status_code=303)
 
-@job_app_router_web.post("/job_applications/", response_class=HTMLResponse)
-def create_application(data: JobApplicationCreate, db: Session = Depends(get_db),
-                       current_user: User = Depends(get_current_user)):
-    create_job_application(db, current_user.id, data)
-    return RedirectResponse("/", status_code=303)
 
-
-@job_app_router_web.get("/edit/{job_id}", response_class=HTMLResponse)
-def edit_application_page(job_id: UUID, request: Request, db: Session = Depends(get_db)):
-    job = view_job_application(db, job_id)
-    return templates.TemplateResponse("edit_job_application.html", {"request": request, "job": job})
-
-
-@job_app_router_web.post("/job_applications/{job_id}")
-def update_application(job_id: UUID, data: JobApplicationEdit, db: Session = Depends(get_db)):
-    edit_job_app(job_id, data, db)
-    return RedirectResponse("/", status_code=303)
-
-
-@job_app_router_web.get("/delete/{job_id}")
-def delete_application(job_id: UUID, db: Session = Depends(get_db)):
-    delete_job_application(job_id, db)
-    return RedirectResponse("/", status_code=303)
-
-@job_app_router_web.get("/view-applications", response_class=HTMLResponse)
-async def view_job_applications_page(
-    request: Request,
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db),
-):
-    job_applications = get_own_job_applications(db, current_user)
-    return templates.TemplateResponse(
-        "job_applications.html",
-        {"request": request, "job_applications": job_applications},
-    )
 
 @job_app_router_web.get("/details/{job_id}", response_class=HTMLResponse)
 def view_single_job_application(
     job_id: UUID,
     request: Request,
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
     """
     View the details of a single job application.
@@ -186,6 +154,7 @@ def view_single_job_application(
             "error.html",
             {"request": request, "message": "Job application not found."},
         )
+    is_owner = application.user_id == current_user.id
 
     # Prepare data for rendering
     application_data = {
@@ -203,7 +172,7 @@ def view_single_job_application(
 
     return templates.TemplateResponse(
         "job_app_single.html",
-        {"request": request, "application": application_data},
+        {"request": request, "application": application_data, "is_owner": is_owner},
     )
 
 @job_app_router_web.put("/archive/{application_id}")

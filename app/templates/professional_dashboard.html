@@ -37,14 +37,16 @@
         }
 
         .container {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 20px;
-            padding: 20px;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 20px;
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+    margin-bottom: 50px; /* Add a larger bottom margin */
+}
+
 
         .content, .sidebar {
             border-radius: 10px;
@@ -288,40 +290,36 @@
 </head>
 <body>
     <div class="header">
-        <div class="logo">JQblet</div>
+          <img src="static/images/logo.png" alt="Logo">
         <div>
-            <a href="#">Home</a>
-            <a href="#">Pages</a>
-            <a href="#">Browse Job</a>
-            <a href="#">Companies</a>
-            <a href="#">Candidate List</a>
-            <a href="#">Blog</a>
-            <a href="#" style="background-color: #d4eac7; padding: 5px 10px; border-radius: 5px;">Seeking Candidates</a>
+            <a href="/">Home</a>
+            <a href="/ads/search">Browse Jobs</a>
+
         </div>
     </div>
 
-    <div class="container">
-        <div class="content">
-            <div class="profile-container">
-                <img src="{{ profile_picture }}" alt="Company Logo">
-                <i class="fa fa-camera camera-icon" id="camera-icon"></i>
-            </div>
-            <h1>{{ company_name }}</h1>
-            <p>{{ company_description }}</p>
+<div class="container" style="margin-bottom: 190px;">
+    <div class="content">
+        <div class="profile-container">
+            <img src="{{ profile_picture }}" alt="Picture">
+            <i class="fa fa-camera camera-icon" id="camera-icon"></i>
         </div>
-        <div class="sidebar">
-            <h2>{{ first_name }} {{ last_name }}</h2>
-            <a href="{{ website }}">{{ website }}</a>
+        <h1>{{ company_name }}</h1>
+        <p>{{ company_description }}</p>
+    </div>
+    <div class="sidebar">
+        <h2>{{ first_name }} {{ last_name }}</h2>
+        <a href="{{ website }}">{{ website }}</a>
 
-            <div class="contact-info">
-                <div>Phone Number: {{ phone }}</div>
-                <div>Email: <a href="mailto:{{ email }}">{{ email }}</a></div>
-                <div>Location: {{ location }}</div>
-                <button onclick="window.location.href='/professionals/applications';">My Applications</button>
-    </div>
-            </div>
+        <div class="contact-info">
+            <div>Phone Number: {{ phone }}</div>
+            <div>Email: <a href="mailto:{{ email }}">{{ email }}</a></div>
+            <div>Location: {{ location }}</div>
+            <button onclick="window.location.href='/professionals/applications';">My Applications</button>
         </div>
     </div>
+</div>
+
 
     <div class="upload-popup" id="upload-popup">
         <span class="close" id="close-popup">&times;</span>

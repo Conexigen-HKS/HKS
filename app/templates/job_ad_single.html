@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Company Offer Detail</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 0;
+        }
+
+        .header {
+            background-color: #274428;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .overview {
+            margin-bottom: 20px;
+        }
+
+        .overview h2 {
+            font-size: 1.5em;
+            margin-bottom: 10px;
+        }
+
+        .overview p {
+            font-size: 1em;
+            line-height: 1.6;
+            color: #555;
+        }
+
+        .offer-detail {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #eefae5;
+            border-radius: 8px;
+            padding: 20px;
+        }
+
+        .offer-info {
+            margin-left: 20px;
+            font-size: 1.2em;
+        }
+
+        .actions {
+            text-align: right;
+        }
+
+        .actions button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-bottom: 10px;
+        }
+
+        .actions button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+    <script>
+        async function archiveOffer(offerId) {
+            try {
+                const response = await fetch(`/company_offers/archive/${offerId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    alert('The company offer has been archived.');
+                    location.reload(); // Reload the page to reflect changes
+                } else {
+                    const errorData = await response.json();
+                    alert(`Error: ${errorData.detail}`);
+                }
+            } catch (error) {
+                console.error('Error archiving the offer:', error);
+                alert('An error occurred while archiving the offer.');
+            }
+        }
+    </script>
+</head>
+<body>
+    <div class="header">
+        <h1>Company Offer Detail</h1>
+    </div>
+    <div class="container">
+        <div class="overview">
+            <h2>Overview</h2>
+            <p>{{ offer.description }}</p>
+        </div>
+        <div class="offer-detail">
+            <div class="offer-info">
+              <img src="{{ offer.company_logo or '/static/images/default-logo.png' }}" alt="Company Logo" style="width: 100px; height: 100px; border-radius: 50%;">
+
+        <h3>{{ offer.title }}</h3>
+                <p>Company: {{ offer.company_name }}</p>
+                <p>Location: {{ offer.location }}</p>
+
+                <p>Salary Range: ${{ offer.min_salary }} - ${{ offer.max_salary }}</p>
+                <p>Status: {{ offer.status }}</p>
+                <p><strong>Skills Required:</strong> {{ offer.skills | join(', ') }}</p>
+            </div>
+            <div class="actions">
+                {% if is_owner %}
+                    <button onclick="archiveOffer('{{ offer.id }}')">Archive</button>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</body>
+</html>

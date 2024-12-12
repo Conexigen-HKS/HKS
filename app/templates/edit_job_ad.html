@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Job Ad</title>
+    <style>
+        </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Edit Job Ad</h1>
+    </div>
+    <div class="container">
+        <form method="POST" action="/ads/{{ ad_id }}/edit" id="edit-ad-form">
+            <h1>Job Details</h1>
+            <label for="title">Job Title:</label>
+            <input type="text" id="title" name="title" placeholder="Job Title" required />
+
+            <label for="description">Job Description:</label>
+            <textarea id="description" name="description" placeholder="Write job description..." rows="4" required></textarea>
+
+            <label for="min_salary">Min Salary:</label>
+            <input type="number" id="min_salary" name="min_salary" placeholder="Min Salary" required />
+
+            <label for="max_salary">Max Salary:</label>
+            <input type="number" id="max_salary" name="max_salary" placeholder="Max Salary" required />
+
+            <label for="location">Location:</label>
+            <input type="text" id="location" name="location" placeholder="City Name" required />
+
+
+            <label for="status">Status:</label>
+            <select id="status" name="status" required>
+                <option value="Active">Active</option>
+                <option value="Archived">Archived</option>
+            </select>
+
+            <h1>Skills</h1>
+            <div class="skills-container" id="skills-container">
+                </div>
+            <button type="button" onclick="addSkill()">Add Another Skill</button>
+
+            <button type="submit">Save Changes</button>
+        </form>
+    </div>
+
+    <script>
+        function addSkill() {
+            const container = document.getElementById('skills-container');
+            const skillDiv = document.createElement('div');
+            skillDiv.innerHTML = `
+                <input type="text" name="skills[]" placeholder="Skill (e.g., Python)" />
+                <input type="text" name="levels[]" placeholder="Level (e.g., Beginner)" />
+            `;
+            container.appendChild(skillDiv);
+        }
+    </script>
+</body>
+</html>

@@ -51,7 +51,7 @@
           <p>Salary: ${{ app.min_salary }} - ${{ app.max_salary }}</p>
           <p><strong>Skills:</strong> {{ app.skills | join(', ') }}</p>
           <p>Status: {{ app.status }}</p>
-          <button>View Details</button>
+           <a href="/job_applications/details/{{ app.id }}" class="details-button">View Details</a>
         </div>
       {% endfor %}
     {% else %}

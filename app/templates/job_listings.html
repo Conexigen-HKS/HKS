@@ -47,7 +47,7 @@
         <div class="job-card">
           <h4>{{ ad.title }}</h4>
           <p>Company: {{ ad.company_name }}</p>
-          <p>Location: {{ ad.location }}</p>
+         <p>Location: {{ ad.location.city_name }}</p>
           <p>Salary: ${{ ad.min_salary }} - ${{ ad.max_salary }}</p>
           <p>{{ ad.description }}</p>
           <button>Apply Now</button>
