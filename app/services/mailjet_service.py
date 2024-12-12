@@ -1,3 +1,6 @@
+"""
+This module contains functions for sending emails using the Mailjet API.
+"""
 import os
 
 from dotenv import load_dotenv
@@ -12,6 +15,15 @@ api_secret = os.getenv('MJ_APIKEY_PRIVATE')
 mailjet = Client(auth=(MJ_APIKEY_PUBLIC, MJ_APIKEY_PRIVATE), version='v3.1')
 
 def send_email(to_email: str, to_name: str, subject: str, text_content: str, html_content: str):
+    """
+    Send an email using Mailjet API
+    :param to_email: Email address of the recipient
+    :param to_name: Name of the recipient
+    :param subject: Email subject
+    :param text_content: Plain text content of the email
+    :param html_content: HTML content of the email
+    :return: Tuple containing the status code and response JSON
+    """
     data = {
         'Messages': [
             {

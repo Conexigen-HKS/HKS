@@ -1,3 +1,11 @@
+"""
+Web routes for company ads.
+Methods:
+    - create_new_ad_: Create a new company ad.
+    - search_ads: Search for company ads.
+    - view_company_offer_details: View the details of a single company offer.
+    - archive_company_offer: Archive a company offer by setting its status to "Archived".
+    """
 import uuid
 from http.client import HTTPException
 from typing import Optional
@@ -19,13 +27,16 @@ company_ad_router_web = APIRouter(prefix="/ads", tags=["Company Ads"])
 templates = Jinja2Templates(directory="app/templates")
 
 
-# WORKS
 @company_ad_router_web.post('/new_ad')
 def create_new_ad_(
         company_ad: CreateCompanyAdModel,
         current_user: User = Depends(auth.get_current_user),
         db: Session = Depends(get_db)
 ):
+    """Web route to create a new company ad.
+    Accepts a POST request with a JSON body containing the ad details.
+    Returns a JSON response with a message and the created ad.
+    """
     new_ad = create_new_ad(
         title=company_ad.title,
         min_salary=company_ad.min_salary,
@@ -52,8 +63,6 @@ def create_new_ad_(
     }
 
 
-
-
 @company_ad_router_web.get('/search', response_class=HTMLResponse)
 def search_ads(
         request: Request,
@@ -65,6 +74,10 @@ def search_ads(
         page: int = 1,
         per_page: int = 10
 ):
+    """Web route to search for company ads.
+    Accepts query parameters for keyword, location, min_salary, max_salary, page, and per_page.
+    Returns a HTML response with the search results.
+    """
     job_ads = search_job_ads_service(
         db=db,
         query=keyword,
@@ -93,7 +106,6 @@ def search_ads(
     )
 
 
-
 @company_ad_router_web.get("/{offer_id}", response_class=HTMLResponse)
 def view_company_offer_details(
     offer_id: uuid.UUID,
@@ -103,6 +115,8 @@ def view_company_offer_details(
 ):
     """
     View the details of a single company offer.
+    Accepts a GET request with the offer_id as a path parameter.
+    Returns an HTML response with the offer details.
     """
     offer = (
         db.query(CompanyOffers)
@@ -151,6 +165,8 @@ def archive_company_offer(
 ):
     """
     Archive a company offer by setting its status to "Archived".
+    Accepts a PUT request with the offer_id as a path parameter.
+    Returns a JSON response with a message.
     """
     offer = db.query(CompanyOffers).filter(CompanyOffers.id == offer_id).first()
 

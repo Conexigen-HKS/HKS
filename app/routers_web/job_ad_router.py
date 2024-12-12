@@ -33,7 +33,6 @@ from app.services.company_ad_service import (
 job_ad_router = APIRouter(prefix="/ads", tags=["Company Ads"])
 
 
-# WORKS
 templates = Jinja2Templates(directory="app/templates")
 
 @job_ad_router.get("/search", response_class=HTMLResponse)
@@ -48,7 +47,15 @@ async def search_jobs(
     page_size: int = 10,
 ):
     """
-    Search job ads with filters for keyword, location, and salary range.
+    Web route to search for job ads
+    Accepts the following parameters:
+    - keyword: str
+    - location: str
+    - min_salary: int
+    - max_salary: int
+    - page: int
+    - page_size: int
+    Returns a list of job ads
     """
     query = db.query(CompanyOffers).filter(CompanyOffers.status == "Active")
 
@@ -82,10 +89,18 @@ async def search_jobs(
             "total_pages": total_pages,
         },
     )
-# WORKS
+
+
 @job_ad_router.api_route("/create", methods=["GET", "POST"], response_class=HTMLResponse)
-async def create_company_ad(request: Request, db: Session = Depends(get_db),
-                            current_user: User = Depends(get_current_user)):
+async def create_company_ad(
+    request: Request, 
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Web route to create a new job ad
+    Accepts parameters from a form and returns a redirect response to the home page.
+    """
     if request.method == "GET":
         return templates.TemplateResponse("job_add_create.html", {"request": request})
 
@@ -122,7 +137,6 @@ async def create_company_ad(request: Request, db: Session = Depends(get_db),
         )
 
         return RedirectResponse("/", status_code=303)
-
 
 
 @job_ad_router.get("/info", response_model=List[CompanyAdModel])

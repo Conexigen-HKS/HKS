@@ -27,6 +27,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
 from app.common import auth
+from app.common.utils import verify_token
 from app.data.database import get_db
 from app.data.models import Companies, Professional, User
 from app.data.schemas.users import CompanyRegister, ProfessionalRegister, TokenResponse
@@ -154,7 +155,7 @@ def logout_user(token: str = Depends(auth.oauth2_scheme)):
     if not token:
         raise HTTPException(status_code=401, detail="No user is currently logged in.")
 
-    payload = auth.verify_token(token)
+    payload = verify_token(token)
     if not payload:
         raise HTTPException(status_code=401, detail="Invalid or expired token.")
 

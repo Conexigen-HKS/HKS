@@ -7,33 +7,25 @@ Methods:
     - search_or_get_job_applications: GET /companies/job-applications
     - get_all_professionals_: GET /companies/professionals-list
 """
-from typing import List, Optional
 
-from fastapi import APIRouter, HTTPException, Query, Depends, Request
+from fastapi import APIRouter, HTTPException, Depends, Request
 from sqlalchemy.orm import Session, joinedload
 from starlette.responses import HTMLResponse
 from starlette.templating import Jinja2Templates
 
-from app.common import auth
 from app.common.auth import get_current_user
 from app.data.database import get_db
 from app.data.models import User, CompanyOffers
-from app.data.schemas.company import ShowCompanyModel, CompanyInfoRequestModel
-from app.data.schemas.job_application import JobApplicationResponse
-from app.services.offer_service import send_offer_request
+from app.data.schemas.company import CompanyInfoRequestModel
 from app.services.company_service import (
     edit_company_description_service,
-    find_all_companies_service,
-    get_all_professionals,
     show_company_description_service,
 )
-from app.services.job_app_service import search_job_applications_service
 
 templates = Jinja2Templates(directory="app/templates")
 
 
 company_router_web = APIRouter(prefix="/companies", tags=["Companies"])
-
 
 
 @company_router_web.get("/dashboard", response_class=HTMLResponse)
@@ -44,6 +36,7 @@ async def company_profile(
 ):
     """
     Render the company profile page.
+    Accepts a GET request and returns the company profile page.
     """
     company_data = show_company_description_service(current_user, db)
 
@@ -61,6 +54,7 @@ async def company_profile(
             "profile_picture": profile_picture,
         },
     )
+
 
 @company_router_web.put('/info')
 def edit_company_description(
@@ -102,6 +96,7 @@ async def view_company_job_offers(
 ):
     """
     View all job offers for the company.
+    Accepts a GET request and returns the job offers for the company.
     """
     company_id = current_user.company.id if current_user.company else None
 

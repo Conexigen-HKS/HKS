@@ -1,28 +1,81 @@
+"""
+This module contains the services for the professional profile.
+Methods:
+- get_professional_by_user_id
+- get_professional_service
+- update_professional_service
+- update_professional_status_on_match
+- create_professional_application
+- get_professional_profile_for_user
+- view_own_profile
+- update_own_profile
+- get_own_job_applications
+"""
 from uuid import UUID
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
-from app.data.models import User, ProfessionalProfile, CompanyOffers, Professional, RequestsAndMatches, Location
+from app.data.models import (
+    User,
+    ProfessionalProfile,
+    CompanyOffers,
+    Professional,
+    RequestsAndMatches,
+    Location,
+)
 from app.data.schemas.job_application import JobApplicationResponse
 from app.data.schemas.professional import ProfessionalUpdate, ProfessionalResponse
 from app.data.schemas.skills import SkillResponse
 
 
 def get_professional_by_user_id(db: Session, user_id: UUID):
-    professional = db.query(Professional).filter(Professional.user_id == user_id).first()
+    """
+    Get professional profile by user id
+    Accepts:
+    - db: Session
+    - user_id: UUID
+    Returns:
+    - professional: Professional
+    """
+    professional = (
+        db.query(Professional).filter(Professional.user_id == user_id).first()
+    )
     if not professional:
         raise HTTPException(status_code=404, detail="Professional profile not found")
     return professional
 
 
 def get_professional_service(db: Session, user_id: UUID):
-    professional = db.query(Professional).filter(Professional.user_id == user_id).first()
+    """
+    Get professional profile by user id
+    Accepts:
+    - db: Session
+    - user_id: UUID
+    Returns:
+    - professional: Professional
+    """
+    professional = (
+        db.query(Professional).filter(Professional.user_id == user_id).first()
+    )
     if not professional:
         raise HTTPException(status_code=404, detail="Professional profile not found")
     return professional
 
 
-def update_professional_service(db: Session, user_id: UUID, update_data: ProfessionalUpdate):
-    professional = db.query(Professional).filter(Professional.user_id == user_id).first()
+def update_professional_service(
+    db: Session, user_id: UUID, update_data: ProfessionalUpdate
+):
+    """
+    Update professional profile
+    Accepts:
+    - db: Session
+    - user_id: UUID
+    - update_data: ProfessionalUpdate
+    Returns:
+    - professional: Professional
+    """
+    professional = (
+        db.query(Professional).filter(Professional.user_id == user_id).first()
+    )
     if not professional:
         raise HTTPException(status_code=404, detail="Professional profile not found")
 
@@ -35,16 +88,28 @@ def update_professional_service(db: Session, user_id: UUID, update_data: Profess
 
 
 def update_professional_status_on_match(db: Session, professional_profile_id: UUID):
-    profile = db.query(ProfessionalProfile).filter(
-        ProfessionalProfile.id == professional_profile_id
-    ).first()
+    """
+    Update professional status on match
+    Accepts:
+    - db: Session
+    - professional_profile_id: UUID
+    Returns:
+    - profile: ProfessionalProfile
+    """
+    profile = (
+        db.query(ProfessionalProfile)
+        .filter(ProfessionalProfile.id == professional_profile_id)
+        .first()
+    )
 
     if not profile:
         raise HTTPException(status_code=404, detail="Professional profile not found")
 
-    has_matches = db.query(RequestsAndMatches).filter(
-        RequestsAndMatches.professional_profile_id == professional_profile_id
-    ).count()
+    has_matches = (
+        db.query(RequestsAndMatches)
+        .filter(RequestsAndMatches.professional_profile_id == professional_profile_id)
+        .count()
+    )
 
     if has_matches > 0:
         profile.status = "busy"
@@ -55,8 +120,26 @@ def update_professional_status_on_match(db: Session, professional_profile_id: UU
     return profile
 
 
-def create_professional_application(db: Session, professional_profile_id: str, min_salary: int, max_salary: int,
-                                    location: str, description: str):
+def create_professional_application(
+    db: Session,
+    professional_profile_id: str,
+    min_salary: int,
+    max_salary: int,
+    location: str,
+    description: str,
+):
+    """
+    Create professional application
+    Accepts:
+    - db: Session
+    - professional_profile_id: str
+    - min_salary: int
+    - max_salary: int
+    - location: str
+    - description: str
+    Returns:
+    - professional_application: CompanyOffers
+    """
     professional_application = CompanyOffers(
         professional_profile_id=professional_profile_id,
         type="professional",
@@ -64,7 +147,7 @@ def create_professional_application(db: Session, professional_profile_id: str, m
         min_salary=min_salary,
         max_salary=max_salary,
         location=location,
-        description=description
+        description=description,
     )
     db.add(professional_application)
     db.commit()
@@ -73,30 +156,63 @@ def create_professional_application(db: Session, professional_profile_id: str, m
 
 
 def get_professional_profile_for_user(db: Session, user_id: str):
-    professional = db.query(Professional).filter(Professional.user_id == user_id).first()
+    """
+    Get professional profile for user
+    Accepts:
+    - db: Session
+    - user_id: str
+    Returns:
+    - professional_profile: ProfessionalProfile
+    """
+    professional = (
+        db.query(Professional).filter(Professional.user_id == user_id).first()
+    )
     if not professional:
         raise HTTPException(status_code=404, detail="Professional profile not found.")
 
-    professional_profile = db.query(ProfessionalProfile).filter(
-        ProfessionalProfile.professional_id == professional.id
-    ).first()
+    professional_profile = (
+        db.query(ProfessionalProfile)
+        .filter(ProfessionalProfile.professional_id == professional.id)
+        .first()
+    )
     if not professional_profile:
         raise HTTPException(status_code=404, detail="Professional profile not found.")
 
     return professional_profile
 
 
-# WORKS
 def view_own_profile(db: Session, user_id: UUID):
-    professional = db.query(Professional).filter(Professional.user_id == user_id).first()
+    """
+    View own professional profile
+    Accepts:
+    - db: Session
+    - user_id: UUID
+    Returns:
+    - ProfessionalResponse
+    """
+    professional = (
+        db.query(Professional).filter(Professional.user_id == user_id).first()
+    )
     if not professional:
         raise HTTPException(status_code=404, detail="Professional profile not found")
     return ProfessionalResponse.from_orm(professional)
 
 
-# WORKS
-def update_own_profile(db: Session, user_id: UUID, data: ProfessionalUpdate) -> ProfessionalResponse:
-    professional = db.query(Professional).filter(Professional.user_id == user_id).first()
+def update_own_profile(
+    db: Session, user_id: UUID, data: ProfessionalUpdate
+) -> ProfessionalResponse:
+    """
+    Update own professional profile
+    Accepts:
+    - db: Session
+    - user_id: UUID
+    - data: ProfessionalUpdate
+    Returns:
+    - ProfessionalResponse
+    """
+    professional = (
+        db.query(Professional).filter(Professional.user_id == user_id).first()
+    )
     if not professional:
         raise HTTPException(status_code=404, detail="Professional profile not found")
 
@@ -105,7 +221,9 @@ def update_own_profile(db: Session, user_id: UUID, data: ProfessionalUpdate) -> 
     if data.last_name is not None:
         professional.last_name = data.last_name
     if data.location is not None:
-        location = db.query(Location).filter(Location.city_name == data.location).first()
+        location = (
+            db.query(Location).filter(Location.city_name == data.location).first()
+        )
         if location:
             professional.location_id = location.id
         else:
@@ -128,11 +246,20 @@ def update_own_profile(db: Session, user_id: UUID, data: ProfessionalUpdate) -> 
     return ProfessionalResponse.from_orm(professional)
 
 
-# WORKS
 def get_own_job_applications(db: Session, current_user: User):
-    applications = db.query(ProfessionalProfile).filter(
-        ProfessionalProfile.user_id == current_user.id
-    ).all()
+    """
+    Get own job applications
+    Accepts:
+    - db: Session
+    - current_user: User
+    Returns:
+    - List[JobApplicationResponse]
+    """
+    applications = (
+        db.query(ProfessionalProfile)
+        .filter(ProfessionalProfile.user_id == current_user.id)
+        .all()
+    )
 
     return [
         JobApplicationResponse(
@@ -144,14 +271,9 @@ def get_own_job_applications(db: Session, current_user: User):
             status=app.status,
             location_name=app.location.city_name if app.location else None,
             skills=[
-                SkillResponse(
-                    skill_id=s.skill.id,
-                    name=s.skill.name,
-                    level=s.level
-                )
+                SkillResponse(skill_id=s.skill.id, name=s.skill.name, level=s.level)
                 for s in app.skills
-            ]
+            ],
         )
         for app in applications
     ]
-
