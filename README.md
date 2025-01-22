@@ -144,22 +144,6 @@ job-matching-platform/
 
 ---
 
-## ✍️ **Contributing**
-
-We welcome contributions! To contribute:
-
-1. Fork the repository.
-2. Create a new branch for your feature or fix.
-3. Submit a pull request for review.
-
----
-
-## 💌 **License**
-
-This project is licensed under the **MIT License**. Feel free to use and modify it as per your requirements.
-
----
-
 ## 📧 **Contact**
 
 For questions or support, feel free to reach out:
